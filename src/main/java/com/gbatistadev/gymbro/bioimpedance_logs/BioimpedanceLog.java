@@ -25,7 +25,7 @@ public class BioimpedanceLog extends BaseEntity {
     @JdbcTypeCode(SqlTypes.JSON)
     private JsonNode oldData;
 
-    @Column(name = "old_data", nullable = true)
+    @Column(name = "new_data", nullable = true)
     @JdbcTypeCode(SqlTypes.JSON)
     private JsonNode newData;
 
