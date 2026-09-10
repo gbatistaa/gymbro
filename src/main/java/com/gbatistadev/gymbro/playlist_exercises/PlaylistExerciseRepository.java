@@ -1,4 +1,9 @@
 package com.gbatistadev.gymbro.playlist_exercises;
 
-public interface PlaylistExerciseRepository extends org.springframework.data.jpa.repository.JpaRepository<com.gbatistadev.gymbro.playlist_exercises.PlaylistExercise, java.util.UUID> ,org.springframework.data.jpa.repository.JpaSpecificationExecutor<com.gbatistadev.gymbro.playlist_exercises.PlaylistExercise> {
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+
+import java.util.UUID;
+
+public interface PlaylistExerciseRepository extends JpaRepository<PlaylistExercise, UUID>, JpaSpecificationExecutor<PlaylistExercise> {
 }
