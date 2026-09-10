@@ -17,3 +17,6 @@ spring:
     enabled: true
     locations: classpath:db/migration
     baseline-on-migrate: true
+  jwt:
+    secret: ${JWT_SECRET:vb/3tfg32s3347qCevonfOLwZdeuDp6pcaQIWh+ezYg4VzSJFUrRy9iggWtMUKGaJRTB30JGi/6YaDORbCmrEw==}
+    expiration-ms: ${JWT_EXPIRATION_MS:86400000}
