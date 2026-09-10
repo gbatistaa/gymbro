@@ -1,4 +1,9 @@
 package com.gbatistadev.gymbro.workout_session;
 
-public interface WorkoutSessionRepository extends org.springframework.data.jpa.repository.JpaRepository<com.gbatistadev.gymbro.workout_session.WorkoutSession, java.util.UUID> ,org.springframework.data.jpa.repository.JpaSpecificationExecutor<com.gbatistadev.gymbro.workout_session.WorkoutSession> {
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+
+import java.util.UUID;
+
+public interface WorkoutSessionRepository extends JpaRepository<WorkoutSession, UUID>, JpaSpecificationExecutor<WorkoutSession> {
 }
