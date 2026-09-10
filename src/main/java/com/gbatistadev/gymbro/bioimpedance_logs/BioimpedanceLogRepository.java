@@ -1,4 +1,9 @@
 package com.gbatistadev.gymbro.bioimpedance_logs;
 
-public interface BioimpedanceLogRepository extends org.springframework.data.jpa.repository.JpaRepository<com.gbatistadev.gymbro.bioimpedance_logs.BioimpedanceLog, java.util.UUID> ,org.springframework.data.jpa.repository.JpaSpecificationExecutor<com.gbatistadev.gymbro.bioimpedance_logs.BioimpedanceLog> {
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+
+import java.util.UUID;
+
+public interface BioimpedanceLogRepository extends JpaRepository<BioimpedanceLog, UUID>, JpaSpecificationExecutor<BioimpedanceLog> {
 }
