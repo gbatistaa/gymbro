@@ -13,8 +13,10 @@ public class ExerciseService {
         this.mapper = mapper;
     }
 
-    public Exercise createExercise(CreateExerciseDto dto) {
-
+    public Exercise create(CreateExerciseDto dto) {
+        Exercise exercise = mapper.toEntity(dto);
         return repository.save(exercise);
     }
+
+
 }

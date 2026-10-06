@@ -12,7 +12,6 @@ import java.util.UUID;
 /**
  * DTO for {@link com.gbatistadev.gymbro.exercise.Exercise}
  */
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
