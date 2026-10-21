@@ -1,7 +1,9 @@
 package com.gbatistadev.gymbro.exercise;
 
 import com.gbatistadev.gymbro.exercise.dto.CreateExerciseDto;
+import com.gbatistadev.gymbro.exercise.dto.ExerciseDto;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ExerciseService {
@@ -13,10 +15,11 @@ public class ExerciseService {
         this.mapper = mapper;
     }
 
-    public Exercise create(CreateExerciseDto dto) {
+    @Transactional
+    public ExerciseDto create(CreateExerciseDto dto) {
         Exercise exercise = mapper.toEntity(dto);
-        return repository.save(exercise);
+        repository.save(exercise);
+
+        return mapper.toDto(exercise);
     }
-
-
 }

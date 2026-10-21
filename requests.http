@@ -1,0 +1,9 @@
+POST http://127.0.0.1:8000/pdf-to-markdown
+Content-Type: multipart/form-data; boundary=pdfboundary
+
+--pdfboundary
+Content-Disposition: form-data; name="file"; filename="Learning-how-to-learn-4-15.pdf"
+Content-Type: application/pdf
+
+< ./Learning-how-to-learn-4-15.pdf
+--pdfboundary--

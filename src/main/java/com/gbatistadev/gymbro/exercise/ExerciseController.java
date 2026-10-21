@@ -2,19 +2,33 @@ package com.gbatistadev.gymbro.exercise;
 
 import com.gbatistadev.gymbro.exercise.dto.CreateExerciseDto;
 import com.gbatistadev.gymbro.exercise.dto.ExerciseDto;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import java.net.URI;
 
 @RestController
 @RequestMapping("/api/exercises")
 public class ExerciseController {
     private final ExerciseService service;
 
-    public ExerciseController(ExerciseService service) {
-        this.service = service;
+    public ExerciseController(ExerciseMapper exerciseMapper, ExerciseService service) {
+		this.service = service;
     }
 
-    public ExerciseDto createExercise(CreateExerciseDto dto) {
-        return null;
+    @PostMapping
+    public ResponseEntity<ExerciseDto> createExercise(@Valid @RequestBody CreateExerciseDto dto) {
+        ExerciseDto exercise = service.create(dto);
+
+        URI location = ServletUriComponentsBuilder
+            .fromCurrentRequest()
+            .path("/{id}")
+            .buildAndExpand(exercise.getId())
+            .toUri();
+
+        return ResponseEntity.created(location).body(exercise);
     }
 }
