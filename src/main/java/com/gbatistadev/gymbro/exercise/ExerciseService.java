@@ -1,11 +1,14 @@
 package com.gbatistadev.gymbro.exercise;
 
+import com.gbatistadev.gymbro.errors.exceptions.ResourceAlreadyExistsException;
 import com.gbatistadev.gymbro.exercise.dto.CreateExerciseDto;
 import com.gbatistadev.gymbro.exercise.dto.ExerciseDto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 @Service
 public class ExerciseService {
@@ -18,12 +21,13 @@ public class ExerciseService {
     }
 
     @Transactional
-    public ExerciseDto create(CreateExerciseDto dto) {
+    public ExerciseDto create(CreateExerciseDto dto) throws ResourceAlreadyExistsException {
 		if (repository.existsExerciseNameDuplicate(dto.name())) {
-			throw new
+			throw new ResourceAlreadyExistsException("An exercise with that name already exists");
 		}
 
         Exercise exercise = mapper.toEntity(dto);
+		exercise.setName(capitalize(exercise.getName()));
         repository.save(exercise);
 
         return mapper.toDto(exercise);
@@ -36,4 +40,22 @@ public class ExerciseService {
 			.stream()
 			.map(mapper::toDto).toList();
     }
+
+	private String capitalize(String text) {
+		List<String> splited = List.of(text.split(" "));
+
+		return splited.stream().map((word) -> {
+			StringBuilder wordBuilder = new StringBuilder(word);
+
+			for (int i = 0; i < word.length(); i++) {
+				String letter = String.valueOf(wordBuilder.charAt(0));
+				if (i == 0) {
+					wordBuilder.setCharAt(i, letter.toUpperCase(Locale.ROOT).toCharArray()[0]);
+				} else {
+					wordBuilder.setCharAt(i, letter.toLowerCase(Locale.ROOT).toCharArray()[0]);
+				}
+			}
+			return wordBuilder;
+		}).toString();
+	}
 }

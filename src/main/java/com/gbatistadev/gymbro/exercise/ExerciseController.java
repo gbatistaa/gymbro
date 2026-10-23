@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/exercises")
@@ -30,5 +31,12 @@ public class ExerciseController {
             .toUri();
 
         return ResponseEntity.created(location).body(exercise);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<ExerciseDto>> findAll() {
+        List<ExerciseDto> exerciseDtos = service.findAll();
+
+        return ResponseEntity.ok(exerciseDtos);
     }
 }

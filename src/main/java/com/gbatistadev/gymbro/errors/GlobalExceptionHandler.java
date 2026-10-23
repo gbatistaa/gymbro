@@ -2,6 +2,7 @@ package com.gbatistadev.gymbro.errors;
 
 import com.gbatistadev.gymbro.errors.exceptions.ForbiddenException;
 import com.gbatistadev.gymbro.errors.exceptions.NotFoundException;
+import com.gbatistadev.gymbro.errors.exceptions.ResourceAlreadyExistsException;
 import com.gbatistadev.gymbro.errors.exceptions.UnauthorizedException;
 import jakarta.servlet.http.HttpServletRequest;
 import jdk.jshell.ErroneousSnippet;
@@ -54,6 +55,20 @@ public class GlobalExceptionHandler {
 		);
 
 		return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
+	}
+
+	@ExceptionHandler(ResourceAlreadyExistsException.class)
+	public ResponseEntity<ErrorResponse> handleResourceAlreadyExistsException(
+		ResourceAlreadyExistsException ex,
+		HttpServletRequest request
+	) {
+		ErrorResponse errorResponse = buildError(
+			HttpStatus.CONFLICT,
+			ex.getMessage(),
+			request
+		);
+
+		return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
 	}
 
 	private ErrorResponse buildError(
