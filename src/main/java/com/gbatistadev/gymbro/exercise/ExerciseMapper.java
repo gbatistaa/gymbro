@@ -2,6 +2,7 @@ package com.gbatistadev.gymbro.exercise;
 
 import com.gbatistadev.gymbro.exercise.dto.CreateExerciseDto;
 import com.gbatistadev.gymbro.exercise.dto.ExerciseDto;
+import org.mapstruct.Condition;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

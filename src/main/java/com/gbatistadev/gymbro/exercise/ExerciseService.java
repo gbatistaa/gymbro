@@ -1,14 +1,13 @@
 package com.gbatistadev.gymbro.exercise;
 
+import com.gbatistadev.gymbro.errors.exceptions.NotFoundException;
 import com.gbatistadev.gymbro.errors.exceptions.ResourceAlreadyExistsException;
 import com.gbatistadev.gymbro.exercise.dto.CreateExerciseDto;
 import com.gbatistadev.gymbro.exercise.dto.ExerciseDto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 @Service
 public class ExerciseService {
@@ -40,6 +39,14 @@ public class ExerciseService {
 			.stream()
 			.map(mapper::toDto).toList();
     }
+
+	@Transactional
+	public void updateExercise(CreateExerciseDto dto, UUID id) {
+		Exercise entity = repository.findById(id)
+			.orElseThrow(() -> new NotFoundException("Rebolou lentinho pros crias"));
+
+
+	}
 
 	private String capitalize(String text) {
 		List<String> splited = List.of(text.split(" "));

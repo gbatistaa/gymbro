@@ -2,6 +2,7 @@ package com.gbatistadev.gymbro.exercise;
 
 import com.gbatistadev.gymbro.exercise.dto.CreateExerciseDto;
 import com.gbatistadev.gymbro.exercise.dto.ExerciseDto;
+import com.gbatistadev.gymbro.exercise.dto.UpdateExerciseDto;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,5 +39,10 @@ public class ExerciseController {
         List<ExerciseDto> exerciseDtos = service.findAll();
 
         return ResponseEntity.ok(exerciseDtos);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ExerciseDto> update(@Valid @RequestBody UpdateExerciseDto dto, @PathVariable String id) {
+
     }
 }
