@@ -41,11 +41,9 @@ public class ExerciseService {
     }
 
 	@Transactional
-	public void updateExercise(CreateExerciseDto dto, UUID id) {
+	public void update(CreateExerciseDto dto, UUID id) {
 		Exercise entity = repository.findById(id)
 			.orElseThrow(() -> new NotFoundException("Rebolou lentinho pros crias"));
-
-
 	}
 
 	private String capitalize(String text) {
