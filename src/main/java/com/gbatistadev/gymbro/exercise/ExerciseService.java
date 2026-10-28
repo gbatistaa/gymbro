@@ -1,9 +1,11 @@
 package com.gbatistadev.gymbro.exercise;
 
+import com.gbatistadev.gymbro.common.aspect.Logging;
 import com.gbatistadev.gymbro.errors.exceptions.NotFoundException;
 import com.gbatistadev.gymbro.errors.exceptions.ResourceAlreadyExistsException;
 import com.gbatistadev.gymbro.exercise.dto.CreateExerciseDto;
 import com.gbatistadev.gymbro.exercise.dto.ExerciseDto;
+import com.gbatistadev.gymbro.exercise.dto.UpdateExerciseDto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,9 +43,16 @@ public class ExerciseService {
     }
 
 	@Transactional
-	public void update(CreateExerciseDto dto, UUID id) {
+	@Logging(action = "UPDATE")
+	public ExerciseDto update(UpdateExerciseDto dto, UUID id) {
 		Exercise entity = repository.findById(id)
-			.orElseThrow(() -> new NotFoundException("Rebolou lentinho pros crias"));
+			.orElseThrow(() -> new NotFoundException(
+				"Exercise not found: " + id
+			));
+
+		mapper.updateEntity(dto, entity);
+
+		return mapper.toDto(entity);
 	}
 
 	private String capitalize(String text) {

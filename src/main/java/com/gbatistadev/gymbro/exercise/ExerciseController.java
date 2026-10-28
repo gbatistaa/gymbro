@@ -11,6 +11,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/exercises")
@@ -42,7 +43,15 @@ public class ExerciseController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ExerciseDto> update(@Valid @RequestBody UpdateExerciseDto dto, @PathVariable String id) {
+    public ResponseEntity<ExerciseDto> update(@Valid @RequestBody UpdateExerciseDto dto, @PathVariable UUID id) {
+		ExerciseDto updated = service.update(dto, id);
 
+        URI location = ServletUriComponentsBuilder
+            .fromCurrentRequest()
+            .path("/{id}")
+            .buildAndExpand(updated.getId())
+            .toUri();
+
+        return ResponseEntity.ok().location(location).body(updated);
     }
 }
