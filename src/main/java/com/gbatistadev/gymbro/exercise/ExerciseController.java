@@ -11,6 +11,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 @RestController
@@ -36,10 +37,15 @@ public class ExerciseController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ExerciseDto>> findAll() {
+    public ResponseEntity<List<ExerciseDto>> findAll(Locale locale) {
         List<ExerciseDto> exerciseDtos = service.findAll();
 
-        return ResponseEntity.ok(exerciseDtos);
+        URI location = ServletUriComponentsBuilder
+            .fromCurrentRequest()
+            .build()
+            .toUri();
+
+        return ResponseEntity.ok().location(location).body(exerciseDtos);
     }
 
     @PutMapping("/{id}")
