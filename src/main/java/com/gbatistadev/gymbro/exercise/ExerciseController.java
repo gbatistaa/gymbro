@@ -4,7 +4,6 @@ import com.gbatistadev.gymbro.exercise.dto.CreateExerciseDto;
 import com.gbatistadev.gymbro.exercise.dto.ExerciseDto;
 import com.gbatistadev.gymbro.exercise.dto.UpdateExerciseDto;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -24,7 +23,7 @@ public class ExerciseController {
     }
 
     @PostMapping
-    public ResponseEntity<ExerciseDto> createExercise(@Valid @RequestBody CreateExerciseDto dto) {
+    public ResponseEntity<ExerciseDto> create(@Valid @RequestBody CreateExerciseDto dto) {
         ExerciseDto exercise = service.create(dto);
 
         URI location = ServletUriComponentsBuilder

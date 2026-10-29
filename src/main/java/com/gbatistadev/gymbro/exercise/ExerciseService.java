@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class ExerciseService {
@@ -23,12 +25,13 @@ public class ExerciseService {
 
     @Transactional
     public ExerciseDto create(CreateExerciseDto dto) throws ResourceAlreadyExistsException {
-		if (repository.existsExerciseNameDuplicate(dto.name())) {
+		String name = capitalize(dto.name());
+		if (repository.existsExerciseNameDuplicate(name)) {
 			throw new ResourceAlreadyExistsException("An exercise with that name already exists");
 		}
 
         Exercise exercise = mapper.toEntity(dto);
-		exercise.setName(capitalize(exercise.getName()));
+		exercise.setName(name);
         repository.save(exercise);
 
         return mapper.toDto(exercise);
@@ -56,20 +59,9 @@ public class ExerciseService {
 	}
 
 	private String capitalize(String text) {
-		List<String> splited = List.of(text.split(" "));
-
-		return splited.stream().map((word) -> {
-			StringBuilder wordBuilder = new StringBuilder(word);
-
-			for (int i = 0; i < word.length(); i++) {
-				String letter = String.valueOf(wordBuilder.charAt(0));
-				if (i == 0) {
-					wordBuilder.setCharAt(i, letter.toUpperCase(Locale.ROOT).toCharArray()[0]);
-				} else {
-					wordBuilder.setCharAt(i, letter.toLowerCase(Locale.ROOT).toCharArray()[0]);
-				}
-			}
-			return wordBuilder;
-		}).toString();
+		return Stream.of(text.split(" "))
+			.map(word -> word.isEmpty() ? word
+				: word.substring(0, 1).toUpperCase(Locale.ROOT) + word.substring(1).toLowerCase(Locale.ROOT))
+			.collect(Collectors.joining(" "));
 	}
 }
