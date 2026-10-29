@@ -6,7 +6,6 @@ from pdf_to_markdown import PROMPT, convert_and_save_pdf_bytes
 
 app = FastAPI()
 
-
 @app.post("/pdf-to-markdown")
 async def pdf_to_markdown(file: UploadFile = File(...)):
     md_bytes, md_path = convert_and_save_pdf_bytes(await file.read(), file.filename or "doc.pdf")
