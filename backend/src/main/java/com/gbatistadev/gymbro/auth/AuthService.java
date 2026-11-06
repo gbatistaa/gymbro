@@ -92,6 +92,26 @@ public class AuthService {
             .build();
     }
 
+    // rotação de refresh não implementada (open question do plan); upgrade = trocar o hash a cada uso
+    @Transactional(readOnly = true)
+    public ResponseEntity<UserDto> refresh(String rawRefreshToken) {
+        if (rawRefreshToken == null || rawRefreshToken.isBlank()) {
+            throw new UnauthorizedException("Invalid refresh token");
+        }
+
+        RefreshToken refreshToken = refreshTokenRepository
+            .findValidByTokenHash(sha256Hex(rawRefreshToken), Instant.now())
+            .orElseThrow(() -> new UnauthorizedException("Invalid refresh token"));
+
+        User user = refreshToken.getUser();
+        String accessToken = jwtService.createAccessToken(user.getId(), user.getEmail());
+
+        return ResponseEntity.ok()
+            .header(HttpHeaders.SET_COOKIE,
+                cookie("access_token", accessToken, "/", jwtProperties.expirationMs() / 1000).toString())
+            .body(userMapper.toDto(user));
+    }
+
     private String generateRefreshToken() {
         byte[] bytes = new byte[32];
         RANDOM.nextBytes(bytes);

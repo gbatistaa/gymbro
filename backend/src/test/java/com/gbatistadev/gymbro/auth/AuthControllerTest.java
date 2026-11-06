@@ -3,6 +3,7 @@ package com.gbatistadev.gymbro.auth;
 import com.gbatistadev.gymbro.config.jwt.JwtProperties;
 import com.gbatistadev.gymbro.config.jwt.JwtService;
 import com.gbatistadev.gymbro.errors.GlobalExceptionHandler;
+import com.gbatistadev.gymbro.user.RefreshToken;
 import com.gbatistadev.gymbro.user.RefreshTokenRepository;
 import com.gbatistadev.gymbro.user.User;
 import com.gbatistadev.gymbro.user.UserMapper;
@@ -28,6 +29,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -53,6 +55,7 @@ class AuthControllerTest {
     private RefreshTokenRepository refreshTokenRepository;
 
     private MockMvc mockMvc;
+    private JwtService jwtService;
     private final PasswordEncoder encoder = new BCryptPasswordEncoder();
 
     @BeforeEach
@@ -60,7 +63,7 @@ class AuthControllerTest {
         UserMapper mapper = new UserMapperImpl();
         JwtProperties properties = new JwtProperties(SECRET, 900_000L, 15_552_000_000L);
         UserService userService = new UserService(userRepository, mapper, encoder);
-        JwtService jwtService = new JwtService(properties);
+        jwtService = new JwtService(properties);
         AuthService authService = new AuthService(
             userService, mapper, userRepository, refreshTokenRepository,
             encoder, jwtService, properties);
@@ -159,5 +162,55 @@ class AuthControllerTest {
         user.setEmail("joao@example.com");
         user.setPasswordHash(encoder.encode(rawPassword));
         return user;
+    }
+
+    @Test
+    @DisplayName("refresh issues a new parseable access cookie and user dto")
+    void shouldRefreshAccessToken() throws Exception {
+        User user = existingUser("password123");
+        RefreshToken stored = new RefreshToken();
+        stored.setTokenHash("a".repeat(64));
+        stored.setExpiresAt(java.time.Instant.now().plusSeconds(60));
+        stored.setUser(user);
+        when(refreshTokenRepository.findValidByTokenHash(anyString(), any(java.time.Instant.class)))
+            .thenReturn(Optional.of(stored));
+
+        MvcResult result = mockMvc.perform(post("/api/auth/refresh")
+                .cookie(new jakarta.servlet.http.Cookie("refresh_token", "raw-token")))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.email").value("joao@example.com"))
+            .andExpect(jsonPath("$.passwordHash").doesNotExist())
+            .andReturn();
+
+        String setCookie = result.getResponse().getHeader("Set-Cookie");
+        assertNotNull(setCookie, "deve emitir novo access_token");
+        assertTrue(setCookie.startsWith("access_token="), setCookie);
+        assertTrue(setCookie.contains("HttpOnly"), setCookie);
+        assertTrue(setCookie.contains("Path=/;"), setCookie);
+        String jwt = setCookie.substring("access_token=".length(), setCookie.indexOf(';'));
+        assertEquals(user.getId(), jwtService.parseAccessToken(jwt), "cookie deve autenticar como o usuário");
+    }
+
+    @Test
+    @DisplayName("refresh without cookie returns 401 ErrorResponse")
+    void shouldRejectRefreshWithoutCookie() throws Exception {
+        mockMvc.perform(post("/api/auth/refresh"))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.status").value(401))
+            .andExpect(jsonPath("$.error").value("UNAUTHORIZED"))
+            .andExpect(jsonPath("$.message").value("Invalid refresh token"))
+            .andExpect(jsonPath("$.path").value("/api/auth/refresh"));
+    }
+
+    @Test
+    @DisplayName("refresh with unknown or expired token returns the same 401")
+    void shouldRejectUnknownOrExpiredRefreshToken() throws Exception {
+        when(refreshTokenRepository.findValidByTokenHash(anyString(), any(java.time.Instant.class)))
+            .thenReturn(Optional.empty());
+
+        mockMvc.perform(post("/api/auth/refresh")
+                .cookie(new jakarta.servlet.http.Cookie("refresh_token", "expired-token")))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.message").value("Invalid refresh token"));
     }
 }
