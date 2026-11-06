@@ -1,7 +1,7 @@
 package com.gbatistadev.gymbro.user.dto;
 
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 
 import java.io.Serializable;
 
@@ -10,7 +10,7 @@ import java.io.Serializable;
  * Password change is not implemented here.
  */
 public record UpdateUserDto(
-    @NotBlank(message = "Name must not be blank")
+    @Pattern(regexp = ".*\\S.*", message = "Name must not be blank")
     String name,
 
     @Email(message = "Email must be valid")
