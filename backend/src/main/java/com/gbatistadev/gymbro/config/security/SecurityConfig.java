@@ -1,4 +1,4 @@
-package com.gbatistadev.gymbro.common;
+package com.gbatistadev.gymbro.config.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,9 +11,6 @@ public class SecurityConfig {
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http
-                .authorizeHttpRequests(a -> a.anyRequest().permitAll())
-                .csrf(AbstractHttpConfigurer::disable)
-                .build();
+        return http.authorizeHttpRequests(a -> a.anyRequest().permitAll()).csrf(AbstractHttpConfigurer::disable).build();
     }
 }
