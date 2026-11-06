@@ -1,6 +1,10 @@
 spring:
   application:
     name: gymbro
+  config:
+    # .env no formato KEY=VALUE; [.properties] = hint de extensão (formato fora do padrão)
+    # optional: para bootar sem o arquivo (defaults abaixo valem)
+    import: optional:file:./.env[.properties]
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/gymbro}
     username: ${DB_USER:postgres}
