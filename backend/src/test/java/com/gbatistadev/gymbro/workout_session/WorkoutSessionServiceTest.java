@@ -1,6 +1,7 @@
 package com.gbatistadev.gymbro.workout_session;
 
 import com.gbatistadev.gymbro.common.dto.PageDto;
+import com.gbatistadev.gymbro.common.mapper.PageMapper;
 import com.gbatistadev.gymbro.common.security.CurrentUser;
 import com.gbatistadev.gymbro.errors.exceptions.ConflictException;
 import com.gbatistadev.gymbro.errors.exceptions.NotFoundException;
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -49,6 +51,9 @@ class WorkoutSessionServiceTest {
 
     @Mock
     private WorkoutSessionMapper mapper;
+
+    @Mock
+    private PageMapper pageMapper;
 
     @Mock
     private CurrentUser currentUser;
@@ -379,10 +384,11 @@ class WorkoutSessionServiceTest {
             .thenReturn(page);
         when(mapper.toDto(session)).thenReturn(expected);
 
-        PageDto<SessionDto> result = service.list(null, null, -1, 500);
+        PageDto<SessionDto> expectedPage = new PageDto<>(List.of(expected), 0, 100, 1, 1);
+        when(pageMapper.toDto(ArgumentMatchers.<Page<SessionDto>>any()))
+            .thenReturn(expectedPage);
 
-        assertEquals(List.of(expected), result.content());
-        assertEquals(100, result.size());
+        assertSame(expectedPage, service.list(null, null, -1, 500));
 
         ArgumentCaptor<Pageable> captor = ArgumentCaptor.forClass(Pageable.class);
         verify(sessions).findByUserIdAndStartedAtBetween(

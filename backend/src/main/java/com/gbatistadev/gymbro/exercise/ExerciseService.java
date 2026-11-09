@@ -2,6 +2,7 @@ package com.gbatistadev.gymbro.exercise;
 
 import com.gbatistadev.gymbro.common.aspect.Logging;
 import com.gbatistadev.gymbro.common.dto.PageDto;
+import com.gbatistadev.gymbro.common.mapper.PageMapper;
 import com.gbatistadev.gymbro.common.security.CurrentUser;
 import com.gbatistadev.gymbro.errors.exceptions.ConflictException;
 import com.gbatistadev.gymbro.errors.exceptions.ForbiddenException;
@@ -30,6 +31,7 @@ public class ExerciseService {
     private final PlaylistExerciseRepository playlistExercises;
     private final WorkoutLogRepository workoutLogs;
     private final ExerciseMapper mapper;
+    private final PageMapper pageMapper;
     private final CurrentUser currentUser;
 
     @Transactional
@@ -66,12 +68,7 @@ public class ExerciseService {
                 pageable)
             .map(mapper::toDto);
 
-        return new PageDto<>(
-            result.getContent(),
-            result.getNumber(),
-            result.getSize(),
-            result.getTotalElements(),
-            result.getTotalPages());
+        return pageMapper.toDto(result);
     }
 
 	@Transactional

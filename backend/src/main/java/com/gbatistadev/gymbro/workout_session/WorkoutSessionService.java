@@ -2,6 +2,7 @@ package com.gbatistadev.gymbro.workout_session;
 
 import com.gbatistadev.gymbro.common.aspect.Logging;
 import com.gbatistadev.gymbro.common.dto.PageDto;
+import com.gbatistadev.gymbro.common.mapper.PageMapper;
 import com.gbatistadev.gymbro.common.security.CurrentUser;
 import com.gbatistadev.gymbro.errors.exceptions.ConflictException;
 import com.gbatistadev.gymbro.errors.exceptions.NotFoundException;
@@ -30,6 +31,7 @@ public class WorkoutSessionService {
     private final ExerciseRepository exercises;
     private final PlaylistRepository playlists;
     private final WorkoutSessionMapper mapper;
+    private final PageMapper pageMapper;
     private final CurrentUser currentUser;
 
     @Transactional
@@ -165,12 +167,7 @@ public class WorkoutSessionService {
             .findByUserIdAndStartedAtBetween(currentUser.id(), start, end, pageable)
             .map(mapper::toDto);
 
-        return new PageDto<>(
-            result.getContent(),
-            result.getNumber(),
-            result.getSize(),
-            result.getTotalElements(),
-            result.getTotalPages());
+        return pageMapper.toDto(result);
     }
 
     @Transactional(readOnly = true)

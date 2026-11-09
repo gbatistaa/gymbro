@@ -1,6 +1,7 @@
 package com.gbatistadev.gymbro.exercise;
 
 import com.gbatistadev.gymbro.common.dto.PageDto;
+import com.gbatistadev.gymbro.common.mapper.PageMapper;
 import com.gbatistadev.gymbro.common.security.CurrentUser;
 import com.gbatistadev.gymbro.errors.exceptions.ConflictException;
 import com.gbatistadev.gymbro.errors.exceptions.ForbiddenException;
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -46,6 +48,9 @@ class ExerciseServiceTest {
 
     @Mock
     private ExerciseMapper mapper;
+
+    @Mock
+    private PageMapper pageMapper;
 
     @Mock
     private CurrentUser currentUser;
@@ -101,10 +106,12 @@ class ExerciseServiceTest {
             .thenReturn(page);
         when(mapper.toDto(any(Exercise.class))).thenReturn(new ExerciseDto());
 
-        PageDto<ExerciseDto> result = service.search(" supino ", " Peito ", false, 0, 20);
+        PageDto<ExerciseDto> expected = new PageDto<>(
+            List.of(new ExerciseDto(), new ExerciseDto()), 0, 20, 2, 1);
+        when(pageMapper.toDto(ArgumentMatchers.<Page<ExerciseDto>>any()))
+            .thenReturn(expected);
 
-        assertEquals(2, result.content().size());
-        assertEquals(2, result.totalElements());
+        assertSame(expected, service.search(" supino ", " Peito ", false, 0, 20));
 
         ArgumentCaptor<Pageable> captor = ArgumentCaptor.forClass(Pageable.class);
         verify(repository).searchForUser(
