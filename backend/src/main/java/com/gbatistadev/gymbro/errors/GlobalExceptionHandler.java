@@ -1,5 +1,6 @@
 package com.gbatistadev.gymbro.errors;
 
+import com.gbatistadev.gymbro.errors.exceptions.BadRequestException;
 import com.gbatistadev.gymbro.errors.exceptions.ConflictException;
 import com.gbatistadev.gymbro.errors.exceptions.ForbiddenException;
 import com.gbatistadev.gymbro.errors.exceptions.NotFoundException;
@@ -55,6 +56,14 @@ public class GlobalExceptionHandler {
 		HttpServletRequest request
 	) {
 		return respond(HttpStatus.UNAUTHORIZED, ex.getMessage(), request);
+	}
+
+	@ExceptionHandler(BadRequestException.class)
+	public ResponseEntity<ErrorResponse> handleBadRequestException(
+		BadRequestException ex,
+		HttpServletRequest request
+	) {
+		return respond(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
 	}
 
 	@ExceptionHandler(ConflictException.class)
