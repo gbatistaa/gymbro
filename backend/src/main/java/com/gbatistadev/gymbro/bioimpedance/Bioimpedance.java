@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -14,6 +15,9 @@ import java.time.Instant;
 @NoArgsConstructor
 @Table(name = "bioimpedance")
 public class Bioimpedance extends BaseEntity {
+    @Column(name = "user_id", nullable = false)
+    private UUID userId;
+
     @Column(name = "body_fat_percentage", nullable = false)
     private Double bodyFatPercentage;
 

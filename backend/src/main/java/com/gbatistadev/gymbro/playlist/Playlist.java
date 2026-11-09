@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @Entity
@@ -16,4 +18,7 @@ import lombok.Setter;
 public class Playlist extends BaseEntity {
     @Column(nullable = false)
     private String name;
+
+    @Column(name = "user_id", nullable = false)
+    private UUID userId;
 }

@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -15,6 +16,9 @@ import java.time.Instant;
 @NoArgsConstructor
 @Table(name = "workout_session")
 public class WorkoutSession extends BaseEntity {
+    @Column(name = "user_id", nullable = false)
+    private UUID userId;
+
     @Column(name = "started_at", nullable = false)
     private Instant startedAt;
 
