@@ -1,5 +1,6 @@
 package com.gbatistadev.gymbro.errors;
 
+import com.gbatistadev.gymbro.errors.exceptions.ConflictException;
 import com.gbatistadev.gymbro.errors.exceptions.ForbiddenException;
 import com.gbatistadev.gymbro.errors.exceptions.NotFoundException;
 import com.gbatistadev.gymbro.errors.exceptions.ResourceAlreadyExistsException;
@@ -10,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -53,6 +55,14 @@ public class GlobalExceptionHandler {
 		HttpServletRequest request
 	) {
 		return respond(HttpStatus.UNAUTHORIZED, ex.getMessage(), request);
+	}
+
+	@ExceptionHandler(ConflictException.class)
+	public ResponseEntity<ErrorResponse> handleConflictException(
+		ConflictException ex,
+		HttpServletRequest request
+	) {
+		return respond(HttpStatus.CONFLICT, ex.getMessage(), request);
 	}
 
 	@ExceptionHandler(ResourceAlreadyExistsException.class)
@@ -134,6 +144,14 @@ public class GlobalExceptionHandler {
 		HttpServletRequest request
 	) {
 		return respond(HttpStatus.CONFLICT, "The request conflicts with the current state of the resource", request);
+	}
+
+	@ExceptionHandler(OptimisticLockingFailureException.class)
+	public ResponseEntity<ErrorResponse> handleOptimisticLockingFailureException(
+		OptimisticLockingFailureException ex,
+		HttpServletRequest request
+	) {
+		return respond(HttpStatus.CONFLICT, "The resource was modified by another request", request);
 	}
 
 	@ExceptionHandler(AuthenticationException.class)

@@ -6,6 +6,7 @@ import com.gbatistadev.gymbro.errors.exceptions.ResourceAlreadyExistsException;
 import com.gbatistadev.gymbro.user.dto.CreateUserDto;
 import com.gbatistadev.gymbro.user.dto.UpdateUserDto;
 import com.gbatistadev.gymbro.user.dto.UserDto;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,16 +14,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
     private final UserRepository repository;
     private final UserMapper mapper;
     private final PasswordEncoder passwordEncoder;
-
-    public UserService(UserRepository repository, UserMapper mapper, PasswordEncoder passwordEncoder) {
-        this.repository = repository;
-        this.mapper = mapper;
-        this.passwordEncoder = passwordEncoder;
-    }
 
     @Transactional
     public UserDto create(CreateUserDto dto) {
