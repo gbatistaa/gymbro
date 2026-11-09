@@ -1,6 +1,8 @@
 package com.gbatistadev.gymbro.exercise;
 
 import com.gbatistadev.gymbro.common.aspect.Logging;
+import com.gbatistadev.gymbro.common.security.CurrentUser;
+import com.gbatistadev.gymbro.errors.exceptions.ForbiddenException;
 import com.gbatistadev.gymbro.errors.exceptions.NotFoundException;
 import com.gbatistadev.gymbro.errors.exceptions.ResourceAlreadyExistsException;
 import com.gbatistadev.gymbro.exercise.dto.CreateExerciseDto;
@@ -17,21 +19,25 @@ import java.util.stream.Stream;
 public class ExerciseService {
     private final ExerciseRepository repository;
     private final ExerciseMapper mapper;
+    private final CurrentUser currentUser;
 
-    public ExerciseService(ExerciseRepository repository, ExerciseMapper mapper) {
+    public ExerciseService(ExerciseRepository repository, ExerciseMapper mapper, CurrentUser currentUser) {
         this.repository = repository;
         this.mapper = mapper;
+        this.currentUser = currentUser;
     }
 
     @Transactional
     public ExerciseDto create(CreateExerciseDto dto) throws ResourceAlreadyExistsException {
 		String name = capitalize(dto.name());
-		if (repository.existsExerciseNameDuplicate(name)) {
+		UUID userId = currentUser.id();
+		if (repository.existsExerciseNameDuplicate(name, userId)) {
 			throw new ResourceAlreadyExistsException("An exercise with that name already exists");
 		}
 
         Exercise exercise = mapper.toEntity(dto);
 		exercise.setName(name);
+		exercise.setUserId(userId);
         repository.save(exercise);
 
         return mapper.toDto(exercise);
@@ -40,7 +46,7 @@ public class ExerciseService {
     @Transactional(readOnly = true)
     public List<ExerciseDto> findAll() {
 		return repository
-			.findAll()
+			.findAllForUser(currentUser.id())
 			.stream()
 			.map(mapper::toDto).toList();
     }
@@ -52,6 +58,13 @@ public class ExerciseService {
 			.orElseThrow(() -> new NotFoundException(
 				"Exercise not found: " + id
 			));
+
+		if (entity.getUserId() == null) {
+			throw new ForbiddenException("Global exercises are read-only");
+		}
+		if (!entity.getUserId().equals(currentUser.id())) {
+			throw new NotFoundException("Exercise not found: " + id);
+		}
 
 		mapper.updateEntity(dto, entity);
 
