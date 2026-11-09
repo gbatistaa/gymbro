@@ -1,4 +1,4 @@
-package com.gbatistadev.gymbro.workout_session.dto;
+package com.gbatistadev.gymbro.common.dto;
 
 import java.util.List;
 
