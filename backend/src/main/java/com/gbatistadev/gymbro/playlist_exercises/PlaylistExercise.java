@@ -20,6 +20,18 @@ public class PlaylistExercise extends BaseEntity {
     @Column(name = "target_sets", nullable = false)
     private Integer targetSets;
 
+    @Column(name = "target_reps_min")
+    private Integer targetRepsMin;
+
+    @Column(name = "target_reps_max")
+    private Integer targetRepsMax;
+
+    @Column(name = "rest_seconds")
+    private Integer restSeconds;
+
+    @Column(length = 500)
+    private String note;
+
     @ManyToOne(optional = false)
     @JoinColumn(name = "playlist_id", nullable = false)
     private Playlist playlist;
