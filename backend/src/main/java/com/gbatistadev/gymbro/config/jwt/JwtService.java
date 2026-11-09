@@ -52,7 +52,9 @@ public class JwtService {
     public UUID parseAccessToken(String token) {
         try {
             Jwt jwt = decoder.decode(token);
-            return UUID.fromString(jwt.getSubject());
+            String jwtSubject = jwt.getSubject();
+            assert jwtSubject != null;
+            return UUID.fromString(jwtSubject);
         } catch (JwtException | IllegalArgumentException e) {
             throw new UnauthorizedException("Invalid access token");
         }
