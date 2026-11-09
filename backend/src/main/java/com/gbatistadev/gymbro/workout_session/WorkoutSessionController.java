@@ -1,5 +1,6 @@
 package com.gbatistadev.gymbro.workout_session;
 
+import com.gbatistadev.gymbro.common.dto.PageDto;
 import com.gbatistadev.gymbro.workout_session.dto.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

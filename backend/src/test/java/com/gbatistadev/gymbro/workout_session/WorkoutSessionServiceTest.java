@@ -1,5 +1,6 @@
 package com.gbatistadev.gymbro.workout_session;
 
+import com.gbatistadev.gymbro.common.dto.PageDto;
 import com.gbatistadev.gymbro.common.security.CurrentUser;
 import com.gbatistadev.gymbro.errors.exceptions.ConflictException;
 import com.gbatistadev.gymbro.errors.exceptions.NotFoundException;

@@ -16,6 +16,8 @@ public interface WorkoutLogRepository extends JpaRepository<WorkoutLog, UUID> {
 
     long countByWorkoutSessionId(UUID sessionId);
 
+    boolean existsByExerciseId(UUID exerciseId);
+
     @Query("""
         SELECT l FROM WorkoutLog l
         JOIN FETCH l.exercise e
