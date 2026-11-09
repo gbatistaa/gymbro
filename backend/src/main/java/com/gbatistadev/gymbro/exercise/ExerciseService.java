@@ -8,6 +8,7 @@ import com.gbatistadev.gymbro.errors.exceptions.ResourceAlreadyExistsException;
 import com.gbatistadev.gymbro.exercise.dto.CreateExerciseDto;
 import com.gbatistadev.gymbro.exercise.dto.ExerciseDto;
 import com.gbatistadev.gymbro.exercise.dto.UpdateExerciseDto;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,16 +17,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
+@RequiredArgsConstructor
 public class ExerciseService {
     private final ExerciseRepository repository;
     private final ExerciseMapper mapper;
     private final CurrentUser currentUser;
-
-    public ExerciseService(ExerciseRepository repository, ExerciseMapper mapper, CurrentUser currentUser) {
-        this.repository = repository;
-        this.mapper = mapper;
-        this.currentUser = currentUser;
-    }
 
     @Transactional
     public ExerciseDto create(CreateExerciseDto dto) throws ResourceAlreadyExistsException {

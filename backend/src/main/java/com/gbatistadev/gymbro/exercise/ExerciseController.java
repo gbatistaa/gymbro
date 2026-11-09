@@ -4,6 +4,7 @@ import com.gbatistadev.gymbro.exercise.dto.CreateExerciseDto;
 import com.gbatistadev.gymbro.exercise.dto.ExerciseDto;
 import com.gbatistadev.gymbro.exercise.dto.UpdateExerciseDto;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -15,12 +16,9 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/exercises")
+@RequiredArgsConstructor
 public class ExerciseController {
     private final ExerciseService service;
-
-    public ExerciseController(ExerciseMapper exerciseMapper, ExerciseService service) {
-		this.service = service;
-    }
 
     @PostMapping
     public ResponseEntity<ExerciseDto> create(@Valid @RequestBody CreateExerciseDto dto) {

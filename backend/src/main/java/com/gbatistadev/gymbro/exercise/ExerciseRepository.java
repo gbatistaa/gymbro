@@ -6,9 +6,16 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface ExerciseRepository extends JpaRepository<Exercise, UUID>, JpaSpecificationExecutor<Exercise> {
+
+	@Query("""
+		SELECT e FROM Exercise e
+		WHERE e.id = :id AND (e.userId IS NULL OR e.userId = :userId)
+	""")
+	Optional<Exercise> findByIdForUser(@Param("id") UUID id, @Param("userId") UUID userId);
 
 	@Query("""
 		SELECT e FROM Exercise e
