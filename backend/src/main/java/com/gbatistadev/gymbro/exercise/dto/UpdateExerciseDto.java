@@ -2,6 +2,7 @@ package com.gbatistadev.gymbro.exercise.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.gbatistadev.gymbro.exercise.Exercise;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
@@ -20,7 +21,12 @@ public record UpdateExerciseDto(
 	@NotBlank
 	String primaryMuscle,
 
-	@Size(message = "Secondary muscle must have at least 3 chars", min = 3)
-	@NotBlank
-	String secondaryMuscle
+	@Size(max = 100, message = "Secondary muscle must have at most 100 characters")
+	String secondaryMuscle,
+
+	@Size(max = 50, message = "Equipment must have at most 50 characters")
+	String equipment,
+
+	@DecimalMin(value = "0.0", message = "incrementKg cannot be negative")
+	Double incrementKg
 ) implements Serializable {}
