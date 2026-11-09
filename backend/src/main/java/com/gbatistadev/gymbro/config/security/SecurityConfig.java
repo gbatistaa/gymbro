@@ -26,7 +26,7 @@ public class SecurityConfig {
         HttpSecurity http,
         JwtAuthenticationFilter jwtAuthenticationFilter,
         ObjectMapper objectMapper
-    ) throws Exception {
+    ) {
         AuthenticationEntryPoint entryPoint = (request, response, authException) -> {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);

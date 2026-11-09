@@ -118,7 +118,6 @@ public class AuthService {
         return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
     }
 
-    // shortcut: 1 refresh por usuário (uk_refresh_tokens_user) — login sobrescreve a linha
     private void saveRefreshToken(User user, String rawToken) {
         RefreshToken refreshToken = refreshTokenRepository.findByUserId(user.getId())
             .orElseGet(() -> {

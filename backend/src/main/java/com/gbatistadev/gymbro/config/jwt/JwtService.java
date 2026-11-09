@@ -30,7 +30,6 @@ public class JwtService {
         SecretKeySpec key = new SecretKeySpec(
             properties.secret().getBytes(StandardCharsets.UTF_8), "HmacSHA256");
         this.encoder = new NimbusJwtEncoder(new ImmutableSecret<SecurityContext>(key));
-        // macAlgorithm restringe o decoder ao HS256 (bloqueia alg confusion)
         this.decoder = NimbusJwtDecoder.withSecretKey(key).macAlgorithm(MacAlgorithm.HS256).build();
         this.expirationMs = properties.expirationMs();
     }
