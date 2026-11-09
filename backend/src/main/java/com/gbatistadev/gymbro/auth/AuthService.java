@@ -12,6 +12,7 @@ import com.gbatistadev.gymbro.user.UserRepository;
 import com.gbatistadev.gymbro.user.UserService;
 import com.gbatistadev.gymbro.user.dto.CreateUserDto;
 import com.gbatistadev.gymbro.user.dto.UserDto;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +29,7 @@ import java.util.Base64;
 import java.util.HexFormat;
 
 @Service
+@RequiredArgsConstructor
 public class AuthService {
     private static final SecureRandom RANDOM = new SecureRandom();
 
@@ -38,24 +40,6 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final JwtProperties jwtProperties;
-
-    public AuthService(
-        UserService userService,
-        UserMapper userMapper,
-        UserRepository userRepository,
-        RefreshTokenRepository refreshTokenRepository,
-        PasswordEncoder passwordEncoder,
-        JwtService jwtService,
-        JwtProperties jwtProperties
-    ) {
-        this.userService = userService;
-        this.userMapper = userMapper;
-        this.userRepository = userRepository;
-        this.refreshTokenRepository = refreshTokenRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.jwtService = jwtService;
-        this.jwtProperties = jwtProperties;
-    }
 
     public UserDto register(CreateUserDto dto) {
         return userService.create(dto);
