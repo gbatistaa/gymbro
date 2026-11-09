@@ -19,6 +19,7 @@ import java.util.UUID;
 
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -56,9 +57,32 @@ class ExerciseOwnershipIT {
 
         mockMvc.perform(get("/api/exercises").cookie(accessCookie(userA)))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$[*].id", hasItem(global.getId().toString())))
-            .andExpect(jsonPath("$[*].id", hasItem(mine.getId().toString())))
-            .andExpect(jsonPath("$[*].id", not(hasItem(foreign.getId().toString()))));
+            .andExpect(jsonPath("$.content[*].id", hasItem(global.getId().toString())))
+            .andExpect(jsonPath("$.content[*].id", hasItem(mine.getId().toString())))
+            .andExpect(jsonPath("$.content[*].id", not(hasItem(foreign.getId().toString()))));
+    }
+
+    @Test
+    @DisplayName("archiving hides a custom exercise from the default search")
+    void shouldArchiveCustomExercise() throws Exception {
+        UserDto userA = createUser("a");
+        Exercise mine = createExercise(userA.getId(), "Archive");
+
+        mockMvc.perform(delete("/api/exercises/{id}", mine.getId()).cookie(accessCookie(userA)))
+            .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/api/exercises")
+                .param("q", mine.getName())
+                .cookie(accessCookie(userA)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.totalElements").value(0));
+
+        mockMvc.perform(get("/api/exercises")
+                .param("q", mine.getName())
+                .param("includeArchived", "true")
+                .cookie(accessCookie(userA)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.totalElements").value(1));
     }
 
     @Test

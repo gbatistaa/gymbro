@@ -1,5 +1,6 @@
 package com.gbatistadev.gymbro.exercise;
 
+import com.gbatistadev.gymbro.common.dto.PageDto;
 import com.gbatistadev.gymbro.exercise.dto.CreateExerciseDto;
 import com.gbatistadev.gymbro.exercise.dto.ExerciseDto;
 import com.gbatistadev.gymbro.exercise.dto.UpdateExerciseDto;
@@ -10,8 +11,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
-import java.util.List;
-import java.util.Locale;
 import java.util.UUID;
 
 @RestController
@@ -34,20 +33,22 @@ public class ExerciseController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ExerciseDto>> findAll(Locale locale) {
-        List<ExerciseDto> exerciseDtos = service.findAll();
-
-        URI location = ServletUriComponentsBuilder
-            .fromCurrentRequest()
-            .build()
-            .toUri();
-
-        return ResponseEntity.ok().location(location).body(exerciseDtos);
+    public ResponseEntity<PageDto<ExerciseDto>> search(
+        @RequestParam(required = false) String q,
+        @RequestParam(required = false) String muscle,
+        @RequestParam(defaultValue = "false") boolean includeArchived,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "20") int size
+    ) {
+        return ResponseEntity.ok(service.search(q, muscle, includeArchived, page, size));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ExerciseDto> update(@Valid @RequestBody UpdateExerciseDto dto, @PathVariable UUID id) {
-		ExerciseDto updated = service.update(dto, id);
+    public ResponseEntity<ExerciseDto> update(
+        @Valid @RequestBody UpdateExerciseDto dto,
+        @PathVariable UUID id
+    ) {
+        ExerciseDto updated = service.update(dto, id);
 
         URI location = ServletUriComponentsBuilder
             .fromCurrentRequest()
@@ -56,5 +57,11 @@ public class ExerciseController {
             .toUri();
 
         return ResponseEntity.ok().location(location).body(updated);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> archive(@PathVariable UUID id) {
+        service.archive(id);
+        return ResponseEntity.noContent().build();
     }
 }

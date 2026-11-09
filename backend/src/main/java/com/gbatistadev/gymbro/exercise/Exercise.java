@@ -24,6 +24,15 @@ public class Exercise extends BaseEntity {
     @Column(name = "primary_muscle", nullable = false)
     private String primaryMuscle;
 
-    @Column(name = "secondary_muscle", nullable = false)
+    @Column(name = "secondary_muscle")
     private String secondaryMuscle;
+
+    @Column(length = 50)
+    private String equipment;
+
+    @Column(name = "increment_kg")
+    private Double incrementKg = 2.5;
+
+    @Column(name = "is_archived", nullable = false)
+    private Boolean isArchived = false;
 }

@@ -22,4 +22,7 @@ public class ExerciseDto implements Serializable {
     private String name;
     private String primaryMuscle;
     private String secondaryMuscle;
+    private String equipment;
+    private Double incrementKg;
+    private Boolean isArchived;
 }
