@@ -8,16 +8,22 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @Entity
 @NoArgsConstructor
 @Table(name = "workout_log")
 public class WorkoutLog extends BaseEntity {
+    /** Client-generated, stable across retries. Unique per session. */
+    @Column(name = "client_log_id", nullable = false)
+    private UUID clientLogId;
+
     @Column(name = "set_number", nullable = false)
     private Integer setNumber;
 
-    @Column(nullable = false, precision = 1)
+    @Column(nullable = false)
     private Double weight;
 
     @Column(nullable = false)
@@ -25,6 +31,12 @@ public class WorkoutLog extends BaseEntity {
 
     @Column(name = "is_pr", nullable = false)
     private Boolean isPr;
+
+    @Column
+    private Integer rpe;
+
+    @Column(length = 500)
+    private String notes;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "exercise_id", nullable = false)
