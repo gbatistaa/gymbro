@@ -25,6 +25,9 @@ public class BioimpedanceImportJobWriter {
     @Transactional
     public void markDone(UUID jobId, JsonNode result) {
         repository.findById(jobId).ifPresent(job -> {
+            if (job.getStatus() != ImportJobStatus.PROCESSING) {
+                return;
+            }
             job.setStatus(ImportJobStatus.DONE);
             job.setResult(result);
             job.setError(null);
@@ -36,6 +39,9 @@ public class BioimpedanceImportJobWriter {
     @Transactional
     public void markFailed(UUID jobId, String error) {
         repository.findById(jobId).ifPresent(job -> {
+            if (job.getStatus() != ImportJobStatus.PROCESSING) {
+                return;
+            }
             job.setStatus(ImportJobStatus.FAILED);
             job.setError(truncate(error));
             job.setFinishedAt(Instant.now());

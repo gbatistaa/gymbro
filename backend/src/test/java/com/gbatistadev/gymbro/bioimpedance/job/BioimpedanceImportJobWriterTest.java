@@ -43,6 +43,7 @@ class BioimpedanceImportJobWriterTest {
     @DisplayName("markDone stores the result and the finish time")
     void shouldMarkDone() {
         BioimpedanceImportJob job = job();
+        job.setStatus(ImportJobStatus.PROCESSING);
         JsonNode result = JsonMapper.builder().build().createObjectNode().put("bodyFatPercentage", 18.2);
         when(repository.findById(jobId)).thenReturn(Optional.of(job));
 
@@ -58,6 +59,7 @@ class BioimpedanceImportJobWriterTest {
     @DisplayName("markFailed truncates the error to the column size")
     void shouldMarkFailedAndTruncate() {
         BioimpedanceImportJob job = job();
+        job.setStatus(ImportJobStatus.PROCESSING);
         when(repository.findById(jobId)).thenReturn(Optional.of(job));
 
         writer.markFailed(jobId, "x".repeat(1500));
@@ -66,6 +68,19 @@ class BioimpedanceImportJobWriterTest {
         assertEquals(1000, job.getError().length());
         assertNotNull(job.getFinishedAt());
         verify(repository).save(job);
+    }
+
+    @Test
+    @DisplayName("a terminal job is not resurrected by a late parser response")
+    void shouldNotOverwriteTerminalJob() {
+        BioimpedanceImportJob job = job();
+        job.setStatus(ImportJobStatus.FAILED);
+        when(repository.findById(jobId)).thenReturn(Optional.of(job));
+
+        writer.markDone(jobId, JsonMapper.builder().build().createObjectNode());
+
+        assertEquals(ImportJobStatus.FAILED, job.getStatus());
+        verify(repository, never()).save(job);
     }
 
     private BioimpedanceImportJob job() {

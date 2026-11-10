@@ -25,10 +25,15 @@ public class HttpBioimpedanceParser implements BioimpedanceParser {
             }
         });
 
-        JsonNode response = restClient()
+        var request = restClient()
             .post()
             .uri("/extract")
-            .contentType(MediaType.MULTIPART_FORM_DATA)
+            .contentType(MediaType.MULTIPART_FORM_DATA);
+        if (properties.token() != null && !properties.token().isBlank()) {
+            request.header("X-Parser-Token", properties.token());
+        }
+
+        JsonNode response = request
             .body(body)
             .retrieve()
             .body(JsonNode.class);

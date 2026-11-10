@@ -12,13 +12,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.core.task.SyncTaskExecutor;
-import org.springframework.core.task.TaskExecutor;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -27,8 +24,13 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
 import java.nio.charset.StandardCharsets;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -40,7 +42,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Import({TestcontainersConfiguration.class, BioimpedanceImportFlowIT.SyncAsyncConfig.class})
+@Import(TestcontainersConfiguration.class)
 @DisplayName("Bioimpedance PDF import flow")
 class BioimpedanceImportFlowIT {
 
@@ -53,16 +55,17 @@ class BioimpedanceImportFlowIT {
     @Autowired
     private JwtService jwtService;
 
+    @Autowired
+    private BioimpedanceImportJobRepository jobRepository;
+
+    @Autowired
+    private BioimpedanceImportJobReaper reaper;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
     @MockitoBean
     private BioimpedanceParser parser;
-
-    @TestConfiguration(proxyBeanMethods = false)
-    static class SyncAsyncConfig {
-        @Bean(name = "applicationTaskExecutor")
-        TaskExecutor applicationTaskExecutor() {
-            return new SyncTaskExecutor();
-        }
-    }
 
     @Test
     @DisplayName("upload, poll, confirm and deduplicate by file hash")
@@ -77,15 +80,16 @@ class BioimpedanceImportFlowIT {
                 .file(file)
                 .cookie(owner))
             .andExpect(status().isAccepted())
-            .andExpect(jsonPath("$.status").value("DONE"))
-            .andExpect(jsonPath("$.result.bodyFatPercentage").value(18.2))
-            .andExpect(jsonPath("$.result.missingFields[0]").value("skeletalMuscleMassKg"))
             .andReturn();
         String jobId = JsonPath.read(upload.getResponse().getContentAsString(), "$.id");
+
+        awaitStatus(jobId, owner, "DONE");
 
         mockMvc.perform(get("/api/bioimpedance/imports/{id}", jobId).cookie(owner))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("DONE"))
+            .andExpect(jsonPath("$.result.bodyFatPercentage").value(18.2))
+            .andExpect(jsonPath("$.result.missingFields[0]").value("skeletalMuscleMassKg"))
             .andExpect(jsonPath("$.sourceFileHash").exists());
 
         // the preview can be confirmed through the existing import contract
@@ -135,14 +139,15 @@ class BioimpedanceImportFlowIT {
                 .file(pdfFile())
                 .cookie(cookie))
             .andExpect(status().isAccepted())
-            .andExpect(jsonPath("$.status").value("FAILED"))
-            .andExpect(jsonPath("$.error").value("parser down"))
             .andReturn();
         String jobId = JsonPath.read(upload.getResponse().getContentAsString(), "$.id");
 
+        awaitStatus(jobId, cookie, "FAILED");
+
         mockMvc.perform(get("/api/bioimpedance/imports/{id}", jobId).cookie(cookie))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.status").value("FAILED"));
+            .andExpect(jsonPath("$.status").value("FAILED"))
+            .andExpect(jsonPath("$.error").value("parser down"));
     }
 
     @Test
@@ -161,6 +166,45 @@ class BioimpedanceImportFlowIT {
 
         mockMvc.perform(get("/api/bioimpedance/imports/{id}", jobId).cookie(other))
             .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("the reaper fails jobs stuck in PROCESSING")
+    void shouldReapStaleProcessingJobs() {
+        UserDto user = createUser();
+        BioimpedanceImportJob job = new BioimpedanceImportJob();
+        job.setUserId(user.getId());
+        job.setStatus(ImportJobStatus.PROCESSING);
+        job.setSourceFileName("stale.pdf");
+        job.setSourceFileHash(UUID.randomUUID().toString().replace("-", ""));
+        jobRepository.save(job);
+
+        jdbcTemplate.update(
+            "UPDATE bioimpedance_import_job SET updated_at = ? WHERE id = ?",
+            Timestamp.from(Instant.now().minus(10, ChronoUnit.MINUTES)),
+            job.getId());
+
+        reaper.reap();
+
+        BioimpedanceImportJob reloaded = jobRepository.findById(job.getId()).orElseThrow();
+        assertEquals(ImportJobStatus.FAILED, reloaded.getStatus());
+        assertEquals("processing interrupted", reloaded.getError());
+    }
+
+    private void awaitStatus(String jobId, Cookie cookie, String expected) throws Exception {
+        long deadline = System.currentTimeMillis() + 5_000;
+        while (System.currentTimeMillis() < deadline) {
+            MvcResult result = mockMvc.perform(
+                    get("/api/bioimpedance/imports/{id}", jobId).cookie(cookie))
+                .andExpect(status().isOk())
+                .andReturn();
+            String status = JsonPath.read(result.getResponse().getContentAsString(), "$.status");
+            if (expected.equals(status)) {
+                return;
+            }
+            Thread.sleep(50);
+        }
+        fail("job " + jobId + " did not reach " + expected);
     }
 
     private JsonNode extraction() throws Exception {

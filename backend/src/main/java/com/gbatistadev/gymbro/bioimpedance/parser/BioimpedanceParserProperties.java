@@ -7,5 +7,6 @@ import java.time.Duration;
 @ConfigurationProperties(prefix = "bioimpedance.parser")
 public record BioimpedanceParserProperties(
     String baseUrl,
-    Duration timeout
+    Duration timeout,
+    String token
 ) {}

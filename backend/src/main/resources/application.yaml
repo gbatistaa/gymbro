@@ -30,3 +30,6 @@ bioimpedance:
   parser:
     base-url: ${BIOIMPEDANCE_PARSER_URL:http://localhost:8000}
     timeout: ${BIOIMPEDANCE_PARSER_TIMEOUT:60s}
+    token: ${BIOIMPEDANCE_PARSER_TOKEN:}
+  import:
+    stale-after: ${BIOIMPEDANCE_IMPORT_STALE_AFTER:3m}
