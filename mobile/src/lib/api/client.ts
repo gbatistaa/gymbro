@@ -37,6 +37,8 @@ export type ApiRequestOptions = {
    * antes de a sessão existir no estado.
    */
   token?: string | null;
+  /** Parâmetros de query. `undefined` é descartado, o resto é encodado. */
+  query?: Record<string, string | number | boolean | undefined>;
   /**
    * Desliga a renovação automática neste request.
    *
@@ -94,8 +96,8 @@ export function createApiClient({
 
   return {
     async request<T>(path: string, options: ApiRequestOptions = {}) {
-      const { method = 'GET', body, timeoutMs: perRequest } = options;
-      const url = `${base}${path.startsWith('/') ? path : `/${path}`}`;
+      const { method = 'GET', body, timeoutMs: perRequest, query } = options;
+      const url = withQuery(`${base}${path.startsWith('/') ? path : `/${path}`}`, query);
       const payload = body === undefined ? undefined : JSON.stringify(body);
 
       const send = async (token: string | null): Promise<FetchResponse> => {
@@ -148,6 +150,21 @@ export function createApiClient({
       );
     },
   };
+}
+
+/** Query encodada; sem parâmetros a URL passa intacta. */
+function withQuery(url: string, query: ApiRequestOptions['query']): string {
+  if (!query) {
+    return url;
+  }
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(query)) {
+    if (value !== undefined) {
+      params.append(key, String(value));
+    }
+  }
+  const serialized = params.toString();
+  return serialized.length > 0 ? `${url}?${serialized}` : url;
 }
 
 /** Esquema + host + porta, sem o caminho: é o que se confere quando a API está inalcançável. */

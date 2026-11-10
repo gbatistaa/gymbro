@@ -274,3 +274,20 @@ describe('createApiClient — falha de transporte', () => {
     });
   });
 });
+
+describe('createApiClient — query parameters', () => {
+  it('serializes defined params and drops undefined', async () => {
+    const seen: string[] = [];
+    const client = createApiClient({
+      baseUrl: BASE,
+      fetchImpl: async (url) => {
+        seen.push(url);
+        return reply(200, {});
+      },
+    });
+
+    await client.request('/api/exercises', { query: { q: 'supino reto', page: 0, size: 20, muscle: undefined } });
+
+    expect(seen[0]).toBe('https://api.test/api/exercises?q=supino+reto&page=0&size=20');
+  });
+});
