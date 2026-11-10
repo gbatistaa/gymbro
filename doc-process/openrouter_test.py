@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 API_KEY = os.getenv("OPENROUTER_API_KEY", "")
-MODEL = "nvidia/nemotron-3.5-lightning:free"
+MODEL = "google/gemma-4-31b-it"
 
 BIOIMPEDANCE_FIELDS = (
     "measuredAt", "bodyWeightKg", "heightCm", "bodyFatPercentage",
@@ -49,7 +49,8 @@ def extract_bioimpedance(md_bytes: bytes) -> dict:
         "Use exatamente estas chaves: "
         + json.dumps((*BIOIMPEDANCE_FIELDS, "missingFields"))
         + ". Valores não identificados devem ser null. "
-        "missingFields deve listar as chaves cujo valor é null."
+        "missingFields deve listar as chaves cujo valor é null. "
+        "measuredAt deve estar em ISO-8601 UTC (ex.: 2026-10-01T00:00:00Z)."
     )
     response = requests.post(
         "https://openrouter.ai/api/v1/chat/completions",
@@ -60,6 +61,7 @@ def extract_bioimpedance(md_bytes: bytes) -> dict:
                 {"role": "system", "content": prompt},
                 {"role": "user", "content": md_bytes.decode("utf-8")},
             ],
+            "reasoning": {"enabled": True},
             "response_format": {"type": "json_object"},
         },
         timeout=120,
