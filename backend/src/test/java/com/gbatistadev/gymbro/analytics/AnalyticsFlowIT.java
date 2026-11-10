@@ -18,7 +18,7 @@ import com.gbatistadev.gymbro.workout_logs.WorkoutLogRepository;
 import com.gbatistadev.gymbro.workout_session.SessionStatus;
 import com.gbatistadev.gymbro.workout_session.WorkoutSession;
 import com.gbatistadev.gymbro.workout_session.WorkoutSessionRepository;
-import jakarta.servlet.http.Cookie;
+import org.springframework.http.HttpHeaders;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,7 +72,7 @@ class AnalyticsFlowIT {
     @DisplayName("stats, next targets, dashboard and trend")
     void shouldServeAnalytics() throws Exception {
         UserDto user = createUser();
-        Cookie cookie = accessCookie(user);
+        String auth = bearer(user);
         Exercise exercise = createExercise(user.getId());
         Playlist playlist = createPlaylist(user.getId());
         addPlaylistExercise(playlist, exercise, 8, 10);
@@ -90,14 +90,14 @@ class AnalyticsFlowIT {
         createMeasurement(user.getId(), Instant.now().minus(10, ChronoUnit.DAYS), 84.0);
         createMeasurement(user.getId(), Instant.now().minus(1, ChronoUnit.DAYS), 82.0);
 
-        mockMvc.perform(get("/api/exercises/{id}/stats", exercise.getId()).cookie(cookie))
+        mockMvc.perform(get("/api/exercises/{id}/stats", exercise.getId()).header(HttpHeaders.AUTHORIZATION, auth))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.sessionCount").value(2))
             .andExpect(jsonPath("$.totalVolume").value(3720.0))
             .andExpect(jsonPath("$.bestWeight").value(100.0))
             .andExpect(jsonPath("$.monthlyBuckets.length()").value(2));
 
-        mockMvc.perform(get("/api/playlists/{id}/next-targets", playlist.getId()).cookie(cookie))
+        mockMvc.perform(get("/api/playlists/{id}/next-targets", playlist.getId()).header(HttpHeaders.AUTHORIZATION, auth))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.length()").value(1))
             .andExpect(jsonPath("$[0].exerciseId").value(exercise.getId().toString()))
@@ -106,7 +106,7 @@ class AnalyticsFlowIT {
             .andExpect(jsonPath("$[0].suggestedWeight").value(102.5))
             .andExpect(jsonPath("$[0].suggestedReps").value(8));
 
-        mockMvc.perform(get("/api/dashboard").param("weeks", "12").cookie(cookie))
+        mockMvc.perform(get("/api/dashboard").param("weeks", "12").header(HttpHeaders.AUTHORIZATION, auth))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.weeks.length()").value(12))
             .andExpect(jsonPath("$.recentPrs.length()").value(1))
@@ -117,7 +117,7 @@ class AnalyticsFlowIT {
         mockMvc.perform(get("/api/bioimpedance/trend")
                 .param("metric", "bodyWeightKg")
                 .param("window", "2")
-                .cookie(cookie))
+                .header(HttpHeaders.AUTHORIZATION, auth))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.points.length()").value(2))
             .andExpect(jsonPath("$.points[0].value").value(84.0))
@@ -136,14 +136,14 @@ class AnalyticsFlowIT {
         Playlist playlist = createPlaylist(owner.getId());
 
         mockMvc.perform(get("/api/exercises/{id}/stats", exercise.getId())
-                .cookie(accessCookie(other)))
+                .header(HttpHeaders.AUTHORIZATION, bearer(other)))
             .andExpect(status().isNotFound());
 
         mockMvc.perform(get("/api/playlists/{id}/next-targets", playlist.getId())
-                .cookie(accessCookie(other)))
+                .header(HttpHeaders.AUTHORIZATION, bearer(other)))
             .andExpect(status().isNotFound());
 
-        mockMvc.perform(get("/api/dashboard").cookie(accessCookie(other)))
+        mockMvc.perform(get("/api/dashboard").header(HttpHeaders.AUTHORIZATION, bearer(other)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.weeks.length()").value(12))
             .andExpect(jsonPath("$.recentPrs.length()").value(0));
@@ -154,7 +154,7 @@ class AnalyticsFlowIT {
     void shouldRejectUnsupportedMetric() throws Exception {
         mockMvc.perform(get("/api/bioimpedance/trend")
                 .param("metric", "peso")
-                .cookie(accessCookie(createUser())))
+                .header(HttpHeaders.AUTHORIZATION, bearer(createUser())))
             .andExpect(status().isBadRequest());
     }
 
@@ -162,13 +162,13 @@ class AnalyticsFlowIT {
     @DisplayName("a single-rep set uses the lifted weight as its estimated 1RM")
     void shouldUseWeightAsE1rmForSingleRep() throws Exception {
         UserDto user = createUser();
-        Cookie cookie = accessCookie(user);
+        String auth = bearer(user);
         Exercise exercise = createExercise(user.getId());
 
         WorkoutSession session = finishedSession(user.getId(), Instant.now(), null);
         addLog(session, exercise, 1, 120.0, 1, true);
 
-        mockMvc.perform(get("/api/exercises/{id}/stats", exercise.getId()).cookie(cookie))
+        mockMvc.perform(get("/api/exercises/{id}/stats", exercise.getId()).header(HttpHeaders.AUTHORIZATION, auth))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.bestE1rm").value(120.0));
     }
@@ -237,8 +237,8 @@ class AnalyticsFlowIT {
         playlistExercises.save(item);
     }
 
-    private Cookie accessCookie(UserDto user) {
-        return new Cookie("access_token", jwtService.createAccessToken(user.getId(), user.getEmail()));
+    private String bearer(UserDto user) {
+        return "Bearer " + jwtService.createAccessToken(user.getId(), user.getEmail());
     }
 
     private UserDto createUser() {

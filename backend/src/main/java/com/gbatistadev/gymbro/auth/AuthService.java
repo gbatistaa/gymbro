@@ -1,5 +1,6 @@
 package com.gbatistadev.gymbro.auth;
 
+import com.gbatistadev.gymbro.auth.dto.AuthTokensDto;
 import com.gbatistadev.gymbro.auth.dto.LoginDto;
 import com.gbatistadev.gymbro.config.jwt.JwtProperties;
 import com.gbatistadev.gymbro.config.jwt.JwtService;
@@ -7,14 +8,12 @@ import com.gbatistadev.gymbro.errors.exceptions.UnauthorizedException;
 import com.gbatistadev.gymbro.user.RefreshToken;
 import com.gbatistadev.gymbro.user.RefreshTokenRepository;
 import com.gbatistadev.gymbro.user.User;
-import com.gbatistadev.gymbro.user.UserMapper;
 import com.gbatistadev.gymbro.user.UserRepository;
 import com.gbatistadev.gymbro.user.UserService;
 import com.gbatistadev.gymbro.user.dto.CreateUserDto;
 import com.gbatistadev.gymbro.user.dto.UserDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -34,7 +33,6 @@ public class AuthService {
     private static final SecureRandom RANDOM = new SecureRandom();
 
     private final UserService userService;
-    private final UserMapper userMapper;
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
@@ -46,7 +44,7 @@ public class AuthService {
     }
 
     @Transactional
-    public ResponseEntity<UserDto> login(LoginDto dto) {
+    public ResponseEntity<AuthTokensDto> login(LoginDto dto) {
         User user = userRepository.findByEmail(dto.email())
             .orElseThrow(() -> new UnauthorizedException("Invalid credentials"));
 
@@ -58,27 +56,12 @@ public class AuthService {
         saveRefreshToken(user, refreshToken);
         String accessToken = jwtService.createAccessToken(user.getId(), user.getEmail());
 
-        return ResponseEntity.ok()
-            .header(HttpHeaders.SET_COOKIE,
-                cookie("access_token", accessToken, "/", jwtProperties.expirationMs() / 1000).toString())
-            .header(HttpHeaders.SET_COOKIE,
-                cookie("refresh_token", refreshToken, "/api/auth", jwtProperties.refreshExpirationMs() / 1000).toString())
-            .body(userMapper.toDto(user));
-    }
-
-    // shortcut: sem Secure até haver TLS em prod (cookie não funciona em http://localhost)
-    private ResponseCookie cookie(String name, String value, String path, long maxAgeSeconds) {
-        return ResponseCookie.from(name, value)
-            .path(path)
-            .maxAge(maxAgeSeconds)
-            .httpOnly(true)
-            .sameSite("Lax")
-            .build();
+        return tokensResponse(accessToken, refreshToken);
     }
 
     // rotação de refresh não implementada (open question do plan); upgrade = trocar o hash a cada uso
     @Transactional(readOnly = true)
-    public ResponseEntity<UserDto> refresh(String rawRefreshToken) {
+    public ResponseEntity<AuthTokensDto> refresh(String rawRefreshToken) {
         if (rawRefreshToken == null || rawRefreshToken.isBlank()) {
             throw new UnauthorizedException("Invalid refresh token");
         }
@@ -90,10 +73,18 @@ public class AuthService {
         User user = refreshToken.getUser();
         String accessToken = jwtService.createAccessToken(user.getId(), user.getEmail());
 
+        return tokensResponse(accessToken, rawRefreshToken);
+    }
+
+    // no-store: a resposta carrega credenciais e não pode ser gravada por cache de proxy ou navegador
+    private ResponseEntity<AuthTokensDto> tokensResponse(String accessToken, String refreshToken) {
         return ResponseEntity.ok()
-            .header(HttpHeaders.SET_COOKIE,
-                cookie("access_token", accessToken, "/", jwtProperties.expirationMs() / 1000).toString())
-            .body(userMapper.toDto(user));
+            .header(HttpHeaders.CACHE_CONTROL, "no-store")
+            .body(new AuthTokensDto(
+                accessToken,
+                "Bearer",
+                jwtProperties.expirationMs() / 1000,
+                refreshToken));
     }
 
     private String generateRefreshToken() {

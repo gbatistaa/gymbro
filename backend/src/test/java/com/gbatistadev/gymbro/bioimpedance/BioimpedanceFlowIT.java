@@ -6,7 +6,7 @@ import com.gbatistadev.gymbro.user.UserService;
 import com.gbatistadev.gymbro.user.dto.CreateUserDto;
 import com.gbatistadev.gymbro.user.dto.UserDto;
 import com.jayway.jsonpath.JsonPath;
-import jakarta.servlet.http.Cookie;
+import org.springframework.http.HttpHeaders;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,12 +41,12 @@ class BioimpedanceFlowIT {
     @Test
     @DisplayName("create, import, update, audit, soft delete and ownership")
     void shouldRunBioimpedanceLifecycle() throws Exception {
-        Cookie owner = accessCookie(createUser());
-        Cookie other = accessCookie(createUser());
+        String owner = bearer(createUser());
+        String other = bearer(createUser());
 
         String createdId = createMeasurement(owner, "2026-10-01T08:00:00Z", 18.5);
 
-        mockMvc.perform(get("/api/bioimpedance").cookie(owner))
+        mockMvc.perform(get("/api/bioimpedance").header(HttpHeaders.AUTHORIZATION, owner))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.length()").value(1))
             .andExpect(jsonPath("$[0].id").value(createdId))
@@ -66,7 +66,7 @@ class BioimpedanceFlowIT {
             """;
 
         mockMvc.perform(post("/api/bioimpedance/import")
-                .cookie(owner)
+                .header(HttpHeaders.AUTHORIZATION, owner)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(importBody))
             .andExpect(status().isOk())
@@ -78,19 +78,19 @@ class BioimpedanceFlowIT {
             .andExpect(jsonPath("$.results[2].status").value("DUPLICATE"))
             .andExpect(jsonPath("$.results[3].status").value("ERROR"));
 
-        mockMvc.perform(get("/api/bioimpedance").cookie(owner))
+        mockMvc.perform(get("/api/bioimpedance").header(HttpHeaders.AUTHORIZATION, owner))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.length()").value(2));
 
         mockMvc.perform(patch("/api/bioimpedance/{id}", createdId)
-                .cookie(owner)
+                .header(HttpHeaders.AUTHORIZATION, owner)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"bodyWeightKg\":80.0}"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.bodyWeightKg").value(80.0))
             .andExpect(jsonPath("$.bodyFatPercentage").value(18.5));
 
-        mockMvc.perform(get("/api/bioimpedance/{id}/history", createdId).cookie(owner))
+        mockMvc.perform(get("/api/bioimpedance/{id}/history", createdId).header(HttpHeaders.AUTHORIZATION, owner))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.length()").value(2))
             .andExpect(jsonPath("$[0].actionType").value("UPDATE"))
@@ -98,14 +98,14 @@ class BioimpedanceFlowIT {
             .andExpect(jsonPath("$[0].newData").exists())
             .andExpect(jsonPath("$[1].actionType").value("INSERT"));
 
-        mockMvc.perform(delete("/api/bioimpedance/{id}", createdId).cookie(owner))
+        mockMvc.perform(delete("/api/bioimpedance/{id}", createdId).header(HttpHeaders.AUTHORIZATION, owner))
             .andExpect(status().isNoContent());
 
-        mockMvc.perform(get("/api/bioimpedance").cookie(owner))
+        mockMvc.perform(get("/api/bioimpedance").header(HttpHeaders.AUTHORIZATION, owner))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.length()").value(1));
 
-        mockMvc.perform(get("/api/bioimpedance/{id}/history", createdId).cookie(owner))
+        mockMvc.perform(get("/api/bioimpedance/{id}/history", createdId).header(HttpHeaders.AUTHORIZATION, owner))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.length()").value(3))
             .andExpect(jsonPath("$[0].actionType").value("DELETE"));
@@ -113,37 +113,37 @@ class BioimpedanceFlowIT {
         // the soft-deleted timestamp frees the unique slot
         createMeasurement(owner, "2026-10-01T08:00:00Z", 18.5);
 
-        mockMvc.perform(get("/api/bioimpedance").cookie(other))
+        mockMvc.perform(get("/api/bioimpedance").header(HttpHeaders.AUTHORIZATION, other))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.length()").value(0));
 
         mockMvc.perform(patch("/api/bioimpedance/{id}", createdId)
-                .cookie(other)
+                .header(HttpHeaders.AUTHORIZATION, other)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"bodyWeightKg\":77.0}"))
             .andExpect(status().isNotFound());
 
-        mockMvc.perform(get("/api/bioimpedance/{id}/history", createdId).cookie(other))
+        mockMvc.perform(get("/api/bioimpedance/{id}/history", createdId).header(HttpHeaders.AUTHORIZATION, other))
             .andExpect(status().isNotFound());
     }
 
     @Test
     @DisplayName("creating the same timestamp twice returns 409")
     void shouldRejectDuplicateTimestamp() throws Exception {
-        Cookie cookie = accessCookie(createUser());
-        createMeasurement(cookie, "2026-09-01T08:00:00Z", 20.0);
+        String auth = bearer(createUser());
+        createMeasurement(auth, "2026-09-01T08:00:00Z", 20.0);
 
         mockMvc.perform(post("/api/bioimpedance")
-                .cookie(cookie)
+                .header(HttpHeaders.AUTHORIZATION, auth)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(measurementBody("2026-09-01T08:00:00Z", 20.0)))
             .andExpect(status().isConflict());
     }
 
-    private String createMeasurement(Cookie cookie, String measuredAt, double bodyFat)
+    private String createMeasurement(String auth, String measuredAt, double bodyFat)
         throws Exception {
         MvcResult result = mockMvc.perform(post("/api/bioimpedance")
-                .cookie(cookie)
+                .header(HttpHeaders.AUTHORIZATION, auth)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(measurementBody(measuredAt, bodyFat)))
             .andExpect(status().isCreated())
@@ -158,8 +158,8 @@ class BioimpedanceFlowIT {
             """.formatted(measuredAt, bodyFat);
     }
 
-    private Cookie accessCookie(UserDto user) {
-        return new Cookie("access_token", jwtService.createAccessToken(user.getId(), user.getEmail()));
+    private String bearer(UserDto user) {
+        return "Bearer " + jwtService.createAccessToken(user.getId(), user.getEmail());
     }
 
     private UserDto createUser() {

@@ -7,7 +7,7 @@ import com.gbatistadev.gymbro.user.UserService;
 import com.gbatistadev.gymbro.user.dto.CreateUserDto;
 import com.gbatistadev.gymbro.user.dto.UserDto;
 import com.jayway.jsonpath.JsonPath;
-import jakarta.servlet.http.Cookie;
+import org.springframework.http.HttpHeaders;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,7 +70,7 @@ class BioimpedanceImportFlowIT {
     @Test
     @DisplayName("upload, poll, confirm and deduplicate by file hash")
     void shouldRunUploadFlow() throws Exception {
-        Cookie owner = accessCookie(createUser());
+        String owner = bearer(createUser());
         JsonNode extraction = extraction();
         when(parser.extract(any(byte[].class), anyString())).thenReturn(extraction);
 
@@ -78,14 +78,14 @@ class BioimpedanceImportFlowIT {
 
         MvcResult upload = mockMvc.perform(multipart("/api/bioimpedance/imports")
                 .file(file)
-                .cookie(owner))
+                .header(HttpHeaders.AUTHORIZATION, owner))
             .andExpect(status().isAccepted())
             .andReturn();
         String jobId = JsonPath.read(upload.getResponse().getContentAsString(), "$.id");
 
         awaitStatus(jobId, owner, "DONE");
 
-        mockMvc.perform(get("/api/bioimpedance/imports/{id}", jobId).cookie(owner))
+        mockMvc.perform(get("/api/bioimpedance/imports/{id}", jobId).header(HttpHeaders.AUTHORIZATION, owner))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("DONE"))
             .andExpect(jsonPath("$.result.bodyFatPercentage").value(18.2))
@@ -99,7 +99,7 @@ class BioimpedanceImportFlowIT {
             """;
 
         mockMvc.perform(post("/api/bioimpedance/imports/{id}/confirm", jobId)
-                .cookie(owner)
+                .header(HttpHeaders.AUTHORIZATION, owner)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(confirmation))
             .andExpect(status().isCreated())
@@ -109,19 +109,19 @@ class BioimpedanceImportFlowIT {
 
         // the same job cannot create a second measurement (same file hash)
         mockMvc.perform(post("/api/bioimpedance/imports/{id}/confirm", jobId)
-                .cookie(owner)
+                .header(HttpHeaders.AUTHORIZATION, owner)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(confirmation))
             .andExpect(status().isConflict());
 
-        mockMvc.perform(get("/api/bioimpedance").cookie(owner))
+        mockMvc.perform(get("/api/bioimpedance").header(HttpHeaders.AUTHORIZATION, owner))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.length()").value(1));
 
         // same file: returns the existing job and does not call the parser again
         mockMvc.perform(multipart("/api/bioimpedance/imports")
                 .file(pdfFile())
-                .cookie(owner))
+                .header(HttpHeaders.AUTHORIZATION, owner))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id").value(jobId));
 
@@ -131,32 +131,32 @@ class BioimpedanceImportFlowIT {
     @Test
     @DisplayName("a non-PDF upload is rejected")
     void shouldRejectNonPdf() throws Exception {
-        Cookie cookie = accessCookie(createUser());
+        String auth = bearer(createUser());
         MockMultipartFile file = new MockMultipartFile(
             "file", "report.txt", "text/plain",
             "not a pdf".getBytes(StandardCharsets.UTF_8));
 
-        mockMvc.perform(multipart("/api/bioimpedance/imports").file(file).cookie(cookie))
+        mockMvc.perform(multipart("/api/bioimpedance/imports").file(file).header(HttpHeaders.AUTHORIZATION, auth))
             .andExpect(status().isBadRequest());
     }
 
     @Test
     @DisplayName("a parser failure marks the job FAILED")
     void shouldMarkJobFailed() throws Exception {
-        Cookie cookie = accessCookie(createUser());
+        String auth = bearer(createUser());
         when(parser.extract(any(byte[].class), anyString()))
             .thenThrow(new IllegalStateException("parser down"));
 
         MvcResult upload = mockMvc.perform(multipart("/api/bioimpedance/imports")
                 .file(pdfFile())
-                .cookie(cookie))
+                .header(HttpHeaders.AUTHORIZATION, auth))
             .andExpect(status().isAccepted())
             .andReturn();
         String jobId = JsonPath.read(upload.getResponse().getContentAsString(), "$.id");
 
-        awaitStatus(jobId, cookie, "FAILED");
+        awaitStatus(jobId, auth, "FAILED");
 
-        mockMvc.perform(get("/api/bioimpedance/imports/{id}", jobId).cookie(cookie))
+        mockMvc.perform(get("/api/bioimpedance/imports/{id}", jobId).header(HttpHeaders.AUTHORIZATION, auth))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("FAILED"))
             .andExpect(jsonPath("$.error").value("parser down"));
@@ -165,18 +165,18 @@ class BioimpedanceImportFlowIT {
     @Test
     @DisplayName("import jobs are scoped to the authenticated user")
     void shouldIsolateJobsBetweenUsers() throws Exception {
-        Cookie owner = accessCookie(createUser());
-        Cookie other = accessCookie(createUser());
+        String owner = bearer(createUser());
+        String other = bearer(createUser());
         when(parser.extract(any(byte[].class), anyString())).thenReturn(extraction());
 
         MvcResult upload = mockMvc.perform(multipart("/api/bioimpedance/imports")
                 .file(pdfFile())
-                .cookie(owner))
+                .header(HttpHeaders.AUTHORIZATION, owner))
             .andExpect(status().isAccepted())
             .andReturn();
         String jobId = JsonPath.read(upload.getResponse().getContentAsString(), "$.id");
 
-        mockMvc.perform(get("/api/bioimpedance/imports/{id}", jobId).cookie(other))
+        mockMvc.perform(get("/api/bioimpedance/imports/{id}", jobId).header(HttpHeaders.AUTHORIZATION, other))
             .andExpect(status().isNotFound());
     }
 
@@ -203,11 +203,11 @@ class BioimpedanceImportFlowIT {
         assertEquals("processing interrupted", reloaded.getError());
     }
 
-    private void awaitStatus(String jobId, Cookie cookie, String expected) throws Exception {
+    private void awaitStatus(String jobId, String auth, String expected) throws Exception {
         long deadline = System.currentTimeMillis() + 5_000;
         while (System.currentTimeMillis() < deadline) {
             MvcResult result = mockMvc.perform(
-                    get("/api/bioimpedance/imports/{id}", jobId).cookie(cookie))
+                    get("/api/bioimpedance/imports/{id}", jobId).header(HttpHeaders.AUTHORIZATION, auth))
                 .andExpect(status().isOk())
                 .andReturn();
             String status = JsonPath.read(result.getResponse().getContentAsString(), "$.status");
@@ -243,8 +243,8 @@ class BioimpedanceImportFlowIT {
             "%PDF-1.4 fake content".getBytes(StandardCharsets.ISO_8859_1));
     }
 
-    private Cookie accessCookie(UserDto user) {
-        return new Cookie("access_token", jwtService.createAccessToken(user.getId(), user.getEmail()));
+    private String bearer(UserDto user) {
+        return "Bearer " + jwtService.createAccessToken(user.getId(), user.getEmail());
     }
 
     private UserDto createUser() {

@@ -36,7 +36,7 @@ public class SecurityConfig {
         };
 
         return http
-            .csrf(AbstractHttpConfigurer::disable) // shortcut: SameSite=Lax; enable CSRF tokens if cookies are served cross-site
+            .csrf(AbstractHttpConfigurer::disable) // stateless Bearer auth: no ambient credential, so no CSRF surface
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .exceptionHandling(exceptions -> exceptions.authenticationEntryPoint(entryPoint))
             .authorizeHttpRequests(auth -> auth

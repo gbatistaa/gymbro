@@ -5,7 +5,7 @@ import com.gbatistadev.gymbro.config.jwt.JwtService;
 import com.gbatistadev.gymbro.user.UserService;
 import com.gbatistadev.gymbro.user.dto.CreateUserDto;
 import com.gbatistadev.gymbro.user.dto.UserDto;
-import jakarta.servlet.http.Cookie;
+import org.springframework.http.HttpHeaders;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,7 +55,7 @@ class ExerciseOwnershipIT {
         Exercise mine = createExercise(userA.getId(), "Mine");
         Exercise foreign = createExercise(userB.getId(), "Foreign");
 
-        mockMvc.perform(get("/api/exercises").cookie(accessCookie(userA)))
+        mockMvc.perform(get("/api/exercises").header(HttpHeaders.AUTHORIZATION, bearer(userA)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.content[*].id", hasItem(global.getId().toString())))
             .andExpect(jsonPath("$.content[*].id", hasItem(mine.getId().toString())))
@@ -68,19 +68,19 @@ class ExerciseOwnershipIT {
         UserDto userA = createUser("a");
         Exercise mine = createExercise(userA.getId(), "Archive");
 
-        mockMvc.perform(delete("/api/exercises/{id}", mine.getId()).cookie(accessCookie(userA)))
+        mockMvc.perform(delete("/api/exercises/{id}", mine.getId()).header(HttpHeaders.AUTHORIZATION, bearer(userA)))
             .andExpect(status().isNoContent());
 
         mockMvc.perform(get("/api/exercises")
                 .param("q", mine.getName())
-                .cookie(accessCookie(userA)))
+                .header(HttpHeaders.AUTHORIZATION, bearer(userA)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.totalElements").value(0));
 
         mockMvc.perform(get("/api/exercises")
                 .param("q", mine.getName())
                 .param("includeArchived", "true")
-                .cookie(accessCookie(userA)))
+                .header(HttpHeaders.AUTHORIZATION, bearer(userA)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.totalElements").value(1));
     }
@@ -93,7 +93,7 @@ class ExerciseOwnershipIT {
         Exercise foreign = createExercise(userB.getId(), "Foreign");
 
         mockMvc.perform(put("/api/exercises/{id}", foreign.getId())
-                .cookie(accessCookie(userA))
+                .header(HttpHeaders.AUTHORIZATION, bearer(userA))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(UPDATE_BODY))
             .andExpect(status().isNotFound());
@@ -106,7 +106,7 @@ class ExerciseOwnershipIT {
         Exercise global = createExercise(null, "Global");
 
         mockMvc.perform(put("/api/exercises/{id}", global.getId())
-                .cookie(accessCookie(userA))
+                .header(HttpHeaders.AUTHORIZATION, bearer(userA))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(UPDATE_BODY))
             .andExpect(status().isForbidden());
@@ -119,7 +119,7 @@ class ExerciseOwnershipIT {
         Exercise mine = createExercise(userA.getId(), "Mine");
 
         mockMvc.perform(put("/api/exercises/{id}", mine.getId())
-                .cookie(accessCookie(userA))
+                .header(HttpHeaders.AUTHORIZATION, bearer(userA))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(UPDATE_BODY))
             .andExpect(status().isOk())
@@ -143,7 +143,7 @@ class ExerciseOwnershipIT {
         return repository.save(exercise);
     }
 
-    private Cookie accessCookie(UserDto user) {
-        return new Cookie("access_token", jwtService.createAccessToken(user.getId(), user.getEmail()));
+    private String bearer(UserDto user) {
+        return "Bearer " + jwtService.createAccessToken(user.getId(), user.getEmail());
     }
 }

@@ -8,7 +8,7 @@ import com.gbatistadev.gymbro.user.UserService;
 import com.gbatistadev.gymbro.user.dto.CreateUserDto;
 import com.gbatistadev.gymbro.user.dto.UserDto;
 import com.jayway.jsonpath.JsonPath;
-import jakarta.servlet.http.Cookie;
+import org.springframework.http.HttpHeaders;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,18 +49,18 @@ class PlaylistFlowIT {
     @Test
     @DisplayName("create, add, reorder, update, clone and archive a routine")
     void shouldRunRoutineLifecycle() throws Exception {
-        Cookie cookie = accessCookie(createUser());
+        String auth = bearer(createUser());
         Exercise supino = createExercise("Supino");
         Exercise agachamento = createExercise("Agachamento");
         Exercise remada = createExercise("Remada");
 
-        String playlistId = createPlaylist(cookie, "Push");
+        String playlistId = createPlaylist(auth, "Push");
 
-        String first = addExercise(cookie, playlistId, supino, 3);
-        String second = addExercise(cookie, playlistId, agachamento, 4);
-        String third = addExercise(cookie, playlistId, remada, 3);
+        String first = addExercise(auth, playlistId, supino, 3);
+        String second = addExercise(auth, playlistId, agachamento, 4);
+        String third = addExercise(auth, playlistId, remada, 3);
 
-        mockMvc.perform(get("/api/playlists/{id}", playlistId).cookie(cookie))
+        mockMvc.perform(get("/api/playlists/{id}", playlistId).header(HttpHeaders.AUTHORIZATION, auth))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.exercises.length()").value(3))
             .andExpect(jsonPath("$.exercises[0].id").value(first))
@@ -77,7 +77,7 @@ class PlaylistFlowIT {
             """.formatted(third, second, first);
 
         mockMvc.perform(put("/api/playlists/{id}/order", playlistId)
-                .cookie(cookie)
+                .header(HttpHeaders.AUTHORIZATION, auth)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(reorder))
             .andExpect(status().isOk())
@@ -85,7 +85,7 @@ class PlaylistFlowIT {
             .andExpect(jsonPath("$.exercises[2].id").value(first));
 
         mockMvc.perform(patch("/api/playlists/{id}/exercises/{itemId}", playlistId, first)
-                .cookie(cookie)
+                .header(HttpHeaders.AUTHORIZATION, auth)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"targetSets\":5}"))
             .andExpect(status().isOk())
@@ -93,37 +93,37 @@ class PlaylistFlowIT {
             .andExpect(jsonPath("$.targetRepsMin").value(8));
 
         MvcResult cloneResult = mockMvc.perform(post("/api/playlists/{id}/clone", playlistId)
-                .cookie(cookie))
+                .header(HttpHeaders.AUTHORIZATION, auth))
             .andExpect(status().isCreated())
             .andReturn();
         String cloneId = JsonPath.read(
             cloneResult.getResponse().getContentAsString(), "$.id");
 
-        mockMvc.perform(get("/api/playlists/{id}", cloneId).cookie(cookie))
+        mockMvc.perform(get("/api/playlists/{id}", cloneId).header(HttpHeaders.AUTHORIZATION, auth))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.name").value("Push (cópia)"))
             .andExpect(jsonPath("$.exercises.length()").value(3));
 
-        mockMvc.perform(post("/api/playlists/{id}/archive", playlistId).cookie(cookie))
+        mockMvc.perform(post("/api/playlists/{id}/archive", playlistId).header(HttpHeaders.AUTHORIZATION, auth))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.archivedAt").exists());
 
         mockMvc.perform(post("/api/playlists/{id}/exercises", playlistId)
-                .cookie(cookie)
+                .header(HttpHeaders.AUTHORIZATION, auth)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                     {"exerciseId":"%s","targetSets":3}
                     """.formatted(supino.getId())))
             .andExpect(status().isConflict());
 
-        mockMvc.perform(get("/api/playlists").cookie(cookie))
+        mockMvc.perform(get("/api/playlists").header(HttpHeaders.AUTHORIZATION, auth))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$[*].id", not(hasItem(playlistId))))
             .andExpect(jsonPath("$[*].id", hasItem(cloneId)));
 
         mockMvc.perform(get("/api/playlists")
                 .param("includeArchived", "true")
-                .cookie(cookie))
+                .header(HttpHeaders.AUTHORIZATION, auth))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$[*].id", hasItem(playlistId)));
     }
@@ -131,16 +131,16 @@ class PlaylistFlowIT {
     @Test
     @DisplayName("a routine is invisible to other users")
     void shouldIsolatePlaylistsBetweenUsers() throws Exception {
-        Cookie owner = accessCookie(createUser());
-        Cookie other = accessCookie(createUser());
+        String owner = bearer(createUser());
+        String other = bearer(createUser());
         Exercise exercise = createExercise("Supino");
         String playlistId = createPlaylist(owner, "Push");
 
-        mockMvc.perform(get("/api/playlists/{id}", playlistId).cookie(other))
+        mockMvc.perform(get("/api/playlists/{id}", playlistId).header(HttpHeaders.AUTHORIZATION, other))
             .andExpect(status().isNotFound());
 
         mockMvc.perform(post("/api/playlists/{id}/exercises", playlistId)
-                .cookie(other)
+                .header(HttpHeaders.AUTHORIZATION, other)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                     {"exerciseId":"%s","targetSets":3}
@@ -151,13 +151,13 @@ class PlaylistFlowIT {
     @Test
     @DisplayName("a workout session can start from a routine")
     void shouldStartSessionFromPlaylist() throws Exception {
-        Cookie cookie = accessCookie(createUser());
+        String auth = bearer(createUser());
         Exercise exercise = createExercise("Supino");
-        String playlistId = createPlaylist(cookie, "Push");
-        addExercise(cookie, playlistId, exercise, 3);
+        String playlistId = createPlaylist(auth, "Push");
+        addExercise(auth, playlistId, exercise, 3);
 
         mockMvc.perform(post("/api/sessions")
-                .cookie(cookie)
+                .header(HttpHeaders.AUTHORIZATION, auth)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                     {"playlistId":"%s"}
@@ -170,19 +170,19 @@ class PlaylistFlowIT {
     @Test
     @DisplayName("search finds a seeded global exercise")
     void shouldFindSeededExercise() throws Exception {
-        Cookie cookie = accessCookie(createUser());
+        String auth = bearer(createUser());
 
         mockMvc.perform(get("/api/exercises")
                 .param("q", "Supino reto")
                 .param("muscle", "Peito")
-                .cookie(cookie))
+                .header(HttpHeaders.AUTHORIZATION, auth))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.totalElements").value(1))
             .andExpect(jsonPath("$.content[0].name").value("Supino reto"));
     }
 
-    private Cookie accessCookie(UserDto user) {
-        return new Cookie("access_token", jwtService.createAccessToken(user.getId(), user.getEmail()));
+    private String bearer(UserDto user) {
+        return "Bearer " + jwtService.createAccessToken(user.getId(), user.getEmail());
     }
 
     private UserDto createUser() {
@@ -201,9 +201,9 @@ class PlaylistFlowIT {
         return exerciseRepository.save(exercise);
     }
 
-    private String createPlaylist(Cookie cookie, String name) throws Exception {
+    private String createPlaylist(String auth, String name) throws Exception {
         MvcResult result = mockMvc.perform(post("/api/playlists")
-                .cookie(cookie)
+                .header(HttpHeaders.AUTHORIZATION, auth)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                     {"name":"%s","description":"test"}
@@ -214,10 +214,10 @@ class PlaylistFlowIT {
     }
 
     private String addExercise(
-        Cookie cookie, String playlistId, Exercise exercise, int targetSets
+        String auth, String playlistId, Exercise exercise, int targetSets
     ) throws Exception {
         MvcResult result = mockMvc.perform(post("/api/playlists/{id}/exercises", playlistId)
-                .cookie(cookie)
+                .header(HttpHeaders.AUTHORIZATION, auth)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                     {"exerciseId":"%s","targetSets":%d,"targetRepsMin":8,"targetRepsMax":12,"restSeconds":90}

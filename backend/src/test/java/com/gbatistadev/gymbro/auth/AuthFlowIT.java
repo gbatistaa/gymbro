@@ -4,15 +4,14 @@ import com.gbatistadev.gymbro.TestcontainersConfiguration;
 import com.gbatistadev.gymbro.user.RefreshToken;
 import com.gbatistadev.gymbro.user.RefreshTokenRepository;
 import com.jayway.jsonpath.JsonPath;
-import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -37,55 +36,61 @@ class AuthFlowIT {
     private RefreshTokenRepository refreshTokenRepository;
 
     @Test
-    @DisplayName("register → login → 401 sem cookie → refresh → retry → 200")
+    @DisplayName("register → login with body tokens → 401 without header → refresh → retry → 200")
     void fullAuthFlow() throws Exception {
         String email = "flow-" + UUID.randomUUID() + "@example.com";
-        MvcResult login = registerAndLogin(email);
-        String access = cookie(login, "access_token");
-        String refresh = cookie(login, "refresh_token");
+        Login login = registerAndLogin(email);
 
-        // access cookie válido → dados resumidos
-        mockMvc.perform(get("/api/users/me").cookie(new Cookie("access_token", access)))
+        // bearer válido → dados resumidos
+        mockMvc.perform(get("/api/users/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + login.accessToken()))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.email").value(email))
             .andExpect(jsonPath("$.name").value("Flow User"))
             .andExpect(jsonPath("$.createdAt").exists())
             .andExpect(jsonPath("$.passwordHash").doesNotExist());
 
-        // sem access cookie → 401 no shape padrão
+        // sem header → 401 no shape padrão
         mockMvc.perform(get("/api/users/me"))
             .andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.status").value(401))
             .andExpect(jsonPath("$.error").value("UNAUTHORIZED"))
             .andExpect(jsonPath("$.path").value("/api/users/me"));
 
-        // refresh com o refresh cookie → novo access cookie
+        // refresh pelo corpo → novo access token
         MvcResult refreshed = mockMvc.perform(post("/api/auth/refresh")
-                .cookie(new Cookie("refresh_token", refresh)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"refreshToken":"%s"}
+                    """.formatted(login.refreshToken())))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.email").value(email))
+            .andExpect(jsonPath("$.tokenType").value("Bearer"))
+            .andExpect(jsonPath("$.refreshToken").value(login.refreshToken()))
             .andReturn();
-        String newAccess = cookie(refreshed, "access_token");
+        String newAccess = JsonPath.read(refreshed.getResponse().getContentAsString(), "$.accessToken");
 
         // retry da requisição original com o access novo → 200
-        mockMvc.perform(get("/api/users/me").cookie(new Cookie("access_token", newAccess)))
+        mockMvc.perform(get("/api/users/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + newAccess))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.email").value(email));
     }
 
     @Test
-    @DisplayName("refresh com expires_at no passado → 401 ErrorResponse")
+    @DisplayName("refresh with expires_at in the past → 401 ErrorResponse")
     void expiredRefreshIsRejected() throws Exception {
         String email = "expired-" + UUID.randomUUID() + "@example.com";
-        MvcResult login = registerAndLogin(email);
-        String refresh = cookie(login, "refresh_token");
+        Login login = registerAndLogin(email);
 
-        String userId = JsonPath.read(login.getResponse().getContentAsString(), "$.id");
-        RefreshToken stored = refreshTokenRepository.findByUserId(UUID.fromString(userId)).orElseThrow();
+        RefreshToken stored = refreshTokenRepository
+            .findByUserId(UUID.fromString(login.userId()))
+            .orElseThrow();
         stored.setExpiresAt(Instant.now().minusSeconds(60));
         refreshTokenRepository.save(stored);
 
-        mockMvc.perform(post("/api/auth/refresh").cookie(new Cookie("refresh_token", refresh)))
+        mockMvc.perform(post("/api/auth/refresh")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"refreshToken":"%s"}
+                    """.formatted(login.refreshToken())))
             .andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.status").value(401))
             .andExpect(jsonPath("$.error").value("UNAUTHORIZED"))
@@ -93,29 +98,30 @@ class AuthFlowIT {
             .andExpect(jsonPath("$.path").value("/api/auth/refresh"));
     }
 
-    private MvcResult registerAndLogin(String email) throws Exception {
-        mockMvc.perform(post("/api/auth/register")
+    private Login registerAndLogin(String email) throws Exception {
+        MvcResult registered = mockMvc.perform(post("/api/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                     {"name":"Flow User","email":"%s","password":"password123"}
                     """.formatted(email)))
-            .andExpect(status().isCreated());
+            .andExpect(status().isCreated())
+            .andReturn();
+        String userId = JsonPath.read(registered.getResponse().getContentAsString(), "$.id");
 
-        return mockMvc.perform(post("/api/auth/login")
+        MvcResult login = mockMvc.perform(post("/api/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                     {"email":"%s","password":"password123"}
                     """.formatted(email)))
             .andExpect(status().isOk())
             .andReturn();
+
+        String body = login.getResponse().getContentAsString();
+        return new Login(
+            userId,
+            JsonPath.read(body, "$.accessToken"),
+            JsonPath.read(body, "$.refreshToken"));
     }
 
-    private String cookie(MvcResult result, String name) {
-        MockHttpServletResponse response = result.getResponse();
-        return response.getHeaders("Set-Cookie").stream()
-            .filter(header -> header.startsWith(name + "="))
-            .map(header -> header.substring(name.length() + 1, header.indexOf(';')))
-            .findFirst()
-            .orElseThrow(() -> new AssertionError("cookie ausente na resposta: " + name));
-    }
+    private record Login(String userId, String accessToken, String refreshToken) {}
 }

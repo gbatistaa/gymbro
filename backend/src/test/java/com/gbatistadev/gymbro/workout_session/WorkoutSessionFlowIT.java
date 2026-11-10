@@ -8,7 +8,7 @@ import com.gbatistadev.gymbro.user.UserService;
 import com.gbatistadev.gymbro.user.dto.CreateUserDto;
 import com.gbatistadev.gymbro.user.dto.UserDto;
 import com.jayway.jsonpath.JsonPath;
-import jakarta.servlet.http.Cookie;
+import org.springframework.http.HttpHeaders;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,53 +50,53 @@ class WorkoutSessionFlowIT {
     @DisplayName("open, log, replay, inspect, finish")
     void shouldRunFullLifecycle() throws Exception {
         UserDto user = createUser();
-        Cookie cookie = accessCookie(user);
+        String auth = bearer(user);
         Exercise exercise = createExercise();
 
-        String sessionId = startSessionAndGetId(cookie);
+        String sessionId = startSessionAndGetId(auth);
 
-        addLog(sessionId, cookie, UUID.randomUUID(), exercise.getId(), 100, 10)
+        addLog(sessionId, auth, UUID.randomUUID(), exercise.getId(), 100, 10)
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.setNumber").value(1))
             .andExpect(jsonPath("$.isPr").value(true));
 
         UUID clientId = UUID.randomUUID();
-        MvcResult first = addLog(sessionId, cookie, clientId, exercise.getId(), 100, 10)
+        MvcResult first = addLog(sessionId, auth, clientId, exercise.getId(), 100, 10)
             .andExpect(status().isCreated())
             .andReturn();
         String logId = JsonPath.read(first.getResponse().getContentAsString(), "$.id");
 
-        addLog(sessionId, cookie, clientId, exercise.getId(), 100, 10)
+        addLog(sessionId, auth, clientId, exercise.getId(), 100, 10)
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id").value(logId));
 
-        addLog(sessionId, cookie, UUID.randomUUID(), exercise.getId(), 100, 5)
+        addLog(sessionId, auth, UUID.randomUUID(), exercise.getId(), 100, 5)
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.setNumber").value(3));
 
-        mockMvc.perform(get("/api/sessions/{id}", sessionId).cookie(cookie))
+        mockMvc.perform(get("/api/sessions/{id}", sessionId).header(HttpHeaders.AUTHORIZATION, auth))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.totalVolume").value(2500.0))
             .andExpect(jsonPath("$.exercises.length()").value(1))
             .andExpect(jsonPath("$.exercises[0].sets.length()").value(3));
 
-        mockMvc.perform(get("/api/sessions/active").cookie(cookie))
+        mockMvc.perform(get("/api/sessions/active").header(HttpHeaders.AUTHORIZATION, auth))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id").value(sessionId));
 
-        finish(sessionId, cookie)
+        finish(sessionId, auth)
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("FINISHED"))
             .andExpect(jsonPath("$.totalVolume").value(2500.0))
             .andExpect(jsonPath("$.endedAt").exists());
 
-        addLog(sessionId, cookie, UUID.randomUUID(), exercise.getId(), 100, 5)
+        addLog(sessionId, auth, UUID.randomUUID(), exercise.getId(), 100, 5)
             .andExpect(status().isConflict());
 
-        mockMvc.perform(get("/api/sessions/active").cookie(cookie))
+        mockMvc.perform(get("/api/sessions/active").header(HttpHeaders.AUTHORIZATION, auth))
             .andExpect(status().isNoContent());
 
-        mockMvc.perform(get("/api/sessions").cookie(cookie))
+        mockMvc.perform(get("/api/sessions").header(HttpHeaders.AUTHORIZATION, auth))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.totalElements").value(1))
             .andExpect(jsonPath("$.content[0].id").value(sessionId));
@@ -106,21 +106,21 @@ class WorkoutSessionFlowIT {
     @DisplayName("PR is measured against previous sessions, not the current one")
     void shouldDetectPrAcrossSessions() throws Exception {
         UserDto user = createUser();
-        Cookie cookie = accessCookie(user);
+        String auth = bearer(user);
         Exercise exercise = createExercise();
 
-        String firstSession = startSessionAndGetId(cookie);
-        addLog(firstSession, cookie, UUID.randomUUID(), exercise.getId(), 100, 5)
+        String firstSession = startSessionAndGetId(auth);
+        addLog(firstSession, auth, UUID.randomUUID(), exercise.getId(), 100, 5)
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.isPr").value(true));
-        finish(firstSession, cookie).andExpect(status().isOk());
+        finish(firstSession, auth).andExpect(status().isOk());
 
-        String secondSession = startSessionAndGetId(cookie);
-        addLog(secondSession, cookie, UUID.randomUUID(), exercise.getId(), 100, 4)
+        String secondSession = startSessionAndGetId(auth);
+        addLog(secondSession, auth, UUID.randomUUID(), exercise.getId(), 100, 4)
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.isPr").value(false));
 
-        addLog(secondSession, cookie, UUID.randomUUID(), exercise.getId(), 100, 8)
+        addLog(secondSession, auth, UUID.randomUUID(), exercise.getId(), 100, 8)
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.isPr").value(true));
     }
@@ -129,29 +129,29 @@ class WorkoutSessionFlowIT {
     @DisplayName("only one open session, unique set numbers, delete recalculates volume")
     void shouldEnforceOpenSessionAndSetRules() throws Exception {
         UserDto user = createUser();
-        Cookie cookie = accessCookie(user);
+        String auth = bearer(user);
         Exercise exercise = createExercise();
 
-        String sessionId = startSessionAndGetId(cookie);
-        startSession(cookie, "{}")
+        String sessionId = startSessionAndGetId(auth);
+        startSession(auth, "{}")
             .andExpect(status().isConflict());
 
-        MvcResult first = addLog(sessionId, cookie, UUID.randomUUID(), exercise.getId(), 50, 10, 1)
+        MvcResult first = addLog(sessionId, auth, UUID.randomUUID(), exercise.getId(), 50, 10, 1)
             .andExpect(status().isCreated())
             .andReturn();
         String logId = JsonPath.read(first.getResponse().getContentAsString(), "$.id");
 
-        addLog(sessionId, cookie, UUID.randomUUID(), exercise.getId(), 50, 10, 1)
+        addLog(sessionId, auth, UUID.randomUUID(), exercise.getId(), 50, 10, 1)
             .andExpect(status().isConflict());
 
-        mockMvc.perform(delete("/api/sessions/{id}/logs/{logId}", sessionId, logId).cookie(cookie))
+        mockMvc.perform(delete("/api/sessions/{id}/logs/{logId}", sessionId, logId).header(HttpHeaders.AUTHORIZATION, auth))
             .andExpect(status().isNoContent());
 
-        mockMvc.perform(get("/api/sessions/{id}", sessionId).cookie(cookie))
+        mockMvc.perform(get("/api/sessions/{id}", sessionId).header(HttpHeaders.AUTHORIZATION, auth))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.totalVolume").value(0.0));
 
-        addLog(sessionId, cookie, UUID.randomUUID(), exercise.getId(), 50, 10, 1)
+        addLog(sessionId, auth, UUID.randomUUID(), exercise.getId(), 50, 10, 1)
             .andExpect(status().isCreated());
     }
 
@@ -160,20 +160,20 @@ class WorkoutSessionFlowIT {
     void shouldIsolateSessionsBetweenUsers() throws Exception {
         UserDto owner = createUser();
         UserDto other = createUser();
-        Cookie ownerCookie = accessCookie(owner);
-        Cookie otherCookie = accessCookie(other);
+        String ownerAuth = bearer(owner);
+        String otherAuth = bearer(other);
         Exercise exercise = createExercise();
 
-        String sessionId = startSessionAndGetId(ownerCookie);
+        String sessionId = startSessionAndGetId(ownerAuth);
 
-        addLog(sessionId, otherCookie, UUID.randomUUID(), exercise.getId(), 40, 10)
+        addLog(sessionId, otherAuth, UUID.randomUUID(), exercise.getId(), 40, 10)
             .andExpect(status().isNotFound());
-        mockMvc.perform(get("/api/sessions/{id}", sessionId).cookie(otherCookie))
+        mockMvc.perform(get("/api/sessions/{id}", sessionId).header(HttpHeaders.AUTHORIZATION, otherAuth))
             .andExpect(status().isNotFound());
-        finish(sessionId, otherCookie)
+        finish(sessionId, otherAuth)
             .andExpect(status().isNotFound());
 
-        startSession(otherCookie, "{\"playlistId\":\"" + UUID.randomUUID() + "\"}")
+        startSession(otherAuth, "{\"playlistId\":\"" + UUID.randomUUID() + "\"}")
             .andExpect(status().isNotFound());
     }
 
@@ -181,22 +181,22 @@ class WorkoutSessionFlowIT {
     @DisplayName("startedAt cannot be in the future")
     void shouldRejectFutureStart() throws Exception {
         UserDto user = createUser();
-        Cookie cookie = accessCookie(user);
+        String auth = bearer(user);
         String future = Instant.now().plus(1, ChronoUnit.HOURS).toString();
 
-        startSession(cookie, "{\"startedAt\":\"" + future + "\"}")
+        startSession(auth, "{\"startedAt\":\"" + future + "\"}")
             .andExpect(status().isBadRequest());
     }
 
-    private ResultActions startSession(Cookie cookie, String body) throws Exception {
+    private ResultActions startSession(String auth, String body) throws Exception {
         return mockMvc.perform(post("/api/sessions")
-            .cookie(cookie)
+            .header(HttpHeaders.AUTHORIZATION, auth)
             .contentType(MediaType.APPLICATION_JSON)
             .content(body));
     }
 
-    private String startSessionAndGetId(Cookie cookie) throws Exception {
-        MvcResult result = startSession(cookie, "{}")
+    private String startSessionAndGetId(String auth) throws Exception {
+        MvcResult result = startSession(auth, "{}")
             .andExpect(status().isCreated())
             .andReturn();
         return JsonPath.read(result.getResponse().getContentAsString(), "$.id");
@@ -204,7 +204,7 @@ class WorkoutSessionFlowIT {
 
     private ResultActions addLog(
         String sessionId,
-        Cookie cookie,
+        String auth,
         UUID clientLogId,
         UUID exerciseId,
         double weight,
@@ -215,14 +215,14 @@ class WorkoutSessionFlowIT {
             """.formatted(clientLogId, exerciseId, weight, reps);
 
         return mockMvc.perform(post("/api/sessions/{id}/logs", sessionId)
-            .cookie(cookie)
+            .header(HttpHeaders.AUTHORIZATION, auth)
             .contentType(MediaType.APPLICATION_JSON)
             .content(body));
     }
 
     private ResultActions addLog(
         String sessionId,
-        Cookie cookie,
+        String auth,
         UUID clientLogId,
         UUID exerciseId,
         double weight,
@@ -234,14 +234,14 @@ class WorkoutSessionFlowIT {
             """.formatted(clientLogId, exerciseId, weight, reps, setNumber);
 
         return mockMvc.perform(post("/api/sessions/{id}/logs", sessionId)
-            .cookie(cookie)
+            .header(HttpHeaders.AUTHORIZATION, auth)
             .contentType(MediaType.APPLICATION_JSON)
             .content(body));
     }
 
-    private ResultActions finish(String sessionId, Cookie cookie) throws Exception {
+    private ResultActions finish(String sessionId, String auth) throws Exception {
         return mockMvc.perform(patch("/api/sessions/{id}", sessionId)
-            .cookie(cookie)
+            .header(HttpHeaders.AUTHORIZATION, auth)
             .contentType(MediaType.APPLICATION_JSON)
             .content("{\"status\":\"FINISHED\"}"));
     }
@@ -262,7 +262,7 @@ class WorkoutSessionFlowIT {
         return exerciseRepository.save(exercise);
     }
 
-    private Cookie accessCookie(UserDto user) {
-        return new Cookie("access_token", jwtService.createAccessToken(user.getId(), user.getEmail()));
+    private String bearer(UserDto user) {
+        return "Bearer " + jwtService.createAccessToken(user.getId(), user.getEmail());
     }
 }

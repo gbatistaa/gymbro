@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -36,8 +37,8 @@ class UserControllerTest {
     private JwtService jwtService;
 
     @Test
-    @DisplayName("GET /api/users/me without access cookie returns standard 401")
-    void shouldRejectRequestWithoutCookie() throws Exception {
+    @DisplayName("GET /api/users/me without an Authorization header returns standard 401")
+    void shouldRejectRequestWithoutAuthorization() throws Exception {
         mockMvc.perform(get("/api/users/me"))
             .andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.status").value(401))
@@ -47,13 +48,12 @@ class UserControllerTest {
     }
 
     @Test
-    @DisplayName("GET /api/users/me returns summary for valid access cookie")
+    @DisplayName("GET /api/users/me returns summary for a valid bearer token")
     void shouldReturnCurrentUserSummary() throws Exception {
         String email = "user-" + UUID.randomUUID() + "@example.com";
         UserDto user = userService.create(new CreateUserDto("Test User", email, "password123"));
-        String token = jwtService.createAccessToken(user.getId(), user.getEmail());
 
-        mockMvc.perform(get("/api/users/me").cookie(new jakarta.servlet.http.Cookie("access_token", token)))
+        mockMvc.perform(get("/api/users/me").header(HttpHeaders.AUTHORIZATION, bearer(user)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id").value(user.getId().toString()))
             .andExpect(jsonPath("$.name").value("Test User"))
@@ -67,10 +67,9 @@ class UserControllerTest {
     void shouldUpdateCurrentUser() throws Exception {
         String email = "user-" + UUID.randomUUID() + "@example.com";
         UserDto user = userService.create(new CreateUserDto("Test User", email, "password123"));
-        String token = jwtService.createAccessToken(user.getId(), user.getEmail());
 
         mockMvc.perform(put("/api/users/me")
-                .cookie(new jakarta.servlet.http.Cookie("access_token", token))
+                .header(HttpHeaders.AUTHORIZATION, bearer(user))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"Updated Name\"}"))
             .andExpect(status().isOk())
@@ -83,11 +82,10 @@ class UserControllerTest {
     void shouldUpdateOnlyEmail() throws Exception {
         String email = "user-" + UUID.randomUUID() + "@example.com";
         UserDto user = userService.create(new CreateUserDto("Test User", email, "password123"));
-        String token = jwtService.createAccessToken(user.getId(), user.getEmail());
         String updatedEmail = "updated-" + UUID.randomUUID() + "@example.com";
 
         mockMvc.perform(put("/api/users/me")
-                .cookie(new jakarta.servlet.http.Cookie("access_token", token))
+                .header(HttpHeaders.AUTHORIZATION, bearer(user))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"email\":\"" + updatedEmail + "\"}"))
             .andExpect(status().isOk())
@@ -96,13 +94,36 @@ class UserControllerTest {
     }
 
     @Test
-    @DisplayName("invalid access cookie returns standard 401")
+    @DisplayName("invalid bearer token returns standard 401")
     void shouldRejectInvalidToken() throws Exception {
-        mockMvc.perform(get("/api/users/me")
-                .cookie(new jakarta.servlet.http.Cookie("access_token", "not-a-jwt")))
+        mockMvc.perform(get("/api/users/me").header(HttpHeaders.AUTHORIZATION, "Bearer not-a-jwt"))
             .andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.status").value(401))
             .andExpect(jsonPath("$.path").value("/api/users/me"));
+    }
+
+    @Test
+    @DisplayName("a malformed Authorization header without the Bearer scheme returns 401")
+    void shouldRejectHeaderWithoutBearerScheme() throws Exception {
+        String email = "user-" + UUID.randomUUID() + "@example.com";
+        UserDto user = userService.create(new CreateUserDto("Test User", email, "password123"));
+
+        mockMvc.perform(get("/api/users/me")
+                .header(HttpHeaders.AUTHORIZATION, jwtService.createAccessToken(user.getId(), user.getEmail())))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.status").value(401));
+    }
+
+    @Test
+    @DisplayName("the Bearer scheme is matched case-insensitively")
+    void shouldAcceptLowerCaseBearerScheme() throws Exception {
+        String email = "user-" + UUID.randomUUID() + "@example.com";
+        UserDto user = userService.create(new CreateUserDto("Test User", email, "password123"));
+
+        mockMvc.perform(get("/api/users/me")
+                .header(HttpHeaders.AUTHORIZATION, "bearer " + jwtService.createAccessToken(user.getId(), user.getEmail())))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id").value(user.getId().toString()));
     }
 
     @Test
@@ -112,5 +133,9 @@ class UserControllerTest {
             .andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.status").value(401))
             .andExpect(jsonPath("$.path").value("/api/exercises"));
+    }
+
+    private String bearer(UserDto user) {
+        return "Bearer " + jwtService.createAccessToken(user.getId(), user.getEmail());
     }
 }

@@ -10,6 +10,7 @@ import com.gbatistadev.gymbro.user.UserMapper;
 import com.gbatistadev.gymbro.user.UserMapperImpl;
 import com.gbatistadev.gymbro.user.UserRepository;
 import com.gbatistadev.gymbro.user.UserService;
+import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -23,15 +24,17 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -65,7 +68,7 @@ class AuthControllerTest {
         UserService userService = new UserService(userRepository, mapper, encoder);
         jwtService = new JwtService(properties);
         AuthService authService = new AuthService(
-            userService, mapper, userRepository, refreshTokenRepository,
+            userService, userRepository, refreshTokenRepository,
             encoder, jwtService, properties);
         mockMvc = MockMvcBuilders.standaloneSetup(new AuthController(authService))
             .setControllerAdvice(new GlobalExceptionHandler())
@@ -87,8 +90,8 @@ class AuthControllerTest {
     }
 
     @Test
-    @DisplayName("login returns 200 with HttpOnly access and refresh cookies")
-    void shouldLoginAndSetCookies() throws Exception {
+    @DisplayName("login returns 200 with bearer tokens in the body and no Set-Cookie")
+    void shouldLoginAndReturnTokensInBody() throws Exception {
         User user = existingUser("password123");
         when(userRepository.findByEmail("joao@example.com")).thenReturn(Optional.of(user));
         when(refreshTokenRepository.findByUserId(any())).thenReturn(Optional.empty());
@@ -97,30 +100,37 @@ class AuthControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(LOGIN_BODY))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.email").value("joao@example.com"))
+            .andExpect(jsonPath("$.tokenType").value("Bearer"))
+            .andExpect(jsonPath("$.expiresIn").value(900))
+            .andExpect(jsonPath("$.accessToken").isNotEmpty())
+            .andExpect(jsonPath("$.refreshToken").isNotEmpty())
+            .andExpect(header().doesNotExist("Set-Cookie"))
+            .andExpect(header().string("Cache-Control", "no-store"))
             .andReturn();
 
-        List<String> setCookies = result.getResponse().getHeaders("Set-Cookie");
-        assertEquals(2, setCookies.size());
+        String body = result.getResponse().getContentAsString();
+        String accessToken = JsonPath.read(body, "$.accessToken");
+        String refreshToken = JsonPath.read(body, "$.refreshToken");
 
-        String access = setCookies.stream()
-            .filter(h -> h.startsWith("access_token=")).findFirst().orElseThrow();
-        String accessValue = access.substring("access_token=".length(), access.indexOf(';'));
-        assertTrue(access.contains("Max-Age=900"), access);
-        assertTrue(access.contains("Path=/;"), access);
-        assertTrue(access.contains("HttpOnly"), access);
-        assertTrue(access.contains("SameSite=Lax"), access);
-        assertEquals(3, accessValue.split("\\.").length, "access token deve ser um JWT");
+        assertEquals(user.getId(), jwtService.parseAccessToken(accessToken),
+            "access token deve autenticar como o usuário");
+        assertEquals(3, accessToken.split("\\.").length, "access token deve ser um JWT");
+        assertEquals(43, refreshToken.length(), "32 bytes em base64url sem padding");
+        assertTrue(refreshToken.matches("[A-Za-z0-9_-]+"));
+    }
 
-        String refresh = setCookies.stream()
-            .filter(h -> h.startsWith("refresh_token=")).findFirst().orElseThrow();
-        String refreshValue = refresh.substring("refresh_token=".length(), refresh.indexOf(';'));
-        assertTrue(refresh.contains("Max-Age=15552000"), refresh);
-        assertTrue(refresh.contains("Path=/api/auth;"), refresh);
-        assertTrue(refresh.contains("HttpOnly"), refresh);
-        assertTrue(refresh.contains("SameSite=Lax"), refresh);
-        assertEquals(43, refreshValue.length(), "32 bytes em base64url sem padding");
-        assertTrue(refreshValue.matches("[A-Za-z0-9_-]+"));
+    @Test
+    @DisplayName("login never leaks the password hash")
+    void shouldNotLeakPasswordHashOnLogin() throws Exception {
+        User user = existingUser("password123");
+        when(userRepository.findByEmail("joao@example.com")).thenReturn(Optional.of(user));
+        when(refreshTokenRepository.findByUserId(any())).thenReturn(Optional.empty());
+
+        mockMvc.perform(post("/api/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(LOGIN_BODY))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.passwordHash").doesNotExist());
     }
 
     @Test
@@ -155,17 +165,8 @@ class AuthControllerTest {
             .andExpect(jsonPath("$.message").value("Invalid credentials"));
     }
 
-    private User existingUser(String rawPassword) {
-        User user = new User();
-        user.setId(UUID.randomUUID());
-        user.setName("João Silva");
-        user.setEmail("joao@example.com");
-        user.setPasswordHash(encoder.encode(rawPassword));
-        return user;
-    }
-
     @Test
-    @DisplayName("refresh issues a new parseable access cookie and user dto")
+    @DisplayName("refresh returns a new parseable access token in the body and no Set-Cookie")
     void shouldRefreshAccessToken() throws Exception {
         User user = existingUser("password123");
         RefreshToken stored = new RefreshToken();
@@ -176,24 +177,25 @@ class AuthControllerTest {
             .thenReturn(Optional.of(stored));
 
         MvcResult result = mockMvc.perform(post("/api/auth/refresh")
-                .cookie(new jakarta.servlet.http.Cookie("refresh_token", "raw-token")))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"refreshToken":"raw-token"}
+                    """))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.email").value("joao@example.com"))
-            .andExpect(jsonPath("$.passwordHash").doesNotExist())
+            .andExpect(jsonPath("$.tokenType").value("Bearer"))
+            .andExpect(jsonPath("$.expiresIn").value(900))
+            .andExpect(jsonPath("$.refreshToken").value("raw-token"))
+            .andExpect(header().doesNotExist("Set-Cookie"))
             .andReturn();
 
-        String setCookie = result.getResponse().getHeader("Set-Cookie");
-        assertNotNull(setCookie, "deve emitir novo access_token");
-        assertTrue(setCookie.startsWith("access_token="), setCookie);
-        assertTrue(setCookie.contains("HttpOnly"), setCookie);
-        assertTrue(setCookie.contains("Path=/;"), setCookie);
-        String jwt = setCookie.substring("access_token=".length(), setCookie.indexOf(';'));
-        assertEquals(user.getId(), jwtService.parseAccessToken(jwt), "cookie deve autenticar como o usuário");
+        String accessToken = JsonPath.read(result.getResponse().getContentAsString(), "$.accessToken");
+        assertEquals(user.getId(), jwtService.parseAccessToken(accessToken),
+            "o access token devolvido deve autenticar como o usuário");
     }
 
     @Test
-    @DisplayName("refresh without cookie returns 401 ErrorResponse")
-    void shouldRejectRefreshWithoutCookie() throws Exception {
+    @DisplayName("refresh without a body returns 401 ErrorResponse")
+    void shouldRejectRefreshWithoutToken() throws Exception {
         mockMvc.perform(post("/api/auth/refresh"))
             .andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.status").value(401))
@@ -203,14 +205,38 @@ class AuthControllerTest {
     }
 
     @Test
+    @DisplayName("refresh with a blank token returns the same 401")
+    void shouldRejectBlankRefreshToken() throws Exception {
+        mockMvc.perform(post("/api/auth/refresh")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"refreshToken":"  "}
+                    """))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.message").value("Invalid refresh token"));
+    }
+
+    @Test
     @DisplayName("refresh with unknown or expired token returns the same 401")
     void shouldRejectUnknownOrExpiredRefreshToken() throws Exception {
         when(refreshTokenRepository.findValidByTokenHash(anyString(), any(java.time.Instant.class)))
             .thenReturn(Optional.empty());
 
         mockMvc.perform(post("/api/auth/refresh")
-                .cookie(new jakarta.servlet.http.Cookie("refresh_token", "expired-token")))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"refreshToken":"expired-token"}
+                    """))
             .andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.message").value("Invalid refresh token"));
+    }
+
+    private User existingUser(String rawPassword) {
+        User user = new User();
+        user.setId(UUID.randomUUID());
+        user.setName("João Silva");
+        user.setEmail("joao@example.com");
+        user.setPasswordHash(encoder.encode(rawPassword));
+        return user;
     }
 }
