@@ -125,12 +125,11 @@ public class AuthService {
     }
 
     private void saveRefreshToken(User user, String rawToken) {
-        RefreshToken refreshToken = refreshTokenRepository.findByUserId(user.getId())
-            .orElseGet(() -> {
-                RefreshToken created = new RefreshToken();
-                created.setUser(user);
-                return created;
-            });
+        // poda as sessões vencidas deste usuário: sem isso, um login diário acumularia linhas por 6 meses
+        refreshTokenRepository.deleteExpiredByUserId(user.getId(), Instant.now());
+
+        RefreshToken refreshToken = new RefreshToken();
+        refreshToken.setUser(user);
         refreshToken.setTokenHash(sha256Hex(rawToken));
         refreshToken.setExpiresAt(Instant.now().plusMillis(jwtProperties.refreshExpirationMs()));
         refreshTokenRepository.save(refreshToken);

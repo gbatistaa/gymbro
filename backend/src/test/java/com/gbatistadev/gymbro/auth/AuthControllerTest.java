@@ -94,7 +94,6 @@ class AuthControllerTest {
     void shouldLoginAndReturnTokensInBody() throws Exception {
         User user = existingUser("password123");
         when(userRepository.findByEmail("joao@example.com")).thenReturn(Optional.of(user));
-        when(refreshTokenRepository.findByUserId(any())).thenReturn(Optional.empty());
 
         MvcResult result = mockMvc.perform(post("/api/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -124,7 +123,6 @@ class AuthControllerTest {
     void shouldNotLeakPasswordHashOnLogin() throws Exception {
         User user = existingUser("password123");
         when(userRepository.findByEmail("joao@example.com")).thenReturn(Optional.of(user));
-        when(refreshTokenRepository.findByUserId(any())).thenReturn(Optional.empty());
 
         mockMvc.perform(post("/api/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)

@@ -23,8 +23,8 @@ public class RefreshToken extends BaseEntity {
     @JdbcTypeCode(SqlTypes.TIMESTAMP_WITH_TIMEZONE)
     private Instant expiresAt;
 
-    // shortcut: 1 refresh ativo por usuário (uk_refresh_tokens_user); upgrade = 1 linha por sessão
+    // uma linha por sessão: cada login cria a sua, sem derrubar as de outros dispositivos
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false, unique = true)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 }

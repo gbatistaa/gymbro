@@ -14,10 +14,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultActions;
 
 import java.time.Instant;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -81,7 +83,9 @@ class AuthFlowIT {
         Login login = registerAndLogin(email);
 
         RefreshToken stored = refreshTokenRepository
-            .findByUserId(UUID.fromString(login.userId()))
+            .findAllByUserId(UUID.fromString(login.userId()))
+            .stream()
+            .findFirst()
             .orElseThrow();
         stored.setExpiresAt(Instant.now().minusSeconds(60));
         refreshTokenRepository.save(stored);
@@ -180,6 +184,57 @@ class AuthFlowIT {
             .andExpect(status().isNoContent());
     }
 
+    @Test
+    @DisplayName("two logins keep independent sessions: revoking one leaves the other usable")
+    void devicesKeepIndependentSessions() throws Exception {
+        String email = "devices-" + UUID.randomUUID() + "@example.com";
+        Login mobile = registerAndLogin(email);
+        Tokens web = login(email);
+
+        // o segundo login não derruba o primeiro
+        refresh(mobile.refreshToken()).andExpect(status().isOk());
+        refresh(web.refreshToken()).andExpect(status().isOk());
+
+        // encerrar o mobile não afeta o web
+        mockMvc.perform(post("/api/auth/logout")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"refreshToken":"%s"}
+                    """.formatted(mobile.refreshToken())))
+            .andExpect(status().isNoContent());
+
+        refresh(mobile.refreshToken()).andExpect(status().isUnauthorized());
+        refresh(web.refreshToken()).andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("an expired session row is pruned on the next login")
+    void expiredSessionsArePrunedOnLogin() throws Exception {
+        String email = "prune-" + UUID.randomUUID() + "@example.com";
+        Login first = registerAndLogin(email);
+
+        RefreshToken expired = refreshTokenRepository
+            .findAllByUserId(UUID.fromString(first.userId()))
+            .stream()
+            .findFirst()
+            .orElseThrow();
+        expired.setExpiresAt(Instant.now().minusSeconds(60));
+        refreshTokenRepository.save(expired);
+
+        login(email);
+
+        assertEquals(1, refreshTokenRepository.findAllByUserId(UUID.fromString(first.userId())).size(),
+            "a sessão expirada deve ser removida no login, não acumular");
+    }
+
+    private ResultActions refresh(String refreshToken) throws Exception {
+        return mockMvc.perform(post("/api/auth/refresh")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("""
+                {"refreshToken":"%s"}
+                """.formatted(refreshToken)));
+    }
+
     private Login registerAndLogin(String email) throws Exception {
         MvcResult registered = mockMvc.perform(post("/api/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -190,6 +245,11 @@ class AuthFlowIT {
             .andReturn();
         String userId = JsonPath.read(registered.getResponse().getContentAsString(), "$.id");
 
+        Tokens tokens = login(email);
+        return new Login(userId, tokens.accessToken(), tokens.refreshToken());
+    }
+
+    private Tokens login(String email) throws Exception {
         MvcResult login = mockMvc.perform(post("/api/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
@@ -199,11 +259,12 @@ class AuthFlowIT {
             .andReturn();
 
         String body = login.getResponse().getContentAsString();
-        return new Login(
-            userId,
+        return new Tokens(
             JsonPath.read(body, "$.accessToken"),
             JsonPath.read(body, "$.refreshToken"));
     }
+
+    private record Tokens(String accessToken, String refreshToken) {}
 
     private record Login(String userId, String accessToken, String refreshToken) {}
 }
