@@ -1,15 +1,16 @@
 import { Platform, StyleSheet, View } from 'react-native';
 
+import { cx } from '@/lib/cx';
+
 /**
  * A régua do caderno de treino: 1 pixel físico em toda plataforma.
  *
- * `hairlineWidth` no iOS resolve para a espessura de 1 pixel físico na densidade do aparelho
- * (0,33pt num @3x); no Android 1 é 1dp. Usar 1 fixo no iOS daria uma linha três vezes mais grossa
- * num aparelho @3x, e a régua é o elemento-assinatura — a espessura não pode variar.
+ * A espessura é o único valor que não vem do Tailwind: `hairlineWidth` no iOS é 1 pixel físico
+ * (0,33pt num @3x) e não existe classe para isso. A cor vem de `bg-rule`.
  */
 const HAIRLINE = Platform.select({ ios: StyleSheet.hairlineWidth, default: 1 });
 
-/** Separa linhas de dado. A cor é fixa: uma régua de outra cor não é régua. */
+/** Separa linhas de dado. A cor é fixa: régua de outra cor não é régua. */
 export function Rule({ className }: { className?: string }) {
-  return <View style={{ height: HAIRLINE }} className={`bg-rule ${className ?? ''}`} />;
+  return <View style={{ height: HAIRLINE }} className={cx('bg-rule', className)} />;
 }

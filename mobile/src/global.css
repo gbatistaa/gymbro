@@ -2,11 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Alvo web. As famílias nativas vêm de `expo-font` (Task 3); aqui é o fallback do navegador.
-   `--font-rounded` e `--font-serif` existem só para o `Fonts` legado e saem na Task 7. */
+/* Alvo web. As famílias nativas vêm de `expo-font`; aqui é o fallback do navegador. */
 :root {
   --font-display: IBMPlexSans, 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
   --font-mono: IBMPlexMono, 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
-  --font-rounded: 'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif;
-  --font-serif: Georgia, 'Times New Roman', serif;
 }

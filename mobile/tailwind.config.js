@@ -56,6 +56,8 @@ module.exports = {
         numeral: '-1.1px',
         numeralXL: '-1.8px',
         label: '0.96px',
+        // wordmark: título 28 × -0.02em (brand §5)
+        wordmark: '-0.56px',
       },
     },
   },
