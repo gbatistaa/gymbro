@@ -2,8 +2,8 @@ import type { ApiClient } from '../client';
 import { listExercises } from '../exercises';
 
 function stubClient(result: unknown) {
-  const calls: Array<{ path: string; options?: { query?: Record<string, string> } }> = [];
-  const client: ApiClient = {
+  const calls: { path: string; options?: { query?: Record<string, string | number | boolean | undefined> } }[] = [];
+  const client = {
     async request<T>(path: string, options?: { query?: Record<string, string | number | boolean | undefined> }) {
       calls.push({ path, options });
       return result as T;

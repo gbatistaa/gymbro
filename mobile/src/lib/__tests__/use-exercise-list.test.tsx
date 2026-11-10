@@ -62,14 +62,15 @@ describe('useExerciseList', () => {
       pageOf(query === '' ? ['a'] : ['z'], 0, 1),
     );
 
-    const { result, rerender } = renderHook(({ query }) => useExerciseList(fetchPage, query), {
-      initialProps: { query: '' },
-    });
+    const { result, rerender } = await renderHook(
+      ({ query }: { query: string }) => useExerciseList(fetchPage, query),
+      { initialProps: { query: '' } },
+    );
 
     await waitFor(() => expect(result.current?.status).toBe('ready'));
     expect(result.current?.items.map((item) => item.id)).toEqual(['a']);
 
-    rerender({ query: 'supino' });
+    await rerender({ query: 'supino' });
 
     await waitFor(() => expect(result.current?.items.map((item) => item.id)).toEqual(['z']));
     expect(fetchPage).toHaveBeenLastCalledWith(0, 'supino');
@@ -93,5 +94,40 @@ describe('useExerciseList', () => {
 
     expect(result.current?.status).toBe('error');
     expect(result.current?.items.map((item) => item.id)).toEqual(['a']);
+  });
+});
+
+describe('useExerciseList — retry', () => {
+  function pageOfRetry(ids: string[]): ExercisePage {
+    return {
+      content: ids.map((id) => ({ id, name: `Exercício ${id}`, primaryMuscle: 'CHEST' })),
+      page: 0,
+      size: 2,
+      totalElements: ids.length,
+      totalPages: 1,
+    };
+  }
+
+  it('reloads the first page when the initial load failed', async () => {
+    let attempts = 0;
+    const fetchPage = jest.fn(async () => {
+      attempts += 1;
+      if (attempts === 1) {
+        throw new Error('boom');
+      }
+      return pageOfRetry(['a']);
+    });
+
+    const { result } = await renderHook(() => useExerciseList(fetchPage));
+
+    await waitFor(() => expect(result.current?.status).toBe('error'));
+
+    await act(async () => {
+      result.current?.retry();
+    });
+
+    await waitFor(() => expect(result.current?.status).toBe('ready'));
+    expect(result.current?.items.map((item) => item.id)).toEqual(['a']);
+    expect(fetchPage).toHaveBeenCalledTimes(2);
   });
 });
