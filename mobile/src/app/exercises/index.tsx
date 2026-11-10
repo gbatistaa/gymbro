@@ -15,6 +15,7 @@ import { getApiClient } from '@/lib/api';
 import { listExercises, type Exercise } from '@/lib/api/exercises';
 import { messageForError, toApiError } from '@/lib/api/error-messages';
 import { useDebouncedValue } from '@/lib/use-debounced-value';
+import { rememberExercises } from '@/lib/exercise-cache';
 import { useExerciseList } from '@/lib/use-exercise-list';
 
 /**
@@ -29,8 +30,12 @@ export default function ExercisesScreen() {
   // useCallback é obrigatório: sem identidade estável o efeito do hook refaz o fetch a cada
   // render, o setState re-renderiza, e a tela entra em loop de requests
   const fetchPage = useCallback(
-    (page: number, q: string) =>
-      listExercises(client, { q: q === '' ? undefined : q, page, size: 20 }),
+    async (page: number, q: string) => {
+      const result = await listExercises(client, { q: q === '' ? undefined : q, page, size: 20 });
+      // a edição lê daqui: o backend não tem GET /api/exercises/{id}
+      rememberExercises(result.content);
+      return result;
+    },
     [client],
   );
   const list = useExerciseList(fetchPage, debouncedQuery);

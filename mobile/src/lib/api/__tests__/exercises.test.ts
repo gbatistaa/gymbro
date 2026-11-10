@@ -1,5 +1,5 @@
 import type { ApiClient } from '../client';
-import { listExercises } from '../exercises';
+import { archiveExercise, createExercise, listExercises, updateExercise } from '../exercises';
 
 function stubClient(result: unknown) {
   const calls: { path: string; options?: { query?: Record<string, string | number | boolean | undefined> } }[] = [];
@@ -46,5 +46,51 @@ describe('listExercises', () => {
 
     expect(result.content).toEqual([]);
     expect(result.totalPages).toBe(0);
+  });
+});
+
+describe('createExercise', () => {
+  it('posts the exercise to the collection and returns it', async () => {
+    const created = { id: 'e9', name: 'Agachamento', primaryMuscle: 'LEGS' };
+    const { client, calls } = stubClient(created);
+
+    const result = await createExercise(client, {
+      name: 'Agachamento',
+      primaryMuscle: 'LEGS',
+      incrementKg: 5,
+    });
+
+    expect(calls[0].path).toBe('/api/exercises');
+    expect(calls[0].options).toMatchObject({
+      method: 'POST',
+      body: { name: 'Agachamento', primaryMuscle: 'LEGS', incrementKg: 5 },
+    });
+    expect(result).toEqual(created);
+  });
+});
+
+describe('updateExercise', () => {
+  it('puts the changes to the exercise path', async () => {
+    const { client, calls } = stubClient({ id: 'e9' });
+
+    await updateExercise(client, 'e9', { name: 'Agachamento livre', primaryMuscle: 'LEGS' });
+
+    expect(calls[0].path).toBe('/api/exercises/e9');
+    expect(calls[0].options).toMatchObject({
+      method: 'PUT',
+      body: { name: 'Agachamento livre', primaryMuscle: 'LEGS' },
+    });
+  });
+});
+
+describe('archiveExercise', () => {
+  it('deletes the exercise without sending a body', async () => {
+    const { client, calls } = stubClient(undefined);
+
+    await archiveExercise(client, 'e9');
+
+    expect(calls[0].path).toBe('/api/exercises/e9');
+    expect(calls[0].options).toMatchObject({ method: 'DELETE' });
+    expect(calls[0].options).not.toHaveProperty('body');
   });
 });

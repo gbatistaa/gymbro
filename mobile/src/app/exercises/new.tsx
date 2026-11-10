@@ -1,18 +1,65 @@
-import { Text } from '@/components/ui/text';
-import { Screen } from '@/components/ui/screen';
+import { router } from 'expo-router';
+import { useCallback, useMemo, useState } from 'react';
+import { ScrollView } from 'react-native';
+import { toast } from 'sonner-native';
 
-/**
- * Placeholder da Task 15: criação de exercício.
- *
- * Existe para as rotas tipadas compilarem; a Task 14 navega para cá no empty state.
- */
-export default function NewExercisePlaceholder() {
+import { ExerciseForm } from '@/components/exercise-form';
+import { Screen } from '@/components/ui/screen';
+import { Text } from '@/components/ui/text';
+import { getApiClient } from '@/lib/api';
+import { createExercise } from '@/lib/api/exercises';
+import { messageForError, toApiError } from '@/lib/api/error-messages';
+import { toExerciseInput, validateExercise, type ExerciseFormValues } from '@/lib/exercise-form';
+
+const EMPTY: ExerciseFormValues = {
+  name: '',
+  primaryMuscle: '',
+  secondaryMuscle: '',
+  equipment: '',
+  incrementKg: '',
+};
+
+export default function NewExerciseScreen() {
+  const client = useMemo(() => getApiClient(), []);
+  const [submitting, setSubmitting] = useState(false);
+
+  const submit = useCallback(
+    async (values: ExerciseFormValues) => {
+      if (submitting) {
+        return;
+      }
+
+      const invalid = validateExercise(values);
+      if (invalid !== null) {
+        toast.error(invalid);
+        return;
+      }
+
+      setSubmitting(true);
+      try {
+        await createExercise(client, toExerciseInput(values));
+        toast.success('Exercício criado.');
+        router.back();
+      } catch (cause) {
+        toast.error(messageForError(toApiError(cause)));
+      } finally {
+        setSubmitting(false);
+      }
+    },
+    [client, submitting],
+  );
+
   return (
-    <Screen edges={['top']}>
-      <Text type="title2">Novo exercício</Text>
-      <Text type="caption" color="muted">
-        Criação de exercício chega na Task 15.
-      </Text>
+    <Screen edges={['top', 'bottom']}>
+      <ScrollView contentContainerClassName="grow gap-6 py-6" keyboardShouldPersistTaps="handled">
+        <Text type="title2">Novo exercício</Text>
+        <ExerciseForm
+          initial={EMPTY}
+          submitLabel="Salvar exercício"
+          submitting={submitting}
+          onSubmit={submit}
+        />
+      </ScrollView>
     </Screen>
   );
 }
