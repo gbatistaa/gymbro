@@ -55,7 +55,12 @@ function textOf(element: ReactTestRenderer): string {
 
 describe('ExercisesScreen', () => {
   beforeEach(() => {
+    jest.useFakeTimers();
     mockListExercises.mockReset();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
   });
 
   it('lists the exercises from the first page', async () => {

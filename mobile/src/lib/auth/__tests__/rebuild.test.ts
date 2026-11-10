@@ -15,7 +15,7 @@ function fakeDriver(preloaded: string | null): SecureStoreLike & { saved: (strin
   return {
     saved,
     getItemAsync: async () => value,
-    setItemAsync: async (next: string) => {
+    setItemAsync: async (_key: string, next: string) => {
       value = next;
       saved.push(next);
     },

@@ -38,12 +38,12 @@ describe('auth screens', () => {
   it('renders the submit button and the register link on the login screen', () => {
     const screen = render(<LoginScreen />);
 
-    expect(buttonLabels(screen)).toEqual(['Entrar', 'Criar conta']);
+    expect(buttonLabels(screen)).toEqual(['Mostrar senha', 'Entrar', 'Criar conta']);
   });
 
   it('renders the submit button and the login link on the register screen', () => {
     const screen = render(<RegisterScreen />);
 
-    expect(buttonLabels(screen)).toEqual(['Criar conta', 'Já tenho conta']);
+    expect(buttonLabels(screen)).toEqual(['Mostrar senha', 'Criar conta', 'Já tenho conta']);
   });
 });
