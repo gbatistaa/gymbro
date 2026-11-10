@@ -18,6 +18,8 @@ type DataRowProps = {
   /** Anotação de margem (`+2,5 kg`, `RPE 8`, `há 6 d`). */
   note?: string;
   onPress?: () => void;
+  /** Ações secundárias (clonar, arquivar): abre menu nativo em vez de encher a linha de ícones. */
+  onLongPress?: () => void;
   disabled?: boolean;
   className?: string;
 };
@@ -34,6 +36,7 @@ export function DataRow({
   unit,
   note,
   onPress,
+  onLongPress,
   disabled = false,
   className,
 }: DataRowProps) {
@@ -75,7 +78,8 @@ export function DataRow({
       ) : (
         <Pressable
           onPress={onPress}
-          disabled={disabled}
+          onLongPress={onLongPress}
+          disabled={disabled && onLongPress === undefined}
           accessibilityRole="button"
           accessibilityState={{ disabled }}
           android_ripple={{ color: Colors.dark.raised }}
