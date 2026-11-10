@@ -1,16 +1,20 @@
 package com.gbatistadev.gymbro.exercise;
 
 import com.gbatistadev.gymbro.common.dto.PageDto;
+import com.gbatistadev.gymbro.analytics.ExerciseStatsService;
+import com.gbatistadev.gymbro.analytics.dto.ExerciseStatsDto;
 import com.gbatistadev.gymbro.exercise.dto.CreateExerciseDto;
 import com.gbatistadev.gymbro.exercise.dto.ExerciseDto;
 import com.gbatistadev.gymbro.exercise.dto.UpdateExerciseDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.time.Instant;
 import java.util.UUID;
 
 @RestController
@@ -18,6 +22,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ExerciseController {
     private final ExerciseService service;
+    private final ExerciseStatsService statsService;
 
     @PostMapping
     public ResponseEntity<ExerciseDto> create(@Valid @RequestBody CreateExerciseDto dto) {
@@ -41,6 +46,17 @@ public class ExerciseController {
         @RequestParam(defaultValue = "20") int size
     ) {
         return ResponseEntity.ok(service.search(q, muscle, includeArchived, page, size));
+    }
+
+    @GetMapping("/{id}/stats")
+    public ResponseEntity<ExerciseStatsDto> stats(
+        @PathVariable UUID id,
+        @RequestParam(required = false)
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant from,
+        @RequestParam(required = false)
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant to
+    ) {
+        return ResponseEntity.ok(statsService.stats(id, from, to));
     }
 
     @PutMapping("/{id}")
