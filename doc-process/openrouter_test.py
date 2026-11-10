@@ -6,6 +6,11 @@ load_dotenv()
 API_KEY = os.getenv("OPENROUTER_API_KEY", "")
 MODEL = "nvidia/nemotron-3.5-lightning:free"
 
+BIOIMPEDANCE_FIELDS = (
+    "measuredAt", "bodyWeightKg", "heightCm", "bodyFatPercentage",
+    "muscleMassKg", "skeletalMuscleMassKg", "visceralFat", "waterPercentage",
+)
+
 
 VOGAIS = set("aeiouáàâãéèêíïóôõöúüAEIOUÁÀÂÃÉÈÊÍÏÓÔÕÖÚÜ")
 
@@ -36,6 +41,32 @@ def analyze_markdown(md_bytes: bytes, prompt: str) -> dict:
         "tamanho_bytes": len(md_bytes),
         "idioma": idioma,
     }
+
+
+def extract_bioimpedance(md_bytes: bytes) -> dict:
+    prompt = (
+        "Extraia os dados de bioimpedância do documento e retorne SOMENTE JSON. "
+        "Use exatamente estas chaves: "
+        + json.dumps((*BIOIMPEDANCE_FIELDS, "missingFields"))
+        + ". Valores não identificados devem ser null. "
+        "missingFields deve listar as chaves cujo valor é null."
+    )
+    response = requests.post(
+        "https://openrouter.ai/api/v1/chat/completions",
+        headers={"Authorization": f"Bearer {API_KEY}", "Content-Type": "application/json"},
+        json={
+            "model": MODEL,
+            "messages": [
+                {"role": "system", "content": prompt},
+                {"role": "user", "content": md_bytes.decode("utf-8")},
+            ],
+            "response_format": {"type": "json_object"},
+        },
+        timeout=120,
+    )
+    response.raise_for_status()
+    content = response.json()["choices"][0]["message"]["content"]
+    return json.loads(content)
 
 
 def build_prompt(fields=("idioma",)) -> str:
