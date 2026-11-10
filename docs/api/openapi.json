@@ -1,0 +1,2578 @@
+{
+  "openapi" : "3.1.0",
+  "info" : {
+    "title" : "Gymbro API",
+    "version" : "1"
+  },
+  "servers" : [ {
+    "url" : "http://localhost",
+    "description" : "Generated server url"
+  } ],
+  "paths" : {
+    "/api/users/me" : {
+      "get" : {
+        "tags" : [ "user-controller" ],
+        "operationId" : "me",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UserSummaryProjection"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put" : {
+        "tags" : [ "user-controller" ],
+        "operationId" : "update",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UpdateUserDto"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UserDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/playlists/{id}" : {
+      "get" : {
+        "tags" : [ "playlist-controller" ],
+        "operationId" : "detail",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PlaylistDetailDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put" : {
+        "tags" : [ "playlist-controller" ],
+        "operationId" : "update_1",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UpdatePlaylistRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PlaylistDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/playlists/{id}/order" : {
+      "put" : {
+        "tags" : [ "playlist-controller" ],
+        "operationId" : "reorder",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ReorderRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PlaylistDetailDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/exercises/{id}" : {
+      "put" : {
+        "tags" : [ "exercise-controller" ],
+        "operationId" : "update_2",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UpdateExerciseDto"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ExerciseDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete" : {
+        "tags" : [ "exercise-controller" ],
+        "operationId" : "archive",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      }
+    },
+    "/api/sessions" : {
+      "get" : {
+        "tags" : [ "workout-session-controller" ],
+        "operationId" : "list",
+        "parameters" : [ {
+          "name" : "from",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }, {
+          "name" : "to",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PageDtoSessionDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "workout-session-controller" ],
+        "operationId" : "start",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/StartSessionRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SessionDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sessions/{id}/logs" : {
+      "post" : {
+        "tags" : [ "workout-session-controller" ],
+        "operationId" : "addLog",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/AddLogRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/LogDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/playlists" : {
+      "get" : {
+        "tags" : [ "playlist-controller" ],
+        "operationId" : "list_1",
+        "parameters" : [ {
+          "name" : "includeArchived",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean",
+            "default" : false
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/PlaylistDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "playlist-controller" ],
+        "operationId" : "create",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CreatePlaylistRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PlaylistDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/playlists/{id}/exercises" : {
+      "post" : {
+        "tags" : [ "playlist-controller" ],
+        "operationId" : "addExercise",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/AddPlaylistExerciseRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PlaylistExerciseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/playlists/{id}/clone" : {
+      "post" : {
+        "tags" : [ "playlist-controller" ],
+        "operationId" : "clone",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PlaylistDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/playlists/{id}/archive" : {
+      "post" : {
+        "tags" : [ "playlist-controller" ],
+        "operationId" : "archive_1",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PlaylistDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/exercises" : {
+      "get" : {
+        "tags" : [ "exercise-controller" ],
+        "operationId" : "search",
+        "parameters" : [ {
+          "name" : "q",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "muscle",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "includeArchived",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean",
+            "default" : false
+          }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PageDtoExerciseDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "exercise-controller" ],
+        "operationId" : "create_1",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CreateExerciseDto"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ExerciseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/bioimpedance" : {
+      "get" : {
+        "tags" : [ "bioimpedance-controller" ],
+        "operationId" : "list_2",
+        "parameters" : [ {
+          "name" : "from",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }, {
+          "name" : "to",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/BioimpedanceDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "bioimpedance-controller" ],
+        "operationId" : "create_2",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CreateBioimpedanceRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BioimpedanceDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/bioimpedance/imports" : {
+      "post" : {
+        "tags" : [ "bioimpedance-import-controller" ],
+        "operationId" : "upload",
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "file" : {
+                    "type" : "string",
+                    "format" : "binary"
+                  }
+                },
+                "required" : [ "file" ]
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ImportJobDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/bioimpedance/imports/{jobId}/confirm" : {
+      "post" : {
+        "tags" : [ "bioimpedance-import-controller" ],
+        "operationId" : "confirm",
+        "parameters" : [ {
+          "name" : "jobId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CreateBioimpedanceRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BioimpedanceDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/bioimpedance/import" : {
+      "post" : {
+        "tags" : [ "bioimpedance-controller" ],
+        "operationId" : "importBatch",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ImportBioimpedanceRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ImportResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/register" : {
+      "post" : {
+        "tags" : [ "auth-controller" ],
+        "operationId" : "register",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CreateUserDto"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UserDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/refresh" : {
+      "post" : {
+        "tags" : [ "auth-controller" ],
+        "operationId" : "refresh",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/RefreshRequest"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AuthTokensDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/logout" : {
+      "post" : {
+        "tags" : [ "auth-controller" ],
+        "operationId" : "logout",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/RefreshRequest"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      }
+    },
+    "/api/auth/login" : {
+      "post" : {
+        "tags" : [ "auth-controller" ],
+        "operationId" : "login",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/LoginDto"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AuthTokensDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sessions/{id}" : {
+      "get" : {
+        "tags" : [ "workout-session-controller" ],
+        "operationId" : "detail_1",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SessionDetailDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch" : {
+        "tags" : [ "workout-session-controller" ],
+        "operationId" : "finish",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/FinishSessionRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SessionDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/playlists/{id}/exercises/{itemId}" : {
+      "delete" : {
+        "tags" : [ "playlist-controller" ],
+        "operationId" : "removeExercise",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "name" : "itemId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      },
+      "patch" : {
+        "tags" : [ "playlist-controller" ],
+        "operationId" : "updateExercise",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "name" : "itemId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UpdatePlaylistExerciseRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PlaylistExerciseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/bioimpedance/{id}" : {
+      "delete" : {
+        "tags" : [ "bioimpedance-controller" ],
+        "operationId" : "delete",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      },
+      "patch" : {
+        "tags" : [ "bioimpedance-controller" ],
+        "operationId" : "update_3",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UpdateBioimpedanceRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BioimpedanceDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sessions/active" : {
+      "get" : {
+        "tags" : [ "workout-session-controller" ],
+        "operationId" : "active",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SessionDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/playlists/{id}/next-targets" : {
+      "get" : {
+        "tags" : [ "playlist-controller" ],
+        "operationId" : "nextTargets",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/NextTargetDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/exercises/{id}/stats" : {
+      "get" : {
+        "tags" : [ "exercise-controller" ],
+        "operationId" : "stats",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "name" : "from",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }, {
+          "name" : "to",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ExerciseStatsDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/dashboard" : {
+      "get" : {
+        "tags" : [ "dashboard-controller" ],
+        "operationId" : "dashboard",
+        "parameters" : [ {
+          "name" : "weeks",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 12
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DashboardDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/bioimpedance/{id}/history" : {
+      "get" : {
+        "tags" : [ "bioimpedance-controller" ],
+        "operationId" : "history",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/BioimpedanceLogDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/bioimpedance/trend" : {
+      "get" : {
+        "tags" : [ "bioimpedance-controller" ],
+        "operationId" : "trend",
+        "parameters" : [ {
+          "name" : "metric",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "from",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }, {
+          "name" : "to",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }, {
+          "name" : "window",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 7
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TrendDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/bioimpedance/imports/{jobId}" : {
+      "get" : {
+        "tags" : [ "bioimpedance-import-controller" ],
+        "operationId" : "get",
+        "parameters" : [ {
+          "name" : "jobId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ImportJobDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sessions/{id}/logs/{logId}" : {
+      "delete" : {
+        "tags" : [ "workout-session-controller" ],
+        "operationId" : "deleteLog",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "name" : "logId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "UpdateUserDto" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "pattern" : ".*\\S.*"
+          },
+          "email" : {
+            "type" : "string",
+            "format" : "email"
+          },
+          "timezone" : {
+            "type" : "string"
+          }
+        }
+      },
+      "UserDto" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "updatedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "email" : {
+            "type" : "string"
+          },
+          "timezone" : {
+            "type" : "string"
+          }
+        }
+      },
+      "UpdatePlaylistRequest" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "maxLength" : 120,
+            "minLength" : 0
+          },
+          "description" : {
+            "type" : "string",
+            "maxLength" : 500,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "name" ]
+      },
+      "PlaylistDto" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "archivedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
+      "ReorderItem" : {
+        "type" : "object",
+        "properties" : {
+          "playlistExerciseId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "orderIndex" : {
+            "type" : "integer",
+            "format" : "int32",
+            "minimum" : 0
+          }
+        },
+        "required" : [ "orderIndex", "playlistExerciseId" ]
+      },
+      "ReorderRequest" : {
+        "type" : "object",
+        "properties" : {
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ReorderItem"
+            },
+            "minItems" : 1
+          }
+        },
+        "required" : [ "items" ]
+      },
+      "PlaylistDetailDto" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "archivedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "exercises" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/PlaylistExerciseDto"
+            }
+          }
+        }
+      },
+      "PlaylistExerciseDto" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "exerciseId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "exerciseName" : {
+            "type" : "string"
+          },
+          "orderIndex" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "targetSets" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "targetRepsMin" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "targetRepsMax" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "restSeconds" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "note" : {
+            "type" : "string"
+          }
+        }
+      },
+      "UpdateExerciseDto" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "maxLength" : 2147483647,
+            "minLength" : 3
+          },
+          "primaryMuscle" : {
+            "type" : "string",
+            "maxLength" : 2147483647,
+            "minLength" : 0
+          },
+          "secondaryMuscle" : {
+            "type" : "string",
+            "maxLength" : 100,
+            "minLength" : 0
+          },
+          "equipment" : {
+            "type" : "string",
+            "maxLength" : 50,
+            "minLength" : 0
+          },
+          "incrementKg" : {
+            "type" : "number",
+            "format" : "double",
+            "minimum" : 0.0
+          }
+        },
+        "required" : [ "name", "primaryMuscle" ]
+      },
+      "ExerciseDto" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "updatedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "primaryMuscle" : {
+            "type" : "string"
+          },
+          "secondaryMuscle" : {
+            "type" : "string"
+          },
+          "equipment" : {
+            "type" : "string"
+          },
+          "incrementKg" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "isArchived" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "StartSessionRequest" : {
+        "type" : "object",
+        "properties" : {
+          "playlistId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "startedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
+      "SessionDto" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "playlistId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "IN_PROGRESS", "FINISHED", "ABANDONED" ]
+          },
+          "startedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "endedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "totalVolume" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "notes" : {
+            "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "AddLogRequest" : {
+        "type" : "object",
+        "properties" : {
+          "clientLogId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "exerciseId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "weight" : {
+            "type" : "number",
+            "format" : "double",
+            "minimum" : 0.0
+          },
+          "reps" : {
+            "type" : "integer",
+            "format" : "int32",
+            "minimum" : 1
+          },
+          "setNumber" : {
+            "type" : "integer",
+            "format" : "int32",
+            "minimum" : 1
+          },
+          "rpe" : {
+            "type" : "integer",
+            "format" : "int32",
+            "maximum" : 10,
+            "minimum" : 1
+          },
+          "notes" : {
+            "type" : "string",
+            "maxLength" : 500,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "clientLogId", "exerciseId", "reps", "weight" ]
+      },
+      "LogDto" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "clientLogId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "exerciseId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "exerciseName" : {
+            "type" : "string"
+          },
+          "setNumber" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "weight" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "reps" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "isPr" : {
+            "type" : "boolean"
+          },
+          "rpe" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "notes" : {
+            "type" : "string"
+          }
+        }
+      },
+      "CreatePlaylistRequest" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "maxLength" : 120,
+            "minLength" : 0
+          },
+          "description" : {
+            "type" : "string",
+            "maxLength" : 500,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "name" ]
+      },
+      "AddPlaylistExerciseRequest" : {
+        "type" : "object",
+        "properties" : {
+          "exerciseId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "targetSets" : {
+            "type" : "integer",
+            "format" : "int32",
+            "maximum" : 20,
+            "minimum" : 1
+          },
+          "targetRepsMin" : {
+            "type" : "integer",
+            "format" : "int32",
+            "minimum" : 1
+          },
+          "targetRepsMax" : {
+            "type" : "integer",
+            "format" : "int32",
+            "minimum" : 1
+          },
+          "restSeconds" : {
+            "type" : "integer",
+            "format" : "int32",
+            "maximum" : 600,
+            "minimum" : 0
+          },
+          "note" : {
+            "type" : "string",
+            "maxLength" : 500,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "exerciseId", "targetSets" ]
+      },
+      "CreateExerciseDto" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "maxLength" : 225,
+            "minLength" : 3
+          },
+          "primaryMuscle" : {
+            "type" : "string",
+            "minLength" : 1
+          },
+          "secondaryMuscle" : {
+            "type" : "string",
+            "maxLength" : 100,
+            "minLength" : 0
+          },
+          "equipment" : {
+            "type" : "string",
+            "maxLength" : 50,
+            "minLength" : 0
+          },
+          "incrementKg" : {
+            "type" : "number",
+            "format" : "double",
+            "minimum" : 0.0
+          }
+        },
+        "required" : [ "name", "primaryMuscle" ]
+      },
+      "CreateBioimpedanceRequest" : {
+        "type" : "object",
+        "properties" : {
+          "measuredAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "bodyFatPercentage" : {
+            "type" : "number",
+            "format" : "double",
+            "maximum" : 70.0,
+            "minimum" : 0.0
+          },
+          "muscleMassKg" : {
+            "type" : "number",
+            "format" : "double",
+            "exclusiveMinimum" : 0.0
+          },
+          "visceralFat" : {
+            "type" : "number",
+            "format" : "double",
+            "maximum" : 60.0,
+            "minimum" : 0.0
+          },
+          "waterPercentage" : {
+            "type" : "number",
+            "format" : "double",
+            "maximum" : 100.0,
+            "minimum" : 0.0
+          },
+          "bodyWeightKg" : {
+            "type" : "number",
+            "format" : "double",
+            "maximum" : 400.0,
+            "minimum" : 20.0
+          },
+          "heightCm" : {
+            "type" : "number",
+            "format" : "double",
+            "maximum" : 250.0,
+            "minimum" : 100.0
+          },
+          "skeletalMuscleMassKg" : {
+            "type" : "number",
+            "format" : "double",
+            "exclusiveMinimum" : 0.0
+          },
+          "source" : {
+            "type" : "string",
+            "maxLength" : 30,
+            "minLength" : 0
+          },
+          "sourceFileHash" : {
+            "type" : "string",
+            "maxLength" : 64,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "bodyFatPercentage", "measuredAt", "muscleMassKg" ]
+      },
+      "BioimpedanceDto" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "measuredAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "bodyWeightKg" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "heightCm" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "bodyFatPercentage" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "muscleMassKg" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "skeletalMuscleMassKg" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "visceralFat" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "waterPercentage" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "source" : {
+            "type" : "string"
+          },
+          "sourceFileHash" : {
+            "type" : "string"
+          }
+        }
+      },
+      "ImportJobDto" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "PENDING", "PROCESSING", "DONE", "FAILED" ]
+          },
+          "sourceFileName" : {
+            "type" : "string"
+          },
+          "sourceFileHash" : {
+            "type" : "string"
+          },
+          "result" : {
+            "$ref" : "#/components/schemas/JsonNode"
+          },
+          "error" : {
+            "type" : "string"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "finishedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
+      "JsonNode" : {
+        "type" : "object",
+        "properties" : {
+          "array" : {
+            "type" : "boolean"
+          },
+          "empty" : {
+            "type" : "boolean"
+          },
+          "null" : {
+            "type" : "boolean"
+          },
+          "float" : {
+            "type" : "boolean"
+          },
+          "container" : {
+            "type" : "boolean"
+          },
+          "nodeType" : {
+            "type" : "string",
+            "enum" : [ "ARRAY", "BINARY", "BOOLEAN", "MISSING", "NULL", "NUMBER", "OBJECT", "POJO", "STRING" ]
+          },
+          "string" : {
+            "type" : "boolean"
+          },
+          "integralNumber" : {
+            "type" : "boolean"
+          },
+          "missingNode" : {
+            "type" : "boolean"
+          },
+          "valueNode" : {
+            "type" : "boolean"
+          },
+          "object" : {
+            "type" : "boolean"
+          },
+          "pojo" : {
+            "type" : "boolean"
+          },
+          "number" : {
+            "type" : "boolean"
+          },
+          "floatingPointNumber" : {
+            "type" : "boolean"
+          },
+          "short" : {
+            "type" : "boolean"
+          },
+          "int" : {
+            "type" : "boolean"
+          },
+          "long" : {
+            "type" : "boolean"
+          },
+          "double" : {
+            "type" : "boolean"
+          },
+          "bigDecimal" : {
+            "type" : "boolean"
+          },
+          "bigInteger" : {
+            "type" : "boolean"
+          },
+          "textual" : {
+            "type" : "boolean",
+            "deprecated" : true
+          },
+          "boolean" : {
+            "type" : "boolean"
+          },
+          "binary" : {
+            "type" : "boolean"
+          },
+          "embeddedValue" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "ImportBioimpedanceRequest" : {
+        "type" : "object",
+        "properties" : {
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/CreateBioimpedanceRequest"
+            },
+            "minItems" : 1
+          }
+        },
+        "required" : [ "items" ]
+      },
+      "ImportResponse" : {
+        "type" : "object",
+        "properties" : {
+          "results" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ImportResultItem"
+            }
+          },
+          "created" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "duplicates" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "errors" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "ImportResultItem" : {
+        "type" : "object",
+        "properties" : {
+          "index" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "CREATED", "DUPLICATE", "ERROR" ]
+          },
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "message" : {
+            "type" : "string"
+          }
+        }
+      },
+      "CreateUserDto" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "minLength" : 1
+          },
+          "email" : {
+            "type" : "string",
+            "format" : "email",
+            "minLength" : 1
+          },
+          "password" : {
+            "type" : "string",
+            "maxLength" : 2147483647,
+            "minLength" : 8
+          }
+        },
+        "required" : [ "email", "name", "password" ]
+      },
+      "RefreshRequest" : {
+        "type" : "object",
+        "properties" : {
+          "refreshToken" : {
+            "type" : "string"
+          }
+        }
+      },
+      "AuthTokensDto" : {
+        "type" : "object",
+        "properties" : {
+          "accessToken" : {
+            "type" : "string"
+          },
+          "tokenType" : {
+            "type" : "string"
+          },
+          "expiresIn" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "refreshToken" : {
+            "type" : "string"
+          }
+        }
+      },
+      "LoginDto" : {
+        "type" : "object",
+        "properties" : {
+          "email" : {
+            "type" : "string",
+            "format" : "email",
+            "minLength" : 1
+          },
+          "password" : {
+            "type" : "string",
+            "minLength" : 1
+          }
+        },
+        "required" : [ "email", "password" ]
+      },
+      "FinishSessionRequest" : {
+        "type" : "object",
+        "properties" : {
+          "status" : {
+            "type" : "string",
+            "enum" : [ "IN_PROGRESS", "FINISHED", "ABANDONED" ]
+          },
+          "notes" : {
+            "type" : "string",
+            "maxLength" : 1000,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "status" ]
+      },
+      "UpdatePlaylistExerciseRequest" : {
+        "type" : "object",
+        "properties" : {
+          "targetSets" : {
+            "type" : "integer",
+            "format" : "int32",
+            "maximum" : 20,
+            "minimum" : 1
+          },
+          "targetRepsMin" : {
+            "type" : "integer",
+            "format" : "int32",
+            "minimum" : 1
+          },
+          "targetRepsMax" : {
+            "type" : "integer",
+            "format" : "int32",
+            "minimum" : 1
+          },
+          "restSeconds" : {
+            "type" : "integer",
+            "format" : "int32",
+            "maximum" : 600,
+            "minimum" : 0
+          },
+          "note" : {
+            "type" : "string",
+            "maxLength" : 500,
+            "minLength" : 0
+          }
+        }
+      },
+      "UpdateBioimpedanceRequest" : {
+        "type" : "object",
+        "properties" : {
+          "measuredAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "bodyFatPercentage" : {
+            "type" : "number",
+            "format" : "double",
+            "maximum" : 70.0,
+            "minimum" : 0.0
+          },
+          "muscleMassKg" : {
+            "type" : "number",
+            "format" : "double",
+            "exclusiveMinimum" : 0.0
+          },
+          "visceralFat" : {
+            "type" : "number",
+            "format" : "double",
+            "maximum" : 60.0,
+            "minimum" : 0.0
+          },
+          "waterPercentage" : {
+            "type" : "number",
+            "format" : "double",
+            "maximum" : 100.0,
+            "minimum" : 0.0
+          },
+          "bodyWeightKg" : {
+            "type" : "number",
+            "format" : "double",
+            "maximum" : 400.0,
+            "minimum" : 20.0
+          },
+          "heightCm" : {
+            "type" : "number",
+            "format" : "double",
+            "maximum" : 250.0,
+            "minimum" : 100.0
+          },
+          "skeletalMuscleMassKg" : {
+            "type" : "number",
+            "format" : "double",
+            "exclusiveMinimum" : 0.0
+          },
+          "source" : {
+            "type" : "string",
+            "maxLength" : 30,
+            "minLength" : 0
+          },
+          "sourceFileHash" : {
+            "type" : "string",
+            "maxLength" : 64,
+            "minLength" : 0
+          }
+        }
+      },
+      "UserSummaryProjection" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "email" : {
+            "type" : "string"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "timezone" : {
+            "type" : "string"
+          }
+        }
+      },
+      "PageDtoSessionDto" : {
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/SessionDto"
+            }
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "ExerciseLogsDto" : {
+        "type" : "object",
+        "properties" : {
+          "exerciseId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "exerciseName" : {
+            "type" : "string"
+          },
+          "sets" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/LogDto"
+            }
+          }
+        }
+      },
+      "SessionDetailDto" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "playlistId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "IN_PROGRESS", "FINISHED", "ABANDONED" ]
+          },
+          "startedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "endedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "totalVolume" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "notes" : {
+            "type" : "string"
+          },
+          "exercises" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ExerciseLogsDto"
+            }
+          }
+        }
+      },
+      "NextTargetDto" : {
+        "type" : "object",
+        "properties" : {
+          "exerciseId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "exerciseName" : {
+            "type" : "string"
+          },
+          "targetSets" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "targetRepsMin" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "targetRepsMax" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "lastWeight" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "lastReps" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "suggestedWeight" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "suggestedReps" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "PageDtoExerciseDto" : {
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ExerciseDto"
+            }
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "ExerciseStatsDto" : {
+        "type" : "object",
+        "properties" : {
+          "exerciseId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "sessionCount" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalVolume" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "bestWeight" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "bestE1rm" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "lastPerformedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "monthlyBuckets" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/MonthlyBucketDto"
+            }
+          }
+        }
+      },
+      "MonthlyBucketDto" : {
+        "type" : "object",
+        "properties" : {
+          "periodStart" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "volume" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "bestE1rm" : {
+            "type" : "number",
+            "format" : "double"
+          }
+        }
+      },
+      "DashboardDto" : {
+        "type" : "object",
+        "properties" : {
+          "weeks" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/WeekSummaryDto"
+            }
+          },
+          "currentStreakWeeks" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "recentPrs" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/RecentPrDto"
+            }
+          },
+          "weightDeltaKg" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "nextPlaylistId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "nextPlaylistName" : {
+            "type" : "string"
+          },
+          "timezone" : {
+            "type" : "string"
+          }
+        }
+      },
+      "RecentPrDto" : {
+        "type" : "object",
+        "properties" : {
+          "logId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "exerciseId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "exerciseName" : {
+            "type" : "string"
+          },
+          "performedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "weight" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "reps" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "e1rm" : {
+            "type" : "number",
+            "format" : "double"
+          }
+        }
+      },
+      "WeekSummaryDto" : {
+        "type" : "object",
+        "properties" : {
+          "weekStart" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "sessions" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "volume" : {
+            "type" : "number",
+            "format" : "double"
+          }
+        }
+      },
+      "BioimpedanceLogDto" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "actionType" : {
+            "type" : "string",
+            "enum" : [ "INSERT", "UPDATE", "DELETE" ]
+          },
+          "oldData" : {
+            "$ref" : "#/components/schemas/JsonNode"
+          },
+          "newData" : {
+            "$ref" : "#/components/schemas/JsonNode"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
+      "TrendDto" : {
+        "type" : "object",
+        "properties" : {
+          "metric" : {
+            "type" : "string"
+          },
+          "points" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/TrendPointDto"
+            }
+          },
+          "deltaAbsolute" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "deltaPercentage" : {
+            "type" : "number",
+            "format" : "double"
+          }
+        }
+      },
+      "TrendPointDto" : {
+        "type" : "object",
+        "properties" : {
+          "measuredAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "value" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "movingAverage" : {
+            "type" : "number",
+            "format" : "double"
+          }
+        }
+      },
+      "ErrorResponse" : {
+        "properties" : {
+          "timestamp" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "status" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "code" : {
+            "type" : "string"
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "path" : {
+            "type" : "string"
+          },
+          "errors" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/FieldErrorDto"
+            }
+          }
+        }
+      },
+      "FieldErrorDto" : {
+        "properties" : {
+          "field" : {
+            "type" : "string"
+          },
+          "message" : {
+            "type" : "string"
+          }
+        }
+      }
+    },
+    "securitySchemes" : {
+      "bearerAuth" : {
+        "type" : "http",
+        "scheme" : "bearer",
+        "bearerFormat" : "JWT"
+      }
+    }
+  }
+}

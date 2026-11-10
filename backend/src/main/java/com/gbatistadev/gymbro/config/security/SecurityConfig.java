@@ -3,6 +3,7 @@ package com.gbatistadev.gymbro.config.security;
 import com.gbatistadev.gymbro.errors.ErrorResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import tools.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -26,7 +27,8 @@ public class SecurityConfig {
     SecurityFilterChain securityFilterChain(
         HttpSecurity http,
         JwtAuthenticationFilter jwtAuthenticationFilter,
-        ObjectMapper objectMapper
+        ObjectMapper objectMapper,
+        @Value("${app.openapi.public:true}") boolean openApiPublic
     ) {
         AuthenticationEntryPoint entryPoint = (request, response, authException) -> {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -40,9 +42,13 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable) // stateless Bearer auth: no ambient credential, so no CSRF surface
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .exceptionHandling(exceptions -> exceptions.authenticationEntryPoint(entryPoint))
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**").permitAll()
-                .anyRequest().authenticated())
+            .authorizeHttpRequests(auth -> {
+                auth.requestMatchers("/api/auth/**").permitAll();
+                if (openApiPublic) {
+                    auth.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll();
+                }
+                auth.anyRequest().authenticated();
+            })
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
             .build();
     }

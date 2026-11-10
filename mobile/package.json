@@ -44,7 +44,8 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "api:types": "npx --yes openapi-typescript@7.13.0 ../docs/api/openapi.json -o src/lib/api/schema.d.ts"
   },
   "private": true
 }
