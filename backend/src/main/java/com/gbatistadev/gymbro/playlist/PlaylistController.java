@@ -1,5 +1,7 @@
 package com.gbatistadev.gymbro.playlist;
 
+import com.gbatistadev.gymbro.analytics.ProgressionService;
+import com.gbatistadev.gymbro.analytics.dto.NextTargetDto;
 import com.gbatistadev.gymbro.playlist.dto.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +18,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PlaylistController {
     private final PlaylistService service;
+    private final ProgressionService progressionService;
 
     @GetMapping
     public ResponseEntity<List<PlaylistDto>> list(
@@ -100,6 +103,11 @@ public class PlaylistController {
     ) {
         service.removeExercise(id, itemId);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}/next-targets")
+    public ResponseEntity<List<NextTargetDto>> nextTargets(@PathVariable UUID id) {
+        return ResponseEntity.ok(progressionService.nextTargets(id));
     }
 
     @PutMapping("/{id}/order")
