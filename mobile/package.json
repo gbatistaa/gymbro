@@ -64,6 +64,11 @@
     "preset": "jest-expo",
     "moduleNameMapper": {
       "\\.(css|png|jpg|jpeg|svg)$": "<rootDir>/src/lib/__mocks__/styleMock.js"
-    }
+    },
+    "transformIgnorePatterns": [
+      "/node_modules/(?!(.pnpm|react-native|@react-native|@react-native-community|expo|@expo|@expo-google-fonts|react-navigation|@react-navigation|@sentry/react-native|native-base|standard-navigation|jotai|expo-secure-store))",
+      "/node_modules/react-native-reanimated/plugin/",
+      "/node_modules/@react-native/babel-preset/"
+    ]
   }
 }
