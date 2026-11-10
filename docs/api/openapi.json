@@ -51,6 +51,15 @@
             }
           }
         }
+      },
+      "delete" : {
+        "tags" : [ "user-controller" ],
+        "operationId" : "delete",
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          }
+        }
       }
     },
     "/api/playlists/{id}" : {
@@ -957,7 +966,7 @@
     "/api/bioimpedance/{id}" : {
       "delete" : {
         "tags" : [ "bioimpedance-controller" ],
-        "operationId" : "delete",
+        "operationId" : "delete_1",
         "parameters" : [ {
           "name" : "id",
           "in" : "path",
@@ -1049,6 +1058,27 @@
                   "type" : "array",
                   "items" : {
                     "$ref" : "#/components/schemas/NextTargetDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/health" : {
+      "get" : {
+        "tags" : [ "health-controller" ],
+        "operationId" : "health",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "object",
+                  "additionalProperties" : {
+                    "type" : "string"
                   }
                 }
               }

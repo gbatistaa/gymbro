@@ -60,6 +60,7 @@ class AuthControllerTest {
 
     private MockMvc mockMvc;
     private JwtService jwtService;
+    private LoginRateLimiter loginRateLimiter;
     private final PasswordEncoder encoder = new BCryptPasswordEncoder();
 
     @BeforeEach
@@ -71,7 +72,8 @@ class AuthControllerTest {
         AuthService authService = new AuthService(
             userService, userRepository, refreshTokenRepository,
             encoder, jwtService, properties);
-        mockMvc = MockMvcBuilders.standaloneSetup(new AuthController(authService))
+        loginRateLimiter = new LoginRateLimiter(5, java.time.Duration.ofMinutes(15));
+        mockMvc = MockMvcBuilders.standaloneSetup(new AuthController(authService, loginRateLimiter))
             .setControllerAdvice(new GlobalExceptionHandler())
             .build();
     }
@@ -258,6 +260,58 @@ class AuthControllerTest {
             .andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.errors").isArray())
             .andExpect(jsonPath("$.errors").isEmpty());
+    }
+
+    @Test
+    @DisplayName("the sixth failed login from the same origin returns 429 with Retry-After")
+    void shouldRateLimitRepeatedFailures() throws Exception {
+        User user = existingUser("password123");
+        when(userRepository.findByEmail("joao@example.com")).thenReturn(Optional.of(user));
+        String wrong = """
+            {"email":"joao@example.com","password":"wrong-password"}
+            """;
+
+        for (int attempt = 1; attempt <= 5; attempt++) {
+            mockMvc.perform(post("/api/auth/login")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(wrong))
+                .andExpect(status().isUnauthorized());
+        }
+
+        mockMvc.perform(post("/api/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(wrong))
+            .andExpect(status().isTooManyRequests())
+            .andExpect(header().exists("Retry-After"))
+            .andExpect(jsonPath("$.code").value("TOO_MANY_ATTEMPTS"));
+    }
+
+    @Test
+    @DisplayName("a successful login clears the failure counter")
+    void shouldResetCounterOnSuccess() throws Exception {
+        User user = existingUser("password123");
+        when(userRepository.findByEmail("joao@example.com")).thenReturn(Optional.of(user));
+        String wrong = """
+            {"email":"joao@example.com","password":"wrong-password"}
+            """;
+
+        for (int attempt = 1; attempt <= 4; attempt++) {
+            mockMvc.perform(post("/api/auth/login")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(wrong))
+                .andExpect(status().isUnauthorized());
+        }
+
+        mockMvc.perform(post("/api/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(LOGIN_BODY))
+            .andExpect(status().isOk());
+
+        // com o contador zerado, mais uma falha ainda é 401 e não 429
+        mockMvc.perform(post("/api/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(wrong))
+            .andExpect(status().isUnauthorized());
     }
 
     private User existingUser(String rawPassword) {

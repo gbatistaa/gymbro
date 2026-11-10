@@ -3,8 +3,10 @@ package com.gbatistadev.gymbro.auth;
 import com.gbatistadev.gymbro.auth.dto.AuthTokensDto;
 import com.gbatistadev.gymbro.auth.dto.LoginDto;
 import com.gbatistadev.gymbro.auth.dto.RefreshRequest;
+import com.gbatistadev.gymbro.errors.exceptions.UnauthorizedException;
 import com.gbatistadev.gymbro.user.dto.CreateUserDto;
 import com.gbatistadev.gymbro.user.dto.UserDto;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,6 +24,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AuthController {
     private final AuthService authService;
+    private final LoginRateLimiter loginRateLimiter;
 
     @PostMapping("/register")
     public ResponseEntity<UserDto> register(@Valid @RequestBody CreateUserDto dto) {
@@ -29,8 +32,21 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthTokensDto> login(@Valid @RequestBody LoginDto dto) {
-        return authService.login(dto);
+    public ResponseEntity<AuthTokensDto> login(
+        @Valid @RequestBody LoginDto dto,
+        HttpServletRequest request
+    ) {
+        // verificar o limite antes de tocar em BCrypt evita que força bruta consuma CPU do servidor
+        String rateLimitKey = request.getRemoteAddr() + "|" + dto.email();
+        loginRateLimiter.checkAllowed(rateLimitKey);
+        try {
+            ResponseEntity<AuthTokensDto> response = authService.login(dto);
+            loginRateLimiter.reset(rateLimitKey);
+            return response;
+        } catch (UnauthorizedException e) {
+            loginRateLimiter.recordFailure(rateLimitKey);
+            throw e;
+        }
     }
 
     @PostMapping("/refresh")

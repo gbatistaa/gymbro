@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import tools.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.config.Customizer;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -40,10 +41,11 @@ public class SecurityConfig {
 
         return http
             .csrf(AbstractHttpConfigurer::disable) // stateless Bearer auth: no ambient credential, so no CSRF surface
+            .cors(Customizer.withDefaults())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .exceptionHandling(exceptions -> exceptions.authenticationEntryPoint(entryPoint))
             .authorizeHttpRequests(auth -> {
-                auth.requestMatchers("/api/auth/**").permitAll();
+                auth.requestMatchers("/api/auth/**", "/api/health").permitAll();
                 if (openApiPublic) {
                     auth.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll();
                 }

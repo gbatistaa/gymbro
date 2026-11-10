@@ -1,6 +1,7 @@
 package com.gbatistadev.gymbro.user;
 
 import com.gbatistadev.gymbro.TestcontainersConfiguration;
+import com.jayway.jsonpath.JsonPath;
 import com.gbatistadev.gymbro.config.jwt.JwtService;
 import com.gbatistadev.gymbro.user.dto.CreateUserDto;
 import com.gbatistadev.gymbro.user.dto.UserDto;
@@ -10,13 +11,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.UUID;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -35,6 +41,12 @@ class UserControllerTest {
 
     @Autowired
     private JwtService jwtService;
+
+    @Autowired
+    private RefreshTokenRepository refreshTokenRepository;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     @Test
     @DisplayName("GET /api/users/me without an Authorization header returns standard 401")
@@ -157,6 +169,99 @@ class UserControllerTest {
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
             .andExpect(jsonPath("$.errors[*].field").value("timezone"));
+    }
+
+    @Test
+    @DisplayName("DELETE /api/users/me removes the account and cascades to dependent rows")
+    void shouldDeleteAccount() throws Exception {
+        String email = "user-" + UUID.randomUUID() + "@example.com";
+        UserDto user = userService.create(new CreateUserDto("Test User", email, "password123"));
+
+        // o login cria uma linha em refresh_tokens: é a prova de que a cascata do banco rodou
+        mockMvc.perform(post("/api/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"email\":\"" + email + "\",\"password\":\"password123\"}"))
+            .andExpect(status().isOk());
+        assertEquals(1, refreshTokenRepository.findAllByUserId(user.getId()).size());
+
+        mockMvc.perform(delete("/api/users/me").header(HttpHeaders.AUTHORIZATION, bearer(user)))
+            .andExpect(status().isNoContent());
+
+        assertTrue(refreshTokenRepository.findAllByUserId(user.getId()).isEmpty(),
+            "a conta apagada não pode deixar refresh token órfão");
+    }
+
+    @Test
+    @DisplayName("after deletion the same credentials are rejected with 401")
+    void shouldRejectDeletedAccount() throws Exception {
+        String email = "user-" + UUID.randomUUID() + "@example.com";
+        UserDto user = userService.create(new CreateUserDto("Test User", email, "password123"));
+        String auth = bearer(user);
+
+        mockMvc.perform(delete("/api/users/me").header(HttpHeaders.AUTHORIZATION, auth))
+            .andExpect(status().isNoContent());
+
+        // o JWT continua parseável (stateless), mas a identidade não existe mais
+        mockMvc.perform(delete("/api/users/me").header(HttpHeaders.AUTHORIZATION, auth))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.code").value("UNAUTHENTICATED"));
+    }
+
+    @Test
+    @DisplayName("deleting the account cascades to playlists, sessions, logs and custom exercises")
+    void shouldCascadeToWorkoutData() throws Exception {
+        String email = "cascade-" + UUID.randomUUID() + "@example.com";
+        UserDto user = userService.create(new CreateUserDto("Cascade User", email, "password123"));
+        String auth = bearer(user);
+        UUID userId = user.getId();
+
+        String exerciseId = JsonPath.read(mockMvc.perform(post("/api/exercises")
+                .header(HttpHeaders.AUTHORIZATION, auth)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\":\"Cascade Press " + UUID.randomUUID() + "\",\"primaryMuscle\":\"CHEST\"}"))
+            .andExpect(status().isCreated())
+            .andReturn().getResponse().getContentAsString(), "$.id");
+
+        String playlistId = JsonPath.read(mockMvc.perform(post("/api/playlists")
+                .header(HttpHeaders.AUTHORIZATION, auth)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\":\"Cascade Playlist\"}"))
+            .andExpect(status().isCreated())
+            .andReturn().getResponse().getContentAsString(), "$.id");
+
+        mockMvc.perform(post("/api/playlists/{id}/exercises", playlistId)
+                .header(HttpHeaders.AUTHORIZATION, auth)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"exerciseId\":\"" + exerciseId + "\",\"targetSets\":3}"))
+            .andExpect(status().isCreated());
+
+        String sessionId = JsonPath.read(mockMvc.perform(post("/api/sessions")
+                .header(HttpHeaders.AUTHORIZATION, auth)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"playlistId\":\"" + playlistId + "\"}"))
+            .andExpect(status().isCreated())
+            .andReturn().getResponse().getContentAsString(), "$.id");
+
+        mockMvc.perform(post("/api/sessions/{id}/logs", sessionId)
+                .header(HttpHeaders.AUTHORIZATION, auth)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"clientLogId":"%s","exerciseId":"%s","weight":100.0,"reps":8,"setNumber":1}
+                    """.formatted(UUID.randomUUID(), exerciseId)))
+            .andExpect(status().isCreated());
+
+        mockMvc.perform(delete("/api/users/me").header(HttpHeaders.AUTHORIZATION, auth))
+            .andExpect(status().isNoContent());
+
+        assertEquals(0, count("SELECT count(*) FROM playlists WHERE user_id = ?", userId));
+        assertEquals(0, count("SELECT count(*) FROM playlist_exercise WHERE playlist_id = ?", UUID.fromString(playlistId)));
+        assertEquals(0, count("SELECT count(*) FROM workout_session WHERE user_id = ?", userId));
+        assertEquals(0, count("SELECT count(*) FROM workout_log WHERE workout_session_id = ?", UUID.fromString(sessionId)));
+        assertEquals(0, count("SELECT count(*) FROM exercises WHERE user_id = ?", userId));
+    }
+
+    private int count(String sql, UUID argument) {
+        return jdbcTemplate.queryForObject(sql, Integer.class, argument);
     }
 
     @Test

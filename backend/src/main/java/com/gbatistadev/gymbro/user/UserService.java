@@ -3,6 +3,7 @@ package com.gbatistadev.gymbro.user;
 import com.gbatistadev.gymbro.common.aspect.Logging;
 import com.gbatistadev.gymbro.errors.exceptions.NotFoundException;
 import com.gbatistadev.gymbro.errors.exceptions.ResourceAlreadyExistsException;
+import com.gbatistadev.gymbro.errors.exceptions.UnauthorizedException;
 import com.gbatistadev.gymbro.user.dto.CreateUserDto;
 import com.gbatistadev.gymbro.user.dto.UpdateUserDto;
 import com.gbatistadev.gymbro.user.dto.UserDto;
@@ -42,5 +43,21 @@ public class UserService {
         mapper.updateEntity(dto, user);
 
         return mapper.toDto(user);
+    }
+
+    /**
+     * Apaga a conta e, por cascata no banco, tudo que pende dela (ver V11). Sem soft delete: o
+     * histórico de treino é dado pessoal e some junto — decisão em docs/adr/0002.
+     *
+     * <p>Usuário já apagado responde 401, e não 404: o token apresentado aponta para uma identidade
+     * que não existe mais, então a sessão é inválida.
+     */
+    @Transactional
+    @Logging(action = "DELETE")
+    public void deleteAccount(UUID id) {
+        User user = repository.findById(id)
+            .orElseThrow(() -> new UnauthorizedException("Session is no longer valid"));
+
+        repository.delete(user);
     }
 }

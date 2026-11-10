@@ -4,6 +4,7 @@ import com.gbatistadev.gymbro.errors.exceptions.BadRequestException;
 import com.gbatistadev.gymbro.errors.exceptions.ConflictException;
 import com.gbatistadev.gymbro.errors.exceptions.ForbiddenException;
 import com.gbatistadev.gymbro.errors.exceptions.NotFoundException;
+import com.gbatistadev.gymbro.errors.exceptions.RateLimitedException;
 import com.gbatistadev.gymbro.errors.exceptions.ResourceAlreadyExistsException;
 import com.gbatistadev.gymbro.errors.exceptions.UnauthorizedException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -202,6 +204,22 @@ public class GlobalExceptionHandler {
 		HttpServletRequest request
 	) {
 		return respond(HttpStatus.FORBIDDEN, "FORBIDDEN", ex.getMessage(), request);
+	}
+
+	@ExceptionHandler(RateLimitedException.class)
+	public ResponseEntity<ErrorResponse> handleRateLimitedException(
+		RateLimitedException ex,
+		HttpServletRequest request
+	) {
+		return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+			.header(HttpHeaders.RETRY_AFTER, String.valueOf(ex.getRetryAfterSeconds()))
+			.body(new ErrorResponse(
+				LocalDateTime.now(),
+				HttpStatus.TOO_MANY_REQUESTS.value(),
+				ex.getCode(),
+				ex.getMessage(),
+				request.getRequestURI(),
+				List.of()));
 	}
 
 	@ExceptionHandler(Exception.class)
