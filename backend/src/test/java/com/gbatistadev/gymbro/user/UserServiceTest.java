@@ -38,6 +38,17 @@ class UserServiceTest {
     }
 
     @Test
+    @DisplayName("create assigns the default time zone")
+    void shouldDefaultTimeZoneOnCreate() {
+        CreateUserDto dto = new CreateUserDto("João Silva", "joao@example.com", "password123");
+        when(repository.existsByEmail("joao@example.com")).thenReturn(false);
+
+        UserDto result = service.create(dto);
+
+        assertEquals("America/Sao_Paulo", result.getTimezone());
+    }
+
+    @Test
     @DisplayName("create saves user with BCrypt hash")
     void shouldCreateUser_whenEmailIsNew() {
         CreateUserDto dto = new CreateUserDto("João Silva", "joao@example.com", "password123");
@@ -74,7 +85,7 @@ class UserServiceTest {
         existing.setPasswordHash("$2a$hash");
         when(repository.findById(id)).thenReturn(Optional.of(existing));
 
-        UserDto result = service.update(new UpdateUserDto(null, "novo@example.com"), id);
+        UserDto result = service.update(new UpdateUserDto(null, "novo@example.com", null), id);
 
         assertEquals("João Silva", result.getName());
         assertEquals("novo@example.com", result.getEmail());
@@ -87,6 +98,6 @@ class UserServiceTest {
         when(repository.findById(id)).thenReturn(Optional.empty());
 
         assertThrows(NotFoundException.class,
-            () -> service.update(new UpdateUserDto("Novo Nome", null), id));
+            () -> service.update(new UpdateUserDto("Novo Nome", null, null), id));
     }
 }
