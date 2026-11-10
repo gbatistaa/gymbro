@@ -78,3 +78,15 @@ def test_extract_returns_502_when_extraction_fails(monkeypatch):
         files={"file": ("inbody.pdf", b"%PDF-1.4", "application/pdf")},
     )
     assert response.status_code == 502
+
+
+def test_normalize_measured_at_for_java_instant():
+    date_only = app.normalize_extraction({"measuredAt": "2026-10-01"})
+    naive = app.normalize_extraction({"measuredAt": "2026-10-01T08:00:00"})
+    with_offset = app.normalize_extraction({"measuredAt": "2026-10-01T08:00:00Z"})
+    missing = app.normalize_extraction({})
+
+    assert date_only["measuredAt"] == "2026-10-01T00:00:00Z"
+    assert naive["measuredAt"] == "2026-10-01T08:00:00Z"
+    assert with_offset["measuredAt"] == "2026-10-01T08:00:00Z"
+    assert missing["measuredAt"] is None

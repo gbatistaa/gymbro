@@ -1,5 +1,6 @@
 import hmac
 import os
+import re
 
 import requests
 from docling.exceptions import ConversionError
@@ -19,10 +20,22 @@ def normalize_extraction(result: dict) -> dict:
     for field, value in normalized.items():
         if value is not None and not isinstance(value, (int, float, str)):
             raise ValueError(f"invalid value for {field}")
+    normalized["measuredAt"] = normalize_measured_at(normalized["measuredAt"])
     normalized["missingFields"] = [
         field for field in BIOIMPEDANCE_FIELDS if normalized[field] is None
     ]
     return normalized
+
+
+def normalize_measured_at(value):
+    """Java's Instant requires an ISO-8601 UTC timestamp, not a date-only string."""
+    if not isinstance(value, str):
+        return value
+    if re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
+        return value + "T00:00:00Z"
+    if re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?", value):
+        return value + "Z"
+    return value
 
 @app.post("/pdf-to-markdown")
 async def pdf_to_markdown(file: UploadFile = File(...)):
