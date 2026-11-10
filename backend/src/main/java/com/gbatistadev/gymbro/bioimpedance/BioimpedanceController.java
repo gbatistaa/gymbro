@@ -1,5 +1,7 @@
 package com.gbatistadev.gymbro.bioimpedance;
 
+import com.gbatistadev.gymbro.analytics.BioimpedanceTrendService;
+import com.gbatistadev.gymbro.analytics.dto.TrendDto;
 import com.gbatistadev.gymbro.bioimpedance.dto.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +20,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class BioimpedanceController {
     private final BioimpedanceService service;
+    private final BioimpedanceTrendService trendService;
 
     @PostMapping
     public ResponseEntity<BioimpedanceDto> create(
@@ -56,6 +59,18 @@ public class BioimpedanceController {
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/trend")
+    public ResponseEntity<TrendDto> trend(
+        @RequestParam String metric,
+        @RequestParam(required = false)
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant from,
+        @RequestParam(required = false)
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant to,
+        @RequestParam(defaultValue = "7") int window
+    ) {
+        return ResponseEntity.ok(trendService.trend(metric, from, to, window));
     }
 
     @PostMapping("/import")
