@@ -20,4 +20,8 @@ public class User extends BaseEntity {
 
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
+
+    // default do domínio: o app nasce em PT-BR e o usuário troca no perfil se precisar
+    @Column(nullable = false)
+    private String timezone = "America/Sao_Paulo";
 }

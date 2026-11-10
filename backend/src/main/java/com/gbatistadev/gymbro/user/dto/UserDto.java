@@ -24,4 +24,5 @@ public class UserDto implements Serializable {
     private Instant updatedAt;
     private String name;
     private String email;
+    private String timezone;
 }

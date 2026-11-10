@@ -16,6 +16,7 @@ public interface UserMapper {
     // passwordHash vem do PasswordEncoder no service, nunca do DTO
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "passwordHash", ignore = true)
+    @Mapping(target = "timezone", ignore = true)
     User toEntity(CreateUserDto dto);
 
     @Mapping(target = "id", ignore = true)

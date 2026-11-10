@@ -12,6 +12,6 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
 	Optional<User> findByEmail(String email);
 
-	@Query("SELECT u.id AS id, u.name AS name, u.email AS email, u.createdAt AS createdAt FROM User u WHERE u.id = :id")
+	@Query("SELECT u.id AS id, u.name AS name, u.email AS email, u.createdAt AS createdAt, u.timezone AS timezone FROM User u WHERE u.id = :id")
 	Optional<UserSummaryProjection> findSummaryById(@Param("id") UUID id);
 }

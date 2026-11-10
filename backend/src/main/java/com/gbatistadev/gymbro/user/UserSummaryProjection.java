@@ -11,4 +11,5 @@ public interface UserSummaryProjection {
     String getName();
     String getEmail();
     Instant getCreatedAt();
+    String getTimezone();
 }

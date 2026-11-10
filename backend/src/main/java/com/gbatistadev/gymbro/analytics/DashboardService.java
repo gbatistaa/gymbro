@@ -4,6 +4,7 @@ import com.gbatistadev.gymbro.analytics.dto.DashboardDto;
 import com.gbatistadev.gymbro.bioimpedance.Bioimpedance;
 import com.gbatistadev.gymbro.bioimpedance.BioimpedanceRepository;
 import com.gbatistadev.gymbro.common.security.CurrentUser;
+import com.gbatistadev.gymbro.errors.exceptions.NotFoundException;
 import com.gbatistadev.gymbro.playlist.Playlist;
 import com.gbatistadev.gymbro.playlist.PlaylistRepository;
 import com.gbatistadev.gymbro.workout_logs.WorkoutLog;
@@ -11,6 +12,7 @@ import com.gbatistadev.gymbro.workout_logs.WorkoutLogRepository;
 import com.gbatistadev.gymbro.workout_session.SessionStatus;
 import com.gbatistadev.gymbro.workout_session.WorkoutSession;
 import com.gbatistadev.gymbro.workout_session.WorkoutSessionRepository;
+import com.gbatistadev.gymbro.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -23,7 +25,6 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 public class DashboardService {
-    private static final ZoneId ZONE = ZoneId.of("America/Sao_Paulo");
     private static final int STREAK_GOAL = 4;
     private static final int RECENT_PR_LIMIT = 10;
 
@@ -32,6 +33,7 @@ public class DashboardService {
     private final BioimpedanceRepository bioimpedance;
     private final PlaylistRepository playlists;
     private final CurrentUser currentUser;
+    private final UserRepository users;
     private final Clock clock;
 
     @Transactional(readOnly = true)
@@ -39,16 +41,19 @@ public class DashboardService {
         UUID userId = currentUser.id();
         int count = Math.clamp(weeks, 1, 52);
 
-        LocalDate currentWeek = LocalDate.now(clock.withZone(ZONE))
+        // o fuso do usuário manda: 22:00 em São Paulo é o dia anterior em UTC
+        ZoneId zone = userZone(userId);
+
+        LocalDate currentWeek = LocalDate.now(clock.withZone(zone))
             .with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
         LocalDate firstWeek = currentWeek.minusWeeks(count - 1L);
-        Instant from = firstWeek.atStartOfDay(ZONE).toInstant();
-        Instant to = currentWeek.plusWeeks(1).atStartOfDay(ZONE).toInstant();
+        Instant from = firstWeek.atStartOfDay(zone).toInstant();
+        Instant to = currentWeek.plusWeeks(1).atStartOfDay(zone).toInstant();
 
         List<WorkoutSession> finished =
             sessions.findFinishedWithPlaylist(userId, SessionStatus.FINISHED, from, to);
 
-        List<DashboardDto.WeekSummaryDto> weekly = weeklySummaries(firstWeek, count, finished);
+        List<DashboardDto.WeekSummaryDto> weekly = weeklySummaries(firstWeek, count, finished, zone);
         List<DashboardDto.RecentPrDto> prs = recentPrs(userId, from, to);
         Double weightDelta = weightDelta(userId, from, to);
         Playlist next = nextPlaylist(userId, finished);
@@ -59,17 +64,24 @@ public class DashboardService {
             prs,
             weightDelta,
             next == null ? null : next.getId(),
-            next == null ? null : next.getName());
+            next == null ? null : next.getName(),
+            zone.getId());
+    }
+
+    private ZoneId userZone(UUID userId) {
+        return users.findById(userId)
+            .map(user -> ZoneId.of(user.getTimezone()))
+            .orElseThrow(() -> new NotFoundException("User not found: " + userId));
     }
 
     private List<DashboardDto.WeekSummaryDto> weeklySummaries(
-        LocalDate firstWeek, int count, List<WorkoutSession> finished
+        LocalDate firstWeek, int count, List<WorkoutSession> finished, ZoneId zone
     ) {
         Map<LocalDate, long[]> buckets = new HashMap<>();
         Map<LocalDate, double[]> volumes = new HashMap<>();
 
         for (WorkoutSession session : finished) {
-            LocalDate week = session.getStartedAt().atZone(ZONE).toLocalDate()
+            LocalDate week = session.getStartedAt().atZone(zone).toLocalDate()
                 .with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
             buckets.computeIfAbsent(week, key -> new long[1])[0]++;
             volumes.computeIfAbsent(week, key -> new double[1])[0] +=
@@ -80,7 +92,7 @@ public class DashboardService {
         for (int i = 0; i < count; i++) {
             LocalDate week = firstWeek.plusWeeks(i);
             result.add(new DashboardDto.WeekSummaryDto(
-                week.atStartOfDay(ZONE).toInstant(),
+                week.atStartOfDay(zone).toInstant(),
                 buckets.getOrDefault(week, new long[1])[0],
                 volumes.getOrDefault(week, new double[1])[0]));
         }

@@ -10,7 +10,8 @@ public record DashboardDto(
     List<RecentPrDto> recentPrs,
     Double weightDeltaKg,
     UUID nextPlaylistId,
-    String nextPlaylistName
+    String nextPlaylistName,
+    String timezone
 ) {
     public record WeekSummaryDto(Instant weekStart, long sessions, double volume) {
     }

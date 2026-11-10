@@ -14,5 +14,8 @@ public record UpdateUserDto(
     String name,
 
     @Email(message = "Email must be valid")
-    String email
+    String email,
+
+    @ValidZoneId
+    String timezone
 ) implements Serializable {}
