@@ -43,3 +43,38 @@ def test_extract_rejects_invalid_token(monkeypatch):
         files={"file": ("inbody.pdf", b"%PDF-1.4", "application/pdf")},
     )
     assert response.status_code == 401
+
+
+def test_extract_returns_422_for_invalid_pdf(monkeypatch):
+    from docling.exceptions import ConversionError
+
+    monkeypatch.setenv("PARSER_TOKEN", "secret")
+
+    def fail(_):
+        raise ConversionError("not a pdf")
+
+    monkeypatch.setattr(app, "convert_pdf_bytes_to_markdown", fail)
+    response = TestClient(app.app).post(
+        "/extract",
+        headers={"X-Parser-Token": "secret"},
+        files={"file": ("inbody.pdf", b"not a pdf", "application/pdf")},
+    )
+    assert response.status_code == 422
+
+
+def test_extract_returns_502_when_extraction_fails(monkeypatch):
+    import requests
+
+    monkeypatch.setenv("PARSER_TOKEN", "secret")
+    monkeypatch.setattr(app, "convert_pdf_bytes_to_markdown", lambda _: b"bioimpedance")
+
+    def fail(_):
+        raise requests.RequestException("openrouter down")
+
+    monkeypatch.setattr(app, "extract_bioimpedance", fail)
+    response = TestClient(app.app).post(
+        "/extract",
+        headers={"X-Parser-Token": "secret"},
+        files={"file": ("inbody.pdf", b"%PDF-1.4", "application/pdf")},
+    )
+    assert response.status_code == 502

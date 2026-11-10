@@ -1,7 +1,8 @@
 import hmac
-import json
 import os
 
+import requests
+from docling.exceptions import ConversionError
 from fastapi import FastAPI, File, Header, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 
@@ -42,6 +43,10 @@ async def extract(
 
     try:
         markdown = convert_pdf_bytes_to_markdown(await file.read())
+    except ConversionError as error:
+        raise HTTPException(status_code=422, detail="invalid PDF file") from error
+
+    try:
         return normalize_extraction(extract_bioimpedance(markdown))
-    except (ValueError, KeyError, TypeError, json.JSONDecodeError) as error:
-        raise HTTPException(status_code=502, detail="invalid parser response") from error
+    except (requests.RequestException, ValueError, KeyError, TypeError) as error:
+        raise HTTPException(status_code=502, detail="extraction failed") from error
