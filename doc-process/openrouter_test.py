@@ -62,6 +62,8 @@ def extract_bioimpedance(md_bytes: bytes) -> dict:
                 {"role": "user", "content": md_bytes.decode("utf-8")},
             ],
             "reasoning": {"enabled": True},
+            "provider": {"only": ["CoreWeave"]},
+            "max_tokens": 4096,
             "response_format": {"type": "json_object"},
         },
         timeout=120,
