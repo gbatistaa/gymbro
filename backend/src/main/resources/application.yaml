@@ -25,3 +25,8 @@ spring:
     secret: ${JWT_SECRET:vb/3tfg32s3347qCevonfOLwZdeuDp6pcaQIWh+ezYg4VzSJFUrRy9iggWtMUKGaJRTB30JGi/6YaDORbCmrEw==}
     expiration-ms: ${JWT_EXPIRATION_MS:900000}
     refresh-expiration-ms: ${JWT_REFRESH_EXPIRATION_MS:15552000000}
+
+bioimpedance:
+  parser:
+    base-url: ${BIOIMPEDANCE_PARSER_URL:http://localhost:8000}
+    timeout: ${BIOIMPEDANCE_PARSER_TIMEOUT:60s}
