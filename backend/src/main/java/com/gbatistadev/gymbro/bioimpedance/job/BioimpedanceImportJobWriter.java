@@ -39,7 +39,7 @@ public class BioimpedanceImportJobWriter {
     @Transactional
     public void markFailed(UUID jobId, String error) {
         repository.findById(jobId).ifPresent(job -> {
-            if (job.getStatus() != ImportJobStatus.PROCESSING) {
+            if (job.getStatus() == ImportJobStatus.DONE || job.getStatus() == ImportJobStatus.FAILED) {
                 return;
             }
             job.setStatus(ImportJobStatus.FAILED);

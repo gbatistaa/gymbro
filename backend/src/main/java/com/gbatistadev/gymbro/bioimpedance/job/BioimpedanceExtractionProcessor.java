@@ -16,7 +16,7 @@ public class BioimpedanceExtractionProcessor {
     private final BioimpedanceParser parser;
     private final BioimpedanceImportJobWriter writer;
 
-    @Async
+    @Async("bioimpedanceExecutor")
     public void process(UUID jobId, byte[] file, String fileName) {
         writer.markProcessing(jobId);
 

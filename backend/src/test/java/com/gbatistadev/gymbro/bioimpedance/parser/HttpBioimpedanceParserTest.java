@@ -47,4 +47,30 @@ class HttpBioimpedanceParserTest {
             server.stop(0);
         }
     }
+
+    @Test
+    @DisplayName("interoperates with the normalized extraction contract")
+    void shouldReadNormalizedExtraction() throws Exception {
+        HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+        server.createContext("/extract", exchange -> {
+            exchange.getRequestBody().readAllBytes();
+            byte[] body = "{\"measuredAt\":\"2026-10-01T08:00:00Z\",\"bodyWeightKg\":82.4,\"skeletalMuscleMassKg\":null,\"missingFields\":[\"skeletalMuscleMassKg\"]}".getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().add("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, body.length);
+            exchange.getResponseBody().write(body);
+            exchange.close();
+        });
+        server.start();
+        try {
+            JsonNode result = new HttpBioimpedanceParser(new BioimpedanceParserProperties(
+                "http://127.0.0.1:" + server.getAddress().getPort(), Duration.ofSeconds(5), ""))
+                .extract("%PDF-1.4".getBytes(StandardCharsets.ISO_8859_1), "inbody.pdf");
+            assertEquals("2026-10-01T08:00:00Z", result.get("measuredAt").asText());
+            assertEquals(82.4, result.get("bodyWeightKg").asDouble());
+            assertTrue(result.get("skeletalMuscleMassKg").isNull());
+            assertEquals("skeletalMuscleMassKg", result.get("missingFields").get(0).asText());
+        } finally {
+            server.stop(0);
+        }
+    }
 }

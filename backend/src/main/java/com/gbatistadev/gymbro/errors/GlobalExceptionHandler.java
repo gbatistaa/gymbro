@@ -25,6 +25,7 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.LocalDateTime;
@@ -145,6 +146,14 @@ public class GlobalExceptionHandler {
 		HttpServletRequest request
 	) {
 		return respond(HttpStatus.NOT_FOUND, "Resource not found", request);
+	}
+
+	@ExceptionHandler(MaxUploadSizeExceededException.class)
+	public ResponseEntity<ErrorResponse> handleMaxUploadSizeExceededException(
+		MaxUploadSizeExceededException ex,
+		HttpServletRequest request
+	) {
+		return respond(HttpStatus.PAYLOAD_TOO_LARGE, "File is too large", request);
 	}
 
 	@ExceptionHandler(DataIntegrityViolationException.class)

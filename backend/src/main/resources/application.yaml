@@ -1,6 +1,11 @@
 spring:
   application:
     name: gymbro
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 11MB
+      file-size-threshold: 1MB
   config:
     # .env no formato KEY=VALUE; [.properties] = hint de extensão (formato fora do padrão)
     # optional: para bootar sem o arquivo (defaults abaixo valem)

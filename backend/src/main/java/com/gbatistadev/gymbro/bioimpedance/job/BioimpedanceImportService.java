@@ -1,11 +1,16 @@
 package com.gbatistadev.gymbro.bioimpedance.job;
 
+import com.gbatistadev.gymbro.bioimpedance.BioimpedanceService;
+import com.gbatistadev.gymbro.bioimpedance.dto.BioimpedanceDto;
+import com.gbatistadev.gymbro.bioimpedance.dto.CreateBioimpedanceRequest;
 import com.gbatistadev.gymbro.bioimpedance.dto.ImportJobDto;
 import com.gbatistadev.gymbro.bioimpedance.dto.ImportJobSubmitResult;
 import com.gbatistadev.gymbro.common.security.CurrentUser;
 import com.gbatistadev.gymbro.errors.exceptions.BadRequestException;
+import com.gbatistadev.gymbro.errors.exceptions.ConflictException;
 import com.gbatistadev.gymbro.errors.exceptions.NotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.task.TaskRejectedException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,7 +32,9 @@ public class BioimpedanceImportService {
 
     private final BioimpedanceImportJobRepository repository;
     private final BioimpedanceImportJobMapper mapper;
+    private final BioimpedanceImportJobWriter writer;
     private final BioimpedanceExtractionProcessor processor;
+    private final BioimpedanceService bioimpedanceService;
     private final CurrentUser currentUser;
 
     public ImportJobSubmitResult submit(MultipartFile file) {
@@ -50,12 +57,26 @@ public class BioimpedanceImportService {
         repository.save(job);
 
         // save() commits before returning, so the async worker always sees the row
-        processor.process(job.getId(), bytes, job.getSourceFileName());
+        try {
+            processor.process(job.getId(), bytes, job.getSourceFileName());
+        } catch (TaskRejectedException e) {
+            writer.markFailed(job.getId(), "extraction queue is full");
+        }
 
-        // shortcut: a crash between PROCESSING and DONE leaves the job stuck; add a reaper
-        // when extraction runs unattended. Re-uploading the same file returns the stuck job.
         BioimpedanceImportJob current = repository.findById(job.getId()).orElse(job);
         return new ImportJobSubmitResult(mapper.toDto(current), true);
+    }
+
+    public BioimpedanceDto confirm(UUID jobId, CreateBioimpedanceRequest request) {
+        BioimpedanceImportJob job = repository.findByIdAndUserId(jobId, currentUser.id())
+            .orElseThrow(() -> new NotFoundException("Import job not found: " + jobId));
+
+        if (job.getStatus() != ImportJobStatus.DONE) {
+            throw new ConflictException("Import job is not ready");
+        }
+
+        return bioimpedanceService.create(
+            mapper.toImportRequest(request, job.getSourceFileHash()));
     }
 
     public ImportJobDto get(UUID jobId) {

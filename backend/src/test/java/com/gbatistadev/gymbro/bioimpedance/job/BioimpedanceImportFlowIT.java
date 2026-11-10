@@ -92,15 +92,27 @@ class BioimpedanceImportFlowIT {
             .andExpect(jsonPath("$.result.missingFields[0]").value("skeletalMuscleMassKg"))
             .andExpect(jsonPath("$.sourceFileHash").exists());
 
-        // the preview can be confirmed through the existing import contract
-        mockMvc.perform(post("/api/bioimpedance/import")
+        String confirmation = """
+            {"measuredAt":"2026-10-01T08:00:00Z","bodyFatPercentage":18.2,"muscleMassKg":38.1,
+             "bodyWeightKg":82.4,"heightCm":178.0,"visceralFat":8.0,"waterPercentage":55.3,
+             "skeletalMuscleMassKg":null}
+            """;
+
+        mockMvc.perform(post("/api/bioimpedance/imports/{id}/confirm", jobId)
                 .cookie(owner)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"items\":[" + extraction + "]}"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.created").value(1))
-            .andExpect(jsonPath("$.duplicates").value(0))
-            .andExpect(jsonPath("$.errors").value(0));
+                .content(confirmation))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.bodyFatPercentage").value(18.2))
+            .andExpect(jsonPath("$.source").value("IMPORT"))
+            .andExpect(jsonPath("$.sourceFileHash").exists());
+
+        // the same job cannot create a second measurement (same file hash)
+        mockMvc.perform(post("/api/bioimpedance/imports/{id}/confirm", jobId)
+                .cookie(owner)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(confirmation))
+            .andExpect(status().isConflict());
 
         mockMvc.perform(get("/api/bioimpedance").cookie(owner))
             .andExpect(status().isOk())

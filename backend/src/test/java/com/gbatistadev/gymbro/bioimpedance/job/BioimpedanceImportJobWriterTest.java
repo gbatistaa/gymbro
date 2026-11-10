@@ -71,6 +71,19 @@ class BioimpedanceImportJobWriterTest {
     }
 
     @Test
+    @DisplayName("markFailed can fail a job that never started (queue rejection)")
+    void shouldFailPendingJob() {
+        BioimpedanceImportJob job = job();
+        when(repository.findById(jobId)).thenReturn(Optional.of(job));
+
+        writer.markFailed(jobId, "extraction queue is full");
+
+        assertEquals(ImportJobStatus.FAILED, job.getStatus());
+        assertEquals("extraction queue is full", job.getError());
+        verify(repository).save(job);
+    }
+
+    @Test
     @DisplayName("a terminal job is not resurrected by a late parser response")
     void shouldNotOverwriteTerminalJob() {
         BioimpedanceImportJob job = job();

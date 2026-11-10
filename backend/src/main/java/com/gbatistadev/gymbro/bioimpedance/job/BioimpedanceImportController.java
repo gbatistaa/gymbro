@@ -1,7 +1,10 @@
 package com.gbatistadev.gymbro.bioimpedance.job;
 
+import com.gbatistadev.gymbro.bioimpedance.dto.BioimpedanceDto;
+import com.gbatistadev.gymbro.bioimpedance.dto.CreateBioimpedanceRequest;
 import com.gbatistadev.gymbro.bioimpedance.dto.ImportJobDto;
 import com.gbatistadev.gymbro.bioimpedance.dto.ImportJobSubmitResult;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -38,5 +41,21 @@ public class BioimpedanceImportController {
     @GetMapping("/{jobId}")
     public ResponseEntity<ImportJobDto> get(@PathVariable UUID jobId) {
         return ResponseEntity.ok(service.get(jobId));
+    }
+
+    @PostMapping("/{jobId}/confirm")
+    public ResponseEntity<BioimpedanceDto> confirm(
+        @PathVariable UUID jobId,
+        @Valid @RequestBody CreateBioimpedanceRequest request
+    ) {
+        BioimpedanceDto created = service.confirm(jobId, request);
+
+        URI location = ServletUriComponentsBuilder
+            .fromCurrentContextPath()
+            .path("/api/bioimpedance/{id}")
+            .buildAndExpand(created.id())
+            .toUri();
+
+        return ResponseEntity.created(location).body(created);
     }
 }

@@ -1,9 +1,13 @@
 package com.gbatistadev.gymbro.bioimpedance.job;
 
+import com.gbatistadev.gymbro.bioimpedance.BioimpedanceService;
+import com.gbatistadev.gymbro.bioimpedance.dto.BioimpedanceDto;
+import com.gbatistadev.gymbro.bioimpedance.dto.CreateBioimpedanceRequest;
 import com.gbatistadev.gymbro.bioimpedance.dto.ImportJobDto;
 import com.gbatistadev.gymbro.bioimpedance.dto.ImportJobSubmitResult;
 import com.gbatistadev.gymbro.common.security.CurrentUser;
 import com.gbatistadev.gymbro.errors.exceptions.BadRequestException;
+import com.gbatistadev.gymbro.errors.exceptions.ConflictException;
 import com.gbatistadev.gymbro.errors.exceptions.NotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -11,6 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.task.TaskRejectedException;
 import org.springframework.mock.web.MockMultipartFile;
 
 import java.nio.charset.StandardCharsets;
@@ -35,6 +40,12 @@ class BioimpedanceImportServiceTest {
 
     @Mock
     private BioimpedanceExtractionProcessor processor;
+
+    @Mock
+    private BioimpedanceImportJobWriter writer;
+
+    @Mock
+    private BioimpedanceService bioimpedanceService;
 
     @Mock
     private CurrentUser currentUser;
@@ -130,6 +141,74 @@ class BioimpedanceImportServiceTest {
 
         assertThrows(BadRequestException.class, () -> service.submit(file));
         verifyNoInteractions(repository, processor, currentUser);
+    }
+
+    @Test
+    @DisplayName("a rejected execution marks the job FAILED instead of leaving it PENDING")
+    void shouldMarkFailedWhenExecutorRejects() {
+        MockMultipartFile file = pdfFile();
+        AtomicReference<BioimpedanceImportJob> saved = new AtomicReference<>();
+
+        when(currentUser.id()).thenReturn(userId);
+        when(repository.findFirstByUserIdAndSourceFileHashAndStatusInOrderByCreatedAtDesc(
+            eq(userId), anyString(), anyList())).thenReturn(Optional.empty());
+        when(repository.save(any(BioimpedanceImportJob.class))).thenAnswer(invocation -> {
+            BioimpedanceImportJob job = invocation.getArgument(0);
+            job.setId(jobId);
+            saved.set(job);
+            return job;
+        });
+        when(repository.findById(jobId)).thenAnswer(invocation -> Optional.of(saved.get()));
+        when(mapper.toDto(any(BioimpedanceImportJob.class)))
+            .thenReturn(new ImportJobDto(jobId, ImportJobStatus.PENDING, "inbody.pdf",
+                "hash", null, null, null, null));
+        doThrow(new TaskRejectedException("full"))
+            .when(processor).process(any(), any(), any());
+
+        service.submit(file);
+
+        verify(writer).markFailed(jobId, "extraction queue is full");
+    }
+
+    @Test
+    @DisplayName("confirm persists a DONE job with the job file hash")
+    void shouldConfirmDoneJob() {
+        BioimpedanceImportJob job = new BioimpedanceImportJob();
+        job.setId(jobId);
+        job.setStatus(ImportJobStatus.DONE);
+        job.setSourceFileHash("file-hash");
+
+        CreateBioimpedanceRequest request = new CreateBioimpedanceRequest(
+            java.time.Instant.parse("2026-10-01T08:00:00Z"),
+            18.0, 38.0, null, null, null, null, null, null, null);
+        CreateBioimpedanceRequest confirmed = new CreateBioimpedanceRequest(
+            request.measuredAt(), 18.0, 38.0, null, null, null, null, null, "IMPORT", "file-hash");
+        BioimpedanceDto expected = new BioimpedanceDto(
+            UUID.randomUUID(), request.measuredAt(), null, null, 18.0, 38.0, null,
+            null, null, "IMPORT", "file-hash");
+
+        when(currentUser.id()).thenReturn(userId);
+        when(repository.findByIdAndUserId(jobId, userId)).thenReturn(Optional.of(job));
+        when(mapper.toImportRequest(request, "file-hash")).thenReturn(confirmed);
+        when(bioimpedanceService.create(confirmed)).thenReturn(expected);
+
+        assertSame(expected, service.confirm(jobId, request));
+    }
+
+    @Test
+    @DisplayName("confirm rejects a job that is not DONE")
+    void shouldRejectConfirmWhenJobIsNotDone() {
+        BioimpedanceImportJob job = new BioimpedanceImportJob();
+        job.setId(jobId);
+        job.setStatus(ImportJobStatus.PROCESSING);
+
+        when(currentUser.id()).thenReturn(userId);
+        when(repository.findByIdAndUserId(jobId, userId)).thenReturn(Optional.of(job));
+
+        assertThrows(ConflictException.class, () -> service.confirm(jobId, new CreateBioimpedanceRequest(
+            java.time.Instant.parse("2026-10-01T08:00:00Z"),
+            18.0, 38.0, null, null, null, null, null, null, null)));
+        verifyNoInteractions(bioimpedanceService);
     }
 
     @Test
