@@ -33,13 +33,18 @@ export const Colors = {
   },
 } as const;
 
-/** Duas famílias, nunca três. Plex Mono garante a tabularidade dos números. */
+/**
+ * Duas famílias, nunca três. Plex Mono garante a tabularidade dos números.
+ *
+ * Os nomes levam o prefixo `IBM` porque são os que `@expo-google-fonts/ibm-plex-*` exporta;
+ * `PlexSans_400Regular` (como o brand escreve) não existe e cairia em silêncio na fonte do sistema.
+ */
 export const FontFamily = {
-  sans: 'PlexSans_400Regular',
-  sansMedium: 'PlexSans_500Medium',
-  sansSemiBold: 'PlexSans_600SemiBold',
-  mono: 'PlexMono_400Regular',
-  monoMedium: 'PlexMono_500Medium',
+  sans: 'IBMPlexSans_400Regular',
+  sansMedium: 'IBMPlexSans_500Medium',
+  sansSemiBold: 'IBMPlexSans_600SemiBold',
+  mono: 'IBMPlexMono_400Regular',
+  monoMedium: 'IBMPlexMono_500Medium',
 } as const;
 
 /** Escala 1,2 sobre base 16. Peso máximo é 600; não existe 700 nem itálico no sistema. */

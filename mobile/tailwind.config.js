@@ -34,11 +34,11 @@ module.exports = {
         pill: '999px',
       },
       fontFamily: {
-        sans: ['PlexSans_400Regular'],
-        sansMedium: ['PlexSans_500Medium'],
-        sansSemiBold: ['PlexSans_600SemiBold'],
-        mono: ['PlexMono_400Regular'],
-        monoMedium: ['PlexMono_500Medium'],
+        sans: ['IBMPlexSans_400Regular'],
+        sansMedium: ['IBMPlexSans_500Medium'],
+        sansSemiBold: ['IBMPlexSans_600SemiBold'],
+        mono: ['IBMPlexMono_400Regular'],
+        monoMedium: ['IBMPlexMono_500Medium'],
       },
       fontSize: {
         label: ['12px', { lineHeight: '16px' }],
