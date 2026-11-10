@@ -6,6 +6,8 @@ import com.gbatistadev.gymbro.bioimpedance.BioimpedanceRepository;
 import com.gbatistadev.gymbro.common.security.CurrentUser;
 import com.gbatistadev.gymbro.playlist.Playlist;
 import com.gbatistadev.gymbro.playlist.PlaylistRepository;
+import com.gbatistadev.gymbro.user.User;
+import com.gbatistadev.gymbro.user.UserRepository;
 import com.gbatistadev.gymbro.workout_logs.WorkoutLogRepository;
 import com.gbatistadev.gymbro.workout_session.SessionStatus;
 import com.gbatistadev.gymbro.workout_session.WorkoutSession;
@@ -19,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -46,6 +49,9 @@ class DashboardServiceTest {
     @Mock
     private CurrentUser currentUser;
 
+    @Mock
+    private UserRepository users;
+
     private DashboardService service;
 
     private final UUID userId = UUID.randomUUID();
@@ -54,8 +60,7 @@ class DashboardServiceTest {
     @DisplayName("returns continuous weekly buckets including weeks without training")
     void shouldReturnContinuousWeeks() {
         Instant now = Instant.parse("2026-11-09T12:00:00Z");
-        service = new DashboardService(sessions, logs, bioimpedance, playlists, currentUser,
-            Clock.fixed(now, ZoneOffset.UTC));
+        service = serviceWithUserTimeZone(now, "America/Sao_Paulo");
 
         when(currentUser.id()).thenReturn(userId);
         when(sessions.findFinishedWithPlaylist(
@@ -82,8 +87,7 @@ class DashboardServiceTest {
     @DisplayName("counts consecutive weeks that meet the weekly goal")
     void shouldCountStreak() {
         Instant now = Instant.parse("2026-11-09T12:00:00Z");
-        service = new DashboardService(sessions, logs, bioimpedance, playlists, currentUser,
-            Clock.fixed(now, ZoneOffset.UTC));
+        service = serviceWithUserTimeZone(now, "America/Sao_Paulo");
 
         List<WorkoutSession> finished = new ArrayList<>();
         finished.addAll(fourSessions(now.minus(7, java.time.temporal.ChronoUnit.DAYS)));
@@ -107,8 +111,7 @@ class DashboardServiceTest {
     @DisplayName("reports weight delta and the most recently used playlist")
     void shouldReportWeightDeltaAndNextPlaylist() {
         Instant now = Instant.parse("2026-11-09T12:00:00Z");
-        service = new DashboardService(sessions, logs, bioimpedance, playlists, currentUser,
-            Clock.fixed(now, ZoneOffset.UTC));
+        service = serviceWithUserTimeZone(now, "America/Sao_Paulo");
 
         Playlist playlist = new Playlist();
         playlist.setId(UUID.randomUUID());
@@ -129,6 +132,50 @@ class DashboardServiceTest {
         assertEquals(playlist.getId(), dashboard.nextPlaylistId());
         assertEquals("Push", dashboard.nextPlaylistName());
         verify(playlists, never()).findByUserIdAndArchivedAtIsNullOrderByName(any());
+    }
+
+    @Test
+    @DisplayName("buckets sessions in the user's own time zone, not the server's")
+    void shouldBucketByUserTimeZone() {
+        Instant now = Instant.parse("2026-11-10T12:00:00Z");
+        service = serviceWithUserTimeZone(now, "Asia/Tokyo");
+
+        // domingo 17:00 em São Paulo, segunda 05:00 em Tóquio
+        Instant sundayNightInSaoPaulo = Instant.parse("2026-11-08T20:00:00Z");
+
+        when(currentUser.id()).thenReturn(userId);
+        when(sessions.findFinishedWithPlaylist(eq(userId), eq(SessionStatus.FINISHED), any(), any()))
+            .thenReturn(List.of(finishedSession(sundayNightInSaoPaulo, 100.0, null)));
+        when(logs.findRecentPrs(eq(userId), any(), any(), any())).thenReturn(List.of());
+        when(bioimpedance.findByUserIdAndDeletedAtIsNullAndMeasuredAtBetweenOrderByMeasuredAtAsc(
+            eq(userId), any(), any())).thenReturn(List.of());
+        when(playlists.findByUserIdAndArchivedAtIsNullOrderByName(userId)).thenReturn(List.of());
+
+        DashboardDto dashboard = service.dashboard(2);
+
+        assertEquals("Asia/Tokyo", dashboard.timezone());
+        assertEquals(List.of(0L, 1L),
+            dashboard.weeks().stream().map(DashboardDto.WeekSummaryDto::sessions).toList(),
+            "a sessão pertence à semana de 09/11 em Tóquio, não à de 02/11");
+        assertEquals(Instant.parse("2026-11-08T15:00:00Z"),
+            dashboard.weeks().getLast().weekStart(),
+            "segunda 00:00 em Tóquio");
+    }
+
+    private DashboardService serviceWithUserTimeZone(Instant now, String timeZone) {
+        when(users.findById(userId)).thenReturn(Optional.of(userWithTimeZone(timeZone)));
+        return new DashboardService(sessions, logs, bioimpedance, playlists, currentUser, users,
+            Clock.fixed(now, ZoneOffset.UTC));
+    }
+
+    private User userWithTimeZone(String timeZone) {
+        User user = new User();
+        user.setId(userId);
+        user.setName("Dashboard User");
+        user.setEmail("dashboard@example.com");
+        user.setPasswordHash("$2a$10$not-used");
+        user.setTimezone(timeZone);
+        return user;
     }
 
     private List<WorkoutSession> fourSessions(Instant start) {

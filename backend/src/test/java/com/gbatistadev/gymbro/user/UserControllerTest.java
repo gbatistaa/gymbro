@@ -42,7 +42,7 @@ class UserControllerTest {
         mockMvc.perform(get("/api/users/me"))
             .andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.status").value(401))
-            .andExpect(jsonPath("$.error").value("UNAUTHORIZED"))
+            .andExpect(jsonPath("$.code").value("UNAUTHENTICATED"))
             .andExpect(jsonPath("$.message").value("Authentication required"))
             .andExpect(jsonPath("$.path").value("/api/users/me"));
     }
@@ -124,6 +124,39 @@ class UserControllerTest {
                 .header(HttpHeaders.AUTHORIZATION, "bearer " + jwtService.createAccessToken(user.getId(), user.getEmail())))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id").value(user.getId().toString()));
+    }
+
+    @Test
+    @DisplayName("PUT /api/users/me updates the time zone and GET returns it")
+    void shouldUpdateTimeZone() throws Exception {
+        String email = "user-" + UUID.randomUUID() + "@example.com";
+        UserDto user = userService.create(new CreateUserDto("Test User", email, "password123"));
+
+        mockMvc.perform(put("/api/users/me")
+                .header(HttpHeaders.AUTHORIZATION, bearer(user))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"timezone\":\"Europe/Lisbon\"}"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.timezone").value("Europe/Lisbon"));
+
+        mockMvc.perform(get("/api/users/me").header(HttpHeaders.AUTHORIZATION, bearer(user)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.timezone").value("Europe/Lisbon"));
+    }
+
+    @Test
+    @DisplayName("an invalid time zone returns VALIDATION_FAILED naming the field")
+    void shouldRejectInvalidTimeZone() throws Exception {
+        String email = "user-" + UUID.randomUUID() + "@example.com";
+        UserDto user = userService.create(new CreateUserDto("Test User", email, "password123"));
+
+        mockMvc.perform(put("/api/users/me")
+                .header(HttpHeaders.AUTHORIZATION, bearer(user))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"timezone\":\"Mars/Olympus_Mons\"}"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
+            .andExpect(jsonPath("$.errors[*].field").value("timezone"));
     }
 
     @Test

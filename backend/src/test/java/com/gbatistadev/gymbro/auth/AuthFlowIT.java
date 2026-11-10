@@ -55,7 +55,7 @@ class AuthFlowIT {
         mockMvc.perform(get("/api/users/me"))
             .andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.status").value(401))
-            .andExpect(jsonPath("$.error").value("UNAUTHORIZED"))
+            .andExpect(jsonPath("$.code").value("UNAUTHENTICATED"))
             .andExpect(jsonPath("$.path").value("/api/users/me"));
 
         // refresh pelo corpo → novo access token
@@ -97,7 +97,7 @@ class AuthFlowIT {
                     """.formatted(login.refreshToken())))
             .andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.status").value(401))
-            .andExpect(jsonPath("$.error").value("UNAUTHORIZED"))
+            .andExpect(jsonPath("$.code").value("UNAUTHENTICATED"))
             .andExpect(jsonPath("$.message").value("Invalid refresh token"))
             .andExpect(jsonPath("$.path").value("/api/auth/refresh"));
     }

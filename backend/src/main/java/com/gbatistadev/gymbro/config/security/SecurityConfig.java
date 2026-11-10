@@ -17,6 +17,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Configuration
 public class SecurityConfig {
@@ -31,8 +32,8 @@ public class SecurityConfig {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             objectMapper.writeValue(response.getOutputStream(), new ErrorResponse(
-                LocalDateTime.now(), HttpStatus.UNAUTHORIZED.value(), HttpStatus.UNAUTHORIZED.name(),
-                "Authentication required", request.getRequestURI()));
+                LocalDateTime.now(), HttpStatus.UNAUTHORIZED.value(), "UNAUTHENTICATED",
+                "Authentication required", request.getRequestURI(), List.of()));
         };
 
         return http

@@ -29,6 +29,7 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
@@ -40,7 +41,7 @@ public class GlobalExceptionHandler {
 		NotFoundException ex,
 		HttpServletRequest request
 	) {
-		return respond(HttpStatus.NOT_FOUND, ex.getMessage(), request);
+		return respond(HttpStatus.NOT_FOUND, ex.getCode(), ex.getMessage(), request);
 	}
 
 	@ExceptionHandler(ForbiddenException.class)
@@ -48,7 +49,7 @@ public class GlobalExceptionHandler {
 		ForbiddenException ex,
 		HttpServletRequest request
 	) {
-		return respond(HttpStatus.FORBIDDEN, ex.getMessage(), request);
+		return respond(HttpStatus.FORBIDDEN, ex.getCode(), ex.getMessage(), request);
 	}
 
 	@ExceptionHandler(UnauthorizedException.class)
@@ -56,7 +57,7 @@ public class GlobalExceptionHandler {
 		UnauthorizedException ex,
 		HttpServletRequest request
 	) {
-		return respond(HttpStatus.UNAUTHORIZED, ex.getMessage(), request);
+		return respond(HttpStatus.UNAUTHORIZED, ex.getCode(), ex.getMessage(), request);
 	}
 
 	@ExceptionHandler(BadRequestException.class)
@@ -64,7 +65,7 @@ public class GlobalExceptionHandler {
 		BadRequestException ex,
 		HttpServletRequest request
 	) {
-		return respond(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+		return respond(HttpStatus.BAD_REQUEST, ex.getCode(), ex.getMessage(), request);
 	}
 
 	@ExceptionHandler(ConflictException.class)
@@ -72,7 +73,7 @@ public class GlobalExceptionHandler {
 		ConflictException ex,
 		HttpServletRequest request
 	) {
-		return respond(HttpStatus.CONFLICT, ex.getMessage(), request);
+		return respond(HttpStatus.CONFLICT, ex.getCode(), ex.getMessage(), request);
 	}
 
 	@ExceptionHandler(ResourceAlreadyExistsException.class)
@@ -80,7 +81,7 @@ public class GlobalExceptionHandler {
 		ResourceAlreadyExistsException ex,
 		HttpServletRequest request
 	) {
-		return respond(HttpStatus.CONFLICT, ex.getMessage(), request);
+		return respond(HttpStatus.CONFLICT, ex.getCode(), ex.getMessage(), request);
 	}
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)
@@ -88,13 +89,19 @@ public class GlobalExceptionHandler {
 		MethodArgumentNotValidException ex,
 		HttpServletRequest request
 	) {
+		List<FieldErrorDto> errors = ex.getBindingResult()
+			.getFieldErrors()
+			.stream()
+			.map(fieldError -> new FieldErrorDto(fieldError.getField(), fieldError.getDefaultMessage()))
+			.toList();
+
 		String message = ex.getBindingResult()
 			.getFieldErrors()
 			.stream()
 			.map(DefaultMessageSourceResolvable::getDefaultMessage)
 			.collect(Collectors.joining("; "));
 
-		return respond(HttpStatus.BAD_REQUEST, message, request);
+		return respond(HttpStatus.BAD_REQUEST, "VALIDATION_FAILED", message, errors, request);
 	}
 
 	@ExceptionHandler(ConstraintViolationException.class)
@@ -102,7 +109,14 @@ public class GlobalExceptionHandler {
 		ConstraintViolationException ex,
 		HttpServletRequest request
 	) {
-		return respond(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+		List<FieldErrorDto> errors = ex.getConstraintViolations()
+			.stream()
+			.map(violation -> new FieldErrorDto(
+				violation.getPropertyPath().toString(),
+				violation.getMessage()))
+			.toList();
+
+		return respond(HttpStatus.BAD_REQUEST, "VALIDATION_FAILED", ex.getMessage(), errors, request);
 	}
 
 	@ExceptionHandler(HttpMessageNotReadableException.class)
@@ -110,7 +124,7 @@ public class GlobalExceptionHandler {
 		HttpMessageNotReadableException ex,
 		HttpServletRequest request
 	) {
-		return respond(HttpStatus.BAD_REQUEST, "Malformed or invalid request body", request);
+		return respond(HttpStatus.BAD_REQUEST, "MALFORMED_BODY", "Malformed or invalid request body", request);
 	}
 
 	@ExceptionHandler({
@@ -121,7 +135,7 @@ public class GlobalExceptionHandler {
 		Exception ex,
 		HttpServletRequest request
 	) {
-		return respond(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+		return respond(HttpStatus.BAD_REQUEST, "INVALID_PARAMETER", ex.getMessage(), request);
 	}
 
 	@ExceptionHandler(HttpMediaTypeNotSupportedException.class)
@@ -129,7 +143,7 @@ public class GlobalExceptionHandler {
 		HttpMediaTypeNotSupportedException ex,
 		HttpServletRequest request
 	) {
-		return respond(HttpStatus.UNSUPPORTED_MEDIA_TYPE, ex.getMessage(), request);
+		return respond(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "UNSUPPORTED_MEDIA_TYPE", ex.getMessage(), request);
 	}
 
 	@ExceptionHandler(HttpRequestMethodNotSupportedException.class)
@@ -137,7 +151,7 @@ public class GlobalExceptionHandler {
 		HttpRequestMethodNotSupportedException ex,
 		HttpServletRequest request
 	) {
-		return respond(HttpStatus.METHOD_NOT_ALLOWED, ex.getMessage(), request);
+		return respond(HttpStatus.METHOD_NOT_ALLOWED, "METHOD_NOT_ALLOWED", ex.getMessage(), request);
 	}
 
 	@ExceptionHandler(NoResourceFoundException.class)
@@ -145,7 +159,7 @@ public class GlobalExceptionHandler {
 		NoResourceFoundException ex,
 		HttpServletRequest request
 	) {
-		return respond(HttpStatus.NOT_FOUND, "Resource not found", request);
+		return respond(HttpStatus.NOT_FOUND, "NOT_FOUND", "Resource not found", request);
 	}
 
 	@ExceptionHandler(MaxUploadSizeExceededException.class)
@@ -153,7 +167,7 @@ public class GlobalExceptionHandler {
 		MaxUploadSizeExceededException ex,
 		HttpServletRequest request
 	) {
-		return respond(HttpStatus.PAYLOAD_TOO_LARGE, "File is too large", request);
+		return respond(HttpStatus.PAYLOAD_TOO_LARGE, "PAYLOAD_TOO_LARGE", "File is too large", request);
 	}
 
 	@ExceptionHandler(DataIntegrityViolationException.class)
@@ -161,7 +175,8 @@ public class GlobalExceptionHandler {
 		DataIntegrityViolationException ex,
 		HttpServletRequest request
 	) {
-		return respond(HttpStatus.CONFLICT, "The request conflicts with the current state of the resource", request);
+		return respond(HttpStatus.CONFLICT, "DATA_CONFLICT",
+			"The request conflicts with the current state of the resource", request);
 	}
 
 	@ExceptionHandler(OptimisticLockingFailureException.class)
@@ -169,7 +184,8 @@ public class GlobalExceptionHandler {
 		OptimisticLockingFailureException ex,
 		HttpServletRequest request
 	) {
-		return respond(HttpStatus.CONFLICT, "The resource was modified by another request", request);
+		return respond(HttpStatus.CONFLICT, "STALE_WRITE",
+			"The resource was modified by another request", request);
 	}
 
 	@ExceptionHandler(AuthenticationException.class)
@@ -177,7 +193,7 @@ public class GlobalExceptionHandler {
 		AuthenticationException ex,
 		HttpServletRequest request
 	) {
-		return respond(HttpStatus.UNAUTHORIZED, ex.getMessage(), request);
+		return respond(HttpStatus.UNAUTHORIZED, "UNAUTHENTICATED", ex.getMessage(), request);
 	}
 
 	@ExceptionHandler(AccessDeniedException.class)
@@ -185,7 +201,7 @@ public class GlobalExceptionHandler {
 		AccessDeniedException ex,
 		HttpServletRequest request
 	) {
-		return respond(HttpStatus.FORBIDDEN, ex.getMessage(), request);
+		return respond(HttpStatus.FORBIDDEN, "FORBIDDEN", ex.getMessage(), request);
 	}
 
 	@ExceptionHandler(Exception.class)
@@ -195,29 +211,34 @@ public class GlobalExceptionHandler {
 	) {
 		log.error("Unhandled exception on {}", request.getRequestURI(), ex);
 
-		return respond(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred", request);
+		return respond(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR",
+			"An unexpected error occurred", request);
 	}
 
 	private ResponseEntity<ErrorResponse> respond(
 		HttpStatus httpStatus,
+		String code,
 		String message,
 		HttpServletRequest request
 	) {
-		return new ResponseEntity<>(buildError(httpStatus, message, request), httpStatus);
+		return respond(httpStatus, code, message, List.of(), request);
 	}
 
-	private ErrorResponse buildError(
+	private ResponseEntity<ErrorResponse> respond(
 		HttpStatus httpStatus,
+		String code,
 		String message,
+		List<FieldErrorDto> errors,
 		HttpServletRequest request
 	) {
-		return new ErrorResponse(
-			LocalDateTime.now(),
-			httpStatus.value(),
-			httpStatus.name(),
-			message,
-			request.getRequestURI()
-		);
-
+		return new ResponseEntity<>(
+			new ErrorResponse(
+				LocalDateTime.now(),
+				httpStatus.value(),
+				code,
+				message,
+				request.getRequestURI(),
+				errors),
+			httpStatus);
 	}
 }

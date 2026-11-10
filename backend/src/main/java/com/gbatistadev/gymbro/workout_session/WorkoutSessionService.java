@@ -38,7 +38,7 @@ public class WorkoutSessionService {
     public SessionDto start(StartSessionRequest dto) {
         UUID userId = currentUser.id();
         if (sessions.existsByUserIdAndStatus(userId, SessionStatus.IN_PROGRESS)) {
-            throw new ConflictException("An open session already exists");
+            throw new ConflictException("SESSION_ALREADY_ACTIVE", "An open session already exists");
         }
 
         WorkoutSession session = mapper.toEntity(dto);
@@ -75,7 +75,7 @@ public class WorkoutSessionService {
         if (existing.isPresent()) {
             WorkoutLog log = existing.get();
             if (!samePayload(log, dto)) {
-                throw new ConflictException("clientLogId reused with a different payload");
+                throw new ConflictException("CLIENT_LOG_CONFLICT", "clientLogId reused with a different payload");
             }
             return new LogResult(mapper.toDto(log), false);
         }

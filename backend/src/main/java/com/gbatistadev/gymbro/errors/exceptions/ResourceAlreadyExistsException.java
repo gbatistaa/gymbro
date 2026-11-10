@@ -1,7 +1,7 @@
 package com.gbatistadev.gymbro.errors.exceptions;
 
-public class ResourceAlreadyExistsException extends RuntimeException {
+public class ResourceAlreadyExistsException extends ApiException {
 	public ResourceAlreadyExistsException(String message) {
-		super(message);
+		super("RESOURCE_ALREADY_EXISTS", message);
 	}
 }

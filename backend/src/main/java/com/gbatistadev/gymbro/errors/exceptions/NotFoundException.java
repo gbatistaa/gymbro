@@ -1,7 +1,7 @@
 package com.gbatistadev.gymbro.errors.exceptions;
 
-public class NotFoundException extends RuntimeException {
+public class NotFoundException extends ApiException {
 	public NotFoundException(String message) {
-		super(message);
+		super("NOT_FOUND", message);
 	}
 }

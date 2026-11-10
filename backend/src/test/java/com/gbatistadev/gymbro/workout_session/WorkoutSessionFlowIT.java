@@ -134,7 +134,8 @@ class WorkoutSessionFlowIT {
 
         String sessionId = startSessionAndGetId(auth);
         startSession(auth, "{}")
-            .andExpect(status().isConflict());
+            .andExpect(status().isConflict())
+            .andExpect(jsonPath("$.code").value("SESSION_ALREADY_ACTIVE"));
 
         MvcResult first = addLog(sessionId, auth, UUID.randomUUID(), exercise.getId(), 50, 10, 1)
             .andExpect(status().isCreated())

@@ -30,6 +30,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -144,7 +145,7 @@ class AuthControllerTest {
                     """))
             .andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.status").value(401))
-            .andExpect(jsonPath("$.error").value("UNAUTHORIZED"))
+            .andExpect(jsonPath("$.code").value("UNAUTHENTICATED"))
             .andExpect(jsonPath("$.message").value("Invalid credentials"))
             .andExpect(jsonPath("$.path").value("/api/auth/login"));
     }
@@ -197,7 +198,7 @@ class AuthControllerTest {
         mockMvc.perform(post("/api/auth/refresh"))
             .andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.status").value(401))
-            .andExpect(jsonPath("$.error").value("UNAUTHORIZED"))
+            .andExpect(jsonPath("$.code").value("UNAUTHENTICATED"))
             .andExpect(jsonPath("$.message").value("Invalid refresh token"))
             .andExpect(jsonPath("$.path").value("/api/auth/refresh"));
     }
@@ -227,6 +228,36 @@ class AuthControllerTest {
                     """))
             .andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.message").value("Invalid refresh token"));
+    }
+
+    @Test
+    @DisplayName("validation failures return VALIDATION_FAILED with one entry per field")
+    void shouldReturnFieldErrorsOnValidationFailure() throws Exception {
+        mockMvc.perform(post("/api/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"name":"","email":"not-an-email","password":"short"}
+                    """))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
+            .andExpect(jsonPath("$.errors[*].field",
+                containsInAnyOrder("name", "email", "password")))
+            .andExpect(jsonPath("$.errors[*].message").isNotEmpty());
+    }
+
+    @Test
+    @DisplayName("a successful error response always carries an errors array (empty when unused)")
+    void shouldAlwaysIncludeErrorsArray() throws Exception {
+        when(userRepository.findByEmail("ghost@example.com")).thenReturn(Optional.empty());
+
+        mockMvc.perform(post("/api/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"email":"ghost@example.com","password":"password123"}
+                    """))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.errors").isArray())
+            .andExpect(jsonPath("$.errors").isEmpty());
     }
 
     private User existingUser(String rawPassword) {

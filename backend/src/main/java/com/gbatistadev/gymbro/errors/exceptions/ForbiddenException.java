@@ -1,7 +1,7 @@
 package com.gbatistadev.gymbro.errors.exceptions;
 
-public class ForbiddenException extends RuntimeException {
+public class ForbiddenException extends ApiException {
 	public ForbiddenException(String message) {
-		super(message);
+		super("FORBIDDEN", message);
 	}
 }
