@@ -98,6 +98,88 @@ class AuthFlowIT {
             .andExpect(jsonPath("$.path").value("/api/auth/refresh"));
     }
 
+    @Test
+    @DisplayName("logout revokes the refresh token, which can no longer be exchanged")
+    void logoutRevokesRefreshToken() throws Exception {
+        String email = "logout-" + UUID.randomUUID() + "@example.com";
+        Login login = registerAndLogin(email);
+
+        mockMvc.perform(post("/api/auth/logout")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"refreshToken":"%s"}
+                    """.formatted(login.refreshToken())))
+            .andExpect(status().isNoContent());
+
+        mockMvc.perform(post("/api/auth/refresh")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"refreshToken":"%s"}
+                    """.formatted(login.refreshToken())))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.message").value("Invalid refresh token"));
+    }
+
+    @Test
+    @DisplayName("the access token stays valid after logout until it expires (stateless JWT)")
+    void logoutDoesNotRevokeTheAccessToken() throws Exception {
+        String email = "logout-access-" + UUID.randomUUID() + "@example.com";
+        Login login = registerAndLogin(email);
+
+        mockMvc.perform(post("/api/auth/logout")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"refreshToken":"%s"}
+                    """.formatted(login.refreshToken())))
+            .andExpect(status().isNoContent());
+
+        // documenta o limite real do stateless: sem lista de revogação, o access vale até expirar
+        mockMvc.perform(get("/api/users/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + login.accessToken()))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("logout without a refresh token revokes every session of the authenticated user")
+    void logoutWithoutTokenRevokesAllSessions() throws Exception {
+        String email = "logout-all-" + UUID.randomUUID() + "@example.com";
+        Login login = registerAndLogin(email);
+
+        mockMvc.perform(post("/api/auth/logout")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + login.accessToken()))
+            .andExpect(status().isNoContent());
+
+        mockMvc.perform(post("/api/auth/refresh")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"refreshToken":"%s"}
+                    """.formatted(login.refreshToken())))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("logout without a refresh token and without authentication returns 401")
+    void logoutWithoutTokenRequiresAuthentication() throws Exception {
+        mockMvc.perform(post("/api/auth/logout"))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.status").value(401))
+            .andExpect(jsonPath("$.message").value("Authentication required"));
+    }
+
+    @Test
+    @DisplayName("logout is idempotent: revoking an already revoked token still returns 204")
+    void logoutIsIdempotent() throws Exception {
+        String email = "logout-twice-" + UUID.randomUUID() + "@example.com";
+        Login login = registerAndLogin(email);
+        String body = """
+            {"refreshToken":"%s"}
+            """.formatted(login.refreshToken());
+
+        mockMvc.perform(post("/api/auth/logout").contentType(MediaType.APPLICATION_JSON).content(body))
+            .andExpect(status().isNoContent());
+        mockMvc.perform(post("/api/auth/logout").contentType(MediaType.APPLICATION_JSON).content(body))
+            .andExpect(status().isNoContent());
+    }
+
     private Login registerAndLogin(String email) throws Exception {
         MvcResult registered = mockMvc.perform(post("/api/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)

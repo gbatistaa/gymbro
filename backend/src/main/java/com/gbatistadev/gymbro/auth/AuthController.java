@@ -9,10 +9,13 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -35,5 +38,13 @@ public class AuthController {
         @RequestBody(required = false) RefreshRequest request
     ) {
         return authService.refresh(request == null ? null : request.refreshToken());
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(
+        @RequestBody(required = false) RefreshRequest request,
+        @AuthenticationPrincipal UUID userId
+    ) {
+        return authService.logout(request == null ? null : request.refreshToken(), userId);
     }
 }

@@ -26,6 +26,7 @@ import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.HexFormat;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -85,6 +86,36 @@ public class AuthService {
                 "Bearer",
                 jwtProperties.expirationMs() / 1000,
                 refreshToken));
+    }
+
+    /**
+     * Revoga a sessão. Com um refresh token no corpo, apaga aquele token — quem o possui já poderia
+     * autenticar com ele, então a posse é a autorização. Sem token no corpo, exige autenticação e
+     * encerra todas as sessões do usuário.
+     *
+     * <p>O access token (JWT) continua válido até expirar: não há lista de revogação.
+     * {@code shortcut: access token sem revogação, upgrade = jti + denylist até o exp}
+     *
+     * <p>Sempre 204, mesmo para um token inexistente, para não revelar se ele existia.
+     */
+    @Transactional
+    public ResponseEntity<Void> logout(String rawRefreshToken, UUID userId) {
+        if (rawRefreshToken != null && !rawRefreshToken.isBlank()) {
+            String tokenHash = sha256Hex(rawRefreshToken);
+            if (userId == null) {
+                refreshTokenRepository.deleteByTokenHash(tokenHash);
+            } else {
+                // autenticado: só pode destruir sessão própria (defesa em profundidade contra IDOR)
+                refreshTokenRepository.deleteByTokenHashAndUserId(tokenHash, userId);
+            }
+            return ResponseEntity.noContent().build();
+        }
+
+        if (userId == null) {
+            throw new UnauthorizedException("Authentication required");
+        }
+        refreshTokenRepository.deleteByUserId(userId);
+        return ResponseEntity.noContent().build();
     }
 
     private String generateRefreshToken() {
