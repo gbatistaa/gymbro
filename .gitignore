@@ -35,3 +35,4 @@ build/
 ### Env ###
 .env
 __pycache__
+doc-process/.venv
