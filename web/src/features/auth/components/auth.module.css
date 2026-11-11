@@ -2,7 +2,7 @@
   position: relative;
   isolation: isolate;
   display: grid;
-  min-height: 100svh;
+  min-height: calc(100svh - var(--safe-area-top));
   overflow: hidden;
   padding: 20px;
 }

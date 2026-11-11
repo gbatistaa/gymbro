@@ -25,6 +25,8 @@
   --content-max: 640px;
   --tap-target-min: 48px;
 
+  --safe-area-top: env(safe-area-inset-top, 0px);
+
   --font-sans: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-plex-mono), ui-monospace, "SFMono-Regular", monospace;
 }
@@ -40,6 +42,7 @@ body {
 
 body {
   margin: 0;
+  padding-top: var(--safe-area-top);
   background: var(--color-canvas);
   color: var(--color-text-primary);
   font-family: var(--font-sans);
