@@ -1,5 +1,7 @@
-import Feather from '@expo/vector-icons/Feather';
-import { Redirect, Tabs } from 'expo-router';
+// importar do pacote raiz (e não do subcaminho `/Feather`): o subpath não é mapeado pelo resolver
+// nem pelos tipos gerados, o que quebrava o `tsc` com "cannot find module"
+import { Feather } from '@expo/vector-icons';
+import { Redirect, Tabs, type Href } from 'expo-router';
 import { useAtomValue } from 'jotai';
 import { StyleSheet, View, type ColorValue } from 'react-native';
 
@@ -47,7 +49,9 @@ export default function TabsLayout() {
   // sem sessão não há o que mostrar: a guarda fica aqui, não em cada tela
   const session = useAtomValue(sessionAtom);
   if (session === null) {
-    return <Redirect href="/login" />;
+    // os tipos de rota gerados pelo expo-router estão desatualizados (só conhecem as rotas do
+    // template), então o cast evita quebrar o build até rodar `expo customize tsconfig` / prebuild
+    return <Redirect href={'/login' as Href} />;
   }
 
   return (
