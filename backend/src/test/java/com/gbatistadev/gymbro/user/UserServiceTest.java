@@ -40,7 +40,7 @@ class UserServiceTest {
     @Test
     @DisplayName("create assigns the default time zone")
     void shouldDefaultTimeZoneOnCreate() {
-        CreateUserDto dto = new CreateUserDto("João Silva", "joao@example.com", "password123");
+        CreateUserDto dto = new CreateUserDto("João Silva", "u" + UUID.randomUUID().toString().substring(0, 8), "joao@example.com", "password123");
         when(repository.existsByEmail("joao@example.com")).thenReturn(false);
 
         UserDto result = service.create(dto);
@@ -51,7 +51,7 @@ class UserServiceTest {
     @Test
     @DisplayName("create saves user with BCrypt hash")
     void shouldCreateUser_whenEmailIsNew() {
-        CreateUserDto dto = new CreateUserDto("João Silva", "joao@example.com", "password123");
+        CreateUserDto dto = new CreateUserDto("João Silva", "u" + UUID.randomUUID().toString().substring(0, 8), "joao@example.com", "password123");
         when(repository.existsByEmail("joao@example.com")).thenReturn(false);
 
         UserDto result = service.create(dto);
@@ -68,10 +68,39 @@ class UserServiceTest {
     @Test
     @DisplayName("create rejects duplicated email")
     void shouldThrow_whenEmailAlreadyExists() {
-        CreateUserDto dto = new CreateUserDto("João Silva", "joao@example.com", "password123");
+        CreateUserDto dto = new CreateUserDto("João Silva", "u" + UUID.randomUUID().toString().substring(0, 8), "joao@example.com", "password123");
         when(repository.existsByEmail("joao@example.com")).thenReturn(true);
 
         assertThrows(ResourceAlreadyExistsException.class, () -> service.create(dto));
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("create stores the username in lowercase")
+    void shouldNormalizeUsernameToLowercase() {
+        CreateUserDto dto = new CreateUserDto("João Silva", "Joao.Silva", "joao@example.com", "password123");
+        when(repository.existsByEmail("joao@example.com")).thenReturn(false);
+
+        UserDto result = service.create(dto);
+
+        assertEquals("joao.silva", result.getUsername());
+
+        ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
+        verify(repository).save(captor.capture());
+        assertEquals("joao.silva", captor.getValue().getUsername());
+    }
+
+    @Test
+    @DisplayName("create rejects duplicated username and points the conflict at the field")
+    void shouldThrow_whenUsernameAlreadyExists() {
+        CreateUserDto dto = new CreateUserDto("João Silva", "joao", "joao@example.com", "password123");
+        when(repository.existsByEmail("joao@example.com")).thenReturn(false);
+        when(repository.existsByUsernameIgnoreCase("joao")).thenReturn(true);
+
+        ResourceAlreadyExistsException exception = assertThrows(
+            ResourceAlreadyExistsException.class, () -> service.create(dto));
+
+        assertEquals("username", exception.getField());
         verify(repository, never()).save(any());
     }
 

@@ -10,6 +10,7 @@ public interface UserSummaryProjection {
     UUID getId();
     String getName();
     String getEmail();
+    String getUsername();
     Instant getCreatedAt();
     String getTimezone();
 }

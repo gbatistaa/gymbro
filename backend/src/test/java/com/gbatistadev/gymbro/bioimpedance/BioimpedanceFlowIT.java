@@ -165,6 +165,7 @@ class BioimpedanceFlowIT {
     private UserDto createUser() {
         return userService.create(new CreateUserDto(
             "User",
+            "u" + UUID.randomUUID().toString().substring(0, 8),
             "user-" + UUID.randomUUID() + "@example.com",
             "password123"
         ));

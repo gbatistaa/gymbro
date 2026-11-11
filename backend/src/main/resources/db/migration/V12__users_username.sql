@@ -44,12 +44,6 @@ END $$;
 
 ALTER TABLE users ALTER COLUMN username SET NOT NULL;
 
--- DEFAULT temporário: enquanto o código ainda não conhece o campo (Task 2), um insert antigo
--- continua válido em vez de estourar NOT NULL. A Task 2 remove este DEFAULT.
--- Fica depois do backfill de propósito: com DEFAULT, `WHERE username IS NULL` não encontraria linha.
-ALTER TABLE users ALTER COLUMN username
-    SET DEFAULT 'user_' || substr(replace(gen_random_uuid()::text, '-', ''), 1, 8);
-
 CREATE UNIQUE INDEX uk_users_username ON users (lower(username));
 
 ALTER TABLE users ADD CONSTRAINT ck_users_username_format

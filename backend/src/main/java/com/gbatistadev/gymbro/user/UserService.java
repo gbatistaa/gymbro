@@ -12,6 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Locale;
 import java.util.UUID;
 
 @Service
@@ -27,7 +28,15 @@ public class UserService {
             throw new ResourceAlreadyExistsException("A user with that email already exists");
         }
 
+        // o formato é insensível a caixa; o banco guarda só minúsculas
+        String username = dto.username().trim().toLowerCase(Locale.ROOT);
+        if (repository.existsByUsernameIgnoreCase(username)) {
+            throw new ResourceAlreadyExistsException(
+                "A user with that username already exists", "username");
+        }
+
         User user = mapper.toEntity(dto);
+        user.setUsername(username);
         user.setPasswordHash(passwordEncoder.encode(dto.password()));
         repository.save(user);
 

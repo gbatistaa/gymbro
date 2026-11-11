@@ -63,13 +63,14 @@ class UserControllerTest {
     @DisplayName("GET /api/users/me returns summary for a valid bearer token")
     void shouldReturnCurrentUserSummary() throws Exception {
         String email = "user-" + UUID.randomUUID() + "@example.com";
-        UserDto user = userService.create(new CreateUserDto("Test User", email, "password123"));
+        UserDto user = userService.create(new CreateUserDto("Test User", "u" + UUID.randomUUID().toString().substring(0, 8), email, "password123"));
 
         mockMvc.perform(get("/api/users/me").header(HttpHeaders.AUTHORIZATION, bearer(user)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id").value(user.getId().toString()))
             .andExpect(jsonPath("$.name").value("Test User"))
             .andExpect(jsonPath("$.email").value(email))
+            .andExpect(jsonPath("$.username").value(user.getUsername()))
             .andExpect(jsonPath("$.createdAt").exists())
             .andExpect(jsonPath("$.passwordHash").doesNotExist());
     }
@@ -78,7 +79,7 @@ class UserControllerTest {
     @DisplayName("PUT /api/users/me updates only provided fields")
     void shouldUpdateCurrentUser() throws Exception {
         String email = "user-" + UUID.randomUUID() + "@example.com";
-        UserDto user = userService.create(new CreateUserDto("Test User", email, "password123"));
+        UserDto user = userService.create(new CreateUserDto("Test User", "u" + UUID.randomUUID().toString().substring(0, 8), email, "password123"));
 
         mockMvc.perform(put("/api/users/me")
                 .header(HttpHeaders.AUTHORIZATION, bearer(user))
@@ -93,7 +94,7 @@ class UserControllerTest {
     @DisplayName("PUT /api/users/me accepts an email-only partial update")
     void shouldUpdateOnlyEmail() throws Exception {
         String email = "user-" + UUID.randomUUID() + "@example.com";
-        UserDto user = userService.create(new CreateUserDto("Test User", email, "password123"));
+        UserDto user = userService.create(new CreateUserDto("Test User", "u" + UUID.randomUUID().toString().substring(0, 8), email, "password123"));
         String updatedEmail = "updated-" + UUID.randomUUID() + "@example.com";
 
         mockMvc.perform(put("/api/users/me")
@@ -118,7 +119,7 @@ class UserControllerTest {
     @DisplayName("a malformed Authorization header without the Bearer scheme returns 401")
     void shouldRejectHeaderWithoutBearerScheme() throws Exception {
         String email = "user-" + UUID.randomUUID() + "@example.com";
-        UserDto user = userService.create(new CreateUserDto("Test User", email, "password123"));
+        UserDto user = userService.create(new CreateUserDto("Test User", "u" + UUID.randomUUID().toString().substring(0, 8), email, "password123"));
 
         mockMvc.perform(get("/api/users/me")
                 .header(HttpHeaders.AUTHORIZATION, jwtService.createAccessToken(user.getId(), user.getEmail())))
@@ -130,7 +131,7 @@ class UserControllerTest {
     @DisplayName("the Bearer scheme is matched case-insensitively")
     void shouldAcceptLowerCaseBearerScheme() throws Exception {
         String email = "user-" + UUID.randomUUID() + "@example.com";
-        UserDto user = userService.create(new CreateUserDto("Test User", email, "password123"));
+        UserDto user = userService.create(new CreateUserDto("Test User", "u" + UUID.randomUUID().toString().substring(0, 8), email, "password123"));
 
         mockMvc.perform(get("/api/users/me")
                 .header(HttpHeaders.AUTHORIZATION, "bearer " + jwtService.createAccessToken(user.getId(), user.getEmail())))
@@ -142,7 +143,7 @@ class UserControllerTest {
     @DisplayName("PUT /api/users/me updates the time zone and GET returns it")
     void shouldUpdateTimeZone() throws Exception {
         String email = "user-" + UUID.randomUUID() + "@example.com";
-        UserDto user = userService.create(new CreateUserDto("Test User", email, "password123"));
+        UserDto user = userService.create(new CreateUserDto("Test User", "u" + UUID.randomUUID().toString().substring(0, 8), email, "password123"));
 
         mockMvc.perform(put("/api/users/me")
                 .header(HttpHeaders.AUTHORIZATION, bearer(user))
@@ -160,7 +161,7 @@ class UserControllerTest {
     @DisplayName("an invalid time zone returns VALIDATION_FAILED naming the field")
     void shouldRejectInvalidTimeZone() throws Exception {
         String email = "user-" + UUID.randomUUID() + "@example.com";
-        UserDto user = userService.create(new CreateUserDto("Test User", email, "password123"));
+        UserDto user = userService.create(new CreateUserDto("Test User", "u" + UUID.randomUUID().toString().substring(0, 8), email, "password123"));
 
         mockMvc.perform(put("/api/users/me")
                 .header(HttpHeaders.AUTHORIZATION, bearer(user))
@@ -175,7 +176,7 @@ class UserControllerTest {
     @DisplayName("DELETE /api/users/me removes the account and cascades to dependent rows")
     void shouldDeleteAccount() throws Exception {
         String email = "user-" + UUID.randomUUID() + "@example.com";
-        UserDto user = userService.create(new CreateUserDto("Test User", email, "password123"));
+        UserDto user = userService.create(new CreateUserDto("Test User", "u" + UUID.randomUUID().toString().substring(0, 8), email, "password123"));
 
         // o login cria uma linha em refresh_tokens: é a prova de que a cascata do banco rodou
         mockMvc.perform(post("/api/auth/login")
@@ -195,7 +196,7 @@ class UserControllerTest {
     @DisplayName("after deletion the same credentials are rejected with 401")
     void shouldRejectDeletedAccount() throws Exception {
         String email = "user-" + UUID.randomUUID() + "@example.com";
-        UserDto user = userService.create(new CreateUserDto("Test User", email, "password123"));
+        UserDto user = userService.create(new CreateUserDto("Test User", "u" + UUID.randomUUID().toString().substring(0, 8), email, "password123"));
         String auth = bearer(user);
 
         mockMvc.perform(delete("/api/users/me").header(HttpHeaders.AUTHORIZATION, auth))
@@ -211,7 +212,7 @@ class UserControllerTest {
     @DisplayName("deleting the account cascades to playlists, sessions, logs and custom exercises")
     void shouldCascadeToWorkoutData() throws Exception {
         String email = "cascade-" + UUID.randomUUID() + "@example.com";
-        UserDto user = userService.create(new CreateUserDto("Cascade User", email, "password123"));
+        UserDto user = userService.create(new CreateUserDto("Cascade User", "u" + UUID.randomUUID().toString().substring(0, 8), email, "password123"));
         String auth = bearer(user);
         UUID userId = user.getId();
 

@@ -83,7 +83,11 @@ public class GlobalExceptionHandler {
 		ResourceAlreadyExistsException ex,
 		HttpServletRequest request
 	) {
-		return respond(HttpStatus.CONFLICT, ex.getCode(), ex.getMessage(), request);
+		List<FieldErrorDto> errors = ex.getField() == null
+			? List.of()
+			: List.of(new FieldErrorDto(ex.getField(), ex.getMessage()));
+
+		return respond(HttpStatus.CONFLICT, ex.getCode(), ex.getMessage(), errors, request);
 	}
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)

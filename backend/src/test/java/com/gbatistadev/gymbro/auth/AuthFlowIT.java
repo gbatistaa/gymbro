@@ -198,11 +198,12 @@ class AuthFlowIT {
     }
 
     private Session register(String email) throws Exception {
+        String username = "u" + UUID.randomUUID().toString().substring(0, 8);
         MvcResult registered = mockMvc.perform(post("/api/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
-                    {"name":"Flow User","email":"%s","password":"password123"}
-                    """.formatted(email)))
+                    {"name":"Flow User","username":"%s","email":"%s","password":"password123"}
+                    """.formatted(username, email)))
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.createdAt").exists())
             .andReturn();

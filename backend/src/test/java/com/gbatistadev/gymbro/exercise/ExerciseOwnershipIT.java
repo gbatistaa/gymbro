@@ -129,6 +129,7 @@ class ExerciseOwnershipIT {
     private UserDto createUser(String prefix) {
         return userService.create(new CreateUserDto(
             "User " + prefix,
+            "u" + UUID.randomUUID().toString().substring(0, 8),
             "user-" + prefix + "-" + UUID.randomUUID() + "@example.com",
             "password123"
         ));

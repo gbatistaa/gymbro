@@ -46,7 +46,7 @@ class AuthControllerTest {
     // >= 32 bytes, exigido para HS256
     private static final String SECRET = "test-secret-0123456789012345678901234567890123456789";
     private static final String REGISTER_BODY = """
-        {"name":"João Silva","email":"joao@example.com","password":"password123"}
+        {"name":"João Silva","username":"joao.silva","email":"joao@example.com","password":"password123"}
         """;
     private static final String LOGIN_BODY = """
         {"email":"joao@example.com","password":"password123"}
@@ -93,6 +93,7 @@ class AuthControllerTest {
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.name").value("João Silva"))
             .andExpect(jsonPath("$.email").value("joao@example.com"))
+            .andExpect(jsonPath("$.username").value("joao.silva"))
             .andExpect(jsonPath("$.passwordHash").doesNotExist())
             .andExpect(jsonPath("$.accessToken").doesNotExist())
             .andExpect(jsonPath("$.refreshToken").doesNotExist())
@@ -233,13 +234,28 @@ class AuthControllerTest {
         mockMvc.perform(post("/api/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
-                    {"name":"","email":"not-an-email","password":"short"}
+                    {"name":"","username":"valid_one","email":"not-an-email","password":"short"}
                     """))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
             .andExpect(jsonPath("$.errors[*].field",
                 containsInAnyOrder("name", "email", "password")))
             .andExpect(jsonPath("$.errors[*].message").isNotEmpty());
+    }
+
+    @Test
+    @DisplayName("an invalid username is reported on its own field")
+    void shouldRejectInvalidUsername() throws Exception {
+        mockMvc.perform(post("/api/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"name":"João Silva","username":"a b!","email":"joao@example.com","password":"password123"}
+                    """))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
+            .andExpect(jsonPath("$.errors[*].field", containsInAnyOrder("username")))
+            .andExpect(jsonPath("$.errors[0].message")
+                .value("Use de 3 a 30 caracteres: letras, números, ponto ou sublinhado."));
     }
 
     @Test
@@ -342,6 +358,7 @@ class AuthControllerTest {
         user.setId(UUID.randomUUID());
         user.setName("João Silva");
         user.setEmail("joao@example.com");
+        user.setUsername("joao.silva");
         user.setPasswordHash(encoder.encode(rawPassword));
         return user;
     }
