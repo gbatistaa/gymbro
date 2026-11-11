@@ -3,6 +3,7 @@ package com.gbatistadev.gymbro.errors;
 import com.gbatistadev.gymbro.errors.exceptions.BadRequestException;
 import com.gbatistadev.gymbro.errors.exceptions.ConflictException;
 import com.gbatistadev.gymbro.errors.exceptions.ForbiddenException;
+import com.gbatistadev.gymbro.errors.exceptions.InvalidCurrentPasswordException;
 import com.gbatistadev.gymbro.errors.exceptions.NotFoundException;
 import com.gbatistadev.gymbro.errors.exceptions.RateLimitedException;
 import com.gbatistadev.gymbro.errors.exceptions.ResourceAlreadyExistsException;
@@ -224,6 +225,14 @@ public class GlobalExceptionHandler {
 				ex.getMessage(),
 				request.getRequestURI(),
 				List.of()));
+	}
+
+	@ExceptionHandler(InvalidCurrentPasswordException.class)
+	public ResponseEntity<ErrorResponse> handleInvalidCurrentPasswordException(
+		InvalidCurrentPasswordException ex,
+		HttpServletRequest request
+	) {
+		return respond(HttpStatus.BAD_REQUEST, ex.getCode(), ex.getMessage(), request);
 	}
 
 	@ExceptionHandler(Exception.class)

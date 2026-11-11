@@ -1,10 +1,12 @@
 package com.gbatistadev.gymbro.user;
 
 import com.gbatistadev.gymbro.common.aspect.Logging;
+import com.gbatistadev.gymbro.errors.exceptions.InvalidCurrentPasswordException;
 import com.gbatistadev.gymbro.errors.exceptions.NotFoundException;
 import com.gbatistadev.gymbro.errors.exceptions.ResourceAlreadyExistsException;
 import com.gbatistadev.gymbro.errors.exceptions.UnauthorizedException;
 import com.gbatistadev.gymbro.user.dto.CreateUserDto;
+import com.gbatistadev.gymbro.user.dto.UpdatePasswordRequest;
 import com.gbatistadev.gymbro.user.dto.UpdateUserDto;
 import com.gbatistadev.gymbro.user.dto.UserDto;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +21,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository repository;
+    private final RefreshTokenRepository refreshTokens;
     private final UserMapper mapper;
     private final PasswordEncoder passwordEncoder;
 
@@ -52,6 +55,25 @@ public class UserService {
         mapper.updateEntity(dto, user);
 
         return mapper.toDto(user);
+    }
+
+    /**
+     * Troca a senha e derruba todas as sessões: quem trocou precisa entrar de novo em cada
+     * dispositivo. Senha atual incorreta é 400, nunca 401, para o interceptor do PWA não tratar
+     * como sessão expirada.
+     */
+    @Transactional
+    @Logging(action = "UPDATE_PASSWORD")
+    public void changePassword(UpdatePasswordRequest dto, UUID id) {
+        User user = repository.findById(id)
+            .orElseThrow(() -> new UnauthorizedException("Session is no longer valid"));
+
+        if (!passwordEncoder.matches(dto.currentPassword(), user.getPasswordHash())) {
+            throw new InvalidCurrentPasswordException();
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(dto.newPassword()));
+        refreshTokens.deleteByUserId(id);
     }
 
     /**

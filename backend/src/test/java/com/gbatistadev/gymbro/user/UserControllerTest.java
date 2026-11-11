@@ -15,6 +15,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.UUID;
 
@@ -272,6 +273,94 @@ class UserControllerTest {
             .andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.status").value(401))
             .andExpect(jsonPath("$.path").value("/api/exercises"));
+    }
+
+    @Test
+    @DisplayName("PUT /api/users/me/password changes the password and revokes every session")
+    void shouldChangePasswordAndRevokeSessions() throws Exception {
+        String email = "pw-" + UUID.randomUUID() + "@example.com";
+        String username = "u" + UUID.randomUUID().toString().substring(0, 8);
+        UserDto user = userService.create(new CreateUserDto("Test User", username, email, "password123"));
+
+        // abre uma sessão para provar que a troca derruba o refresh token
+        MvcResult login = mockMvc.perform(post("/api/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"identifier\":\"" + email + "\",\"password\":\"password123\"}"))
+            .andExpect(status().isOk())
+            .andReturn();
+        assertEquals(1, refreshTokenRepository.findAllByUserId(user.getId()).size());
+        String refreshCookie = login.getResponse().getHeaders("Set-Cookie").stream()
+            .filter(header -> header.startsWith("gymbro_refresh="))
+            .findFirst()
+            .orElseThrow(() -> new AssertionError("cookie de refresh ausente"));
+
+        mockMvc.perform(put("/api/users/me/password")
+                .header(HttpHeaders.AUTHORIZATION, bearer(user))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"currentPassword\":\"password123\",\"newPassword\":\"new-password-456\"}"))
+            .andExpect(status().isNoContent());
+
+        assertTrue(refreshTokenRepository.findAllByUserId(user.getId()).isEmpty(),
+            "a troca de senha precisa derrubar todas as sessões");
+
+        // senha antiga não entra mais; a nova entra
+        mockMvc.perform(post("/api/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"identifier\":\"" + email + "\",\"password\":\"password123\"}"))
+            .andExpect(status().isUnauthorized());
+        mockMvc.perform(post("/api/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"identifier\":\"" + email + "\",\"password\":\"new-password-456\"}"))
+            .andExpect(status().isOk());
+
+        // o refresh antigo morreu junto com a sessão
+        mockMvc.perform(post("/api/auth/refresh").header("Cookie", refreshCookie.split(";")[0]))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("PUT /api/users/me/password with the wrong current password returns 400, never 401")
+    void shouldRejectPasswordChange_whenCurrentPasswordIsWrong() throws Exception {
+        String email = "pw-wrong-" + UUID.randomUUID() + "@example.com";
+        UserDto user = userService.create(
+            new CreateUserDto("Test User", "u" + UUID.randomUUID().toString().substring(0, 8), email, "password123"));
+
+        mockMvc.perform(put("/api/users/me/password")
+                .header(HttpHeaders.AUTHORIZATION, bearer(user))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"currentPassword\":\"not-the-password\",\"newPassword\":\"new-password-456\"}"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value("INVALID_CURRENT_PASSWORD"));
+
+        // a sessão continua válida: 401 aqui significaria deslogar o usuário à toa
+        mockMvc.perform(get("/api/users/me").header(HttpHeaders.AUTHORIZATION, bearer(user)))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("PUT /api/users/me/password with a short password returns field errors")
+    void shouldRejectShortNewPassword() throws Exception {
+        String email = "pw-short-" + UUID.randomUUID() + "@example.com";
+        UserDto user = userService.create(
+            new CreateUserDto("Test User", "u" + UUID.randomUUID().toString().substring(0, 8), email, "password123"));
+
+        mockMvc.perform(put("/api/users/me/password")
+                .header(HttpHeaders.AUTHORIZATION, bearer(user))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"currentPassword\":\"password123\",\"newPassword\":\"short\"}"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
+            .andExpect(jsonPath("$.errors[*].field").value("newPassword"));
+    }
+
+    @Test
+    @DisplayName("PUT /api/users/me/password without authentication returns 401")
+    void shouldRejectPasswordChangeWithoutAuthentication() throws Exception {
+        mockMvc.perform(put("/api/users/me/password")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"currentPassword\":\"password123\",\"newPassword\":\"new-password-456\"}"))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.code").value("UNAUTHENTICATED"));
     }
 
     private String bearer(UserDto user) {

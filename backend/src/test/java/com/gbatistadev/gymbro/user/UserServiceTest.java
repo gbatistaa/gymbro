@@ -1,8 +1,10 @@
 package com.gbatistadev.gymbro.user;
 
+import com.gbatistadev.gymbro.errors.exceptions.InvalidCurrentPasswordException;
 import com.gbatistadev.gymbro.errors.exceptions.NotFoundException;
 import com.gbatistadev.gymbro.errors.exceptions.ResourceAlreadyExistsException;
 import com.gbatistadev.gymbro.user.dto.CreateUserDto;
+import com.gbatistadev.gymbro.user.dto.UpdatePasswordRequest;
 import com.gbatistadev.gymbro.user.dto.UpdateUserDto;
 import com.gbatistadev.gymbro.user.dto.UserDto;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,13 +30,16 @@ class UserServiceTest {
     @Mock
     private UserRepository repository;
 
+    @Mock
+    private RefreshTokenRepository refreshTokens;
+
     // mapper e encoder reais: o comportamento de update parcial e o hash da senha são o que se testa
     private final UserMapper mapper = new UserMapperImpl();
     private UserService service;
 
     @BeforeEach
     void setUp() {
-        service = new UserService(repository, mapper, new BCryptPasswordEncoder());
+        service = new UserService(repository, refreshTokens, mapper, new BCryptPasswordEncoder());
     }
 
     @Test
@@ -128,5 +133,45 @@ class UserServiceTest {
 
         assertThrows(NotFoundException.class,
             () -> service.update(new UpdateUserDto("Novo Nome", null, null), id));
+    }
+
+    @Test
+    @DisplayName("changePassword stores the new hash and revokes every session")
+    void shouldChangePasswordAndRevokeSessions() {
+        User existing = passwordUser("old-password-123");
+        when(repository.findById(existing.getId())).thenReturn(Optional.of(existing));
+
+        service.changePassword(
+            new UpdatePasswordRequest("old-password-123", "new-password-456"), existing.getId());
+
+        assertTrue(new BCryptPasswordEncoder().matches("new-password-456", existing.getPasswordHash()));
+        verify(refreshTokens).deleteByUserId(existing.getId());
+    }
+
+    @Test
+    @DisplayName("changePassword with the wrong current password changes nothing")
+    void shouldRejectPasswordChange_whenCurrentPasswordIsWrong() {
+        User existing = passwordUser("old-password-123");
+        String hashBefore = existing.getPasswordHash();
+        when(repository.findById(existing.getId())).thenReturn(Optional.of(existing));
+
+        InvalidCurrentPasswordException exception = assertThrows(
+            InvalidCurrentPasswordException.class,
+            () -> service.changePassword(
+                new UpdatePasswordRequest("not-the-password", "new-password-456"), existing.getId()));
+
+        assertEquals("INVALID_CURRENT_PASSWORD", exception.getCode());
+        assertEquals(hashBefore, existing.getPasswordHash());
+        verify(refreshTokens, never()).deleteByUserId(any());
+    }
+
+    private User passwordUser(String rawPassword) {
+        User user = new User();
+        user.setId(UUID.randomUUID());
+        user.setName("João Silva");
+        user.setEmail("joao@example.com");
+        user.setUsername("joao.silva");
+        user.setPasswordHash(new BCryptPasswordEncoder().encode(rawPassword));
+        return user;
     }
 }

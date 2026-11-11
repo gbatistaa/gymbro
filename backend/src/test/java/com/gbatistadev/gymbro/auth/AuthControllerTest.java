@@ -70,7 +70,7 @@ class AuthControllerTest {
     void setUp() {
         UserMapper mapper = new UserMapperImpl();
         JwtProperties properties = new JwtProperties(SECRET, 900_000L, 15_552_000_000L);
-        UserService userService = new UserService(userRepository, mapper, encoder);
+        UserService userService = new UserService(userRepository, refreshTokenRepository, mapper, encoder);
         jwtService = new JwtService(properties);
         AuthService authService = new AuthService(
             userService, userRepository, refreshTokenRepository,

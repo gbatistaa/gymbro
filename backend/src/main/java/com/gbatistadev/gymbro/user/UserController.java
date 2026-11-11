@@ -1,6 +1,7 @@
 package com.gbatistadev.gymbro.user;
 
 import com.gbatistadev.gymbro.errors.exceptions.NotFoundException;
+import com.gbatistadev.gymbro.user.dto.UpdatePasswordRequest;
 import com.gbatistadev.gymbro.user.dto.UpdateUserDto;
 import com.gbatistadev.gymbro.user.dto.UserDto;
 import jakarta.validation.Valid;
@@ -33,6 +34,15 @@ public class UserController {
     @PutMapping
     public UserDto update(@Valid @RequestBody UpdateUserDto dto, @AuthenticationPrincipal UUID userId) {
         return userService.update(dto, userId);
+    }
+
+    @PutMapping("/password")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void changePassword(
+        @Valid @RequestBody UpdatePasswordRequest dto,
+        @AuthenticationPrincipal UUID userId
+    ) {
+        userService.changePassword(dto, userId);
     }
 
     @DeleteMapping
