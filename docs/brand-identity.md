@@ -20,21 +20,23 @@ Toda escolha visual abaixo deriva disso.
 
 ## 1. Posicionamento
 
-| Dimensão | Decisão |
-|---|---|
-| Usuário central | Intermediário, 1 a 3 anos de treino. Sabe o que é PR, volume e deload. |
-| Sensação ao abrir | Ferramenta séria de progressão. Precisa, silenciosa, confiável. |
-| Tema | **Escuro apenas** no MVP. Claro entra depois como paleta própria, nunca como inversão. |
-| Marca | **Gymbro**, wordmark tipográfico. |
-| Ambição visual | Estrutura convencional de app + **um elemento-assinatura forte**. |
-| Idioma e unidade | PT-BR, kg, decimal com vírgula (`42,5 kg`). |
-| Navegação | 4 abas: Início, Treinar, Progresso, Perfil. |
+| Dimensão           | Decisão                                                                                       |
+| ------------------- | ---------------------------------------------------------------------------------------------- |
+| Usuário central    | Intermediário, 1 a 3 anos de treino. Sabe o que é PR, volume e deload.                       |
+| Sensação ao abrir | Ferramenta séria de progressão. Precisa, silenciosa, confiável.                             |
+| Tema                | **Escuro apenas** no MVP. Claro entra depois como paleta própria, nunca como inversão. |
+| Marca               | **Gymbro**, wordmark tipográfico.                                                       |
+| Ambição visual    | Estrutura convencional de app + **um elemento-assinatura forte**.                        |
+| Idioma e unidade    | PT-BR, kg, decimal com vírgula (`42,5 kg`).                                                 |
+| Navegação         | 4 abas: Início, Treinar, Progresso, Perfil.                                                   |
 
 ### Contexto de uso que manda no design
+
 Quatro vezes por semana, no meio do treino, uma mão livre, dedo com suor, luz dura de academia,
 sinal instável. Cada toque a mais é custo. Cada ambiguidade numérica é erro de treino.
 
 ### Proibido
+
 - Gradiente roxo/azul, glassmorphism como superfície padrão, card com borda lateral colorida.
 - Copy motivacional: "supere seus limites", "desbloqueie", "transforme-se".
 - Confete como recompensa principal. PR é dado, não festa.
@@ -45,11 +47,11 @@ sinal instável. Cada toque a mais é custo. Cada ambiguidade numérica é erro 
 
 ## 2. Dials
 
-| Dial | Persuade (login, onboarding) | Experience (treino ao vivo, PR) | Operate (rotinas, ajustes) | Read (histórico, relatório) |
-|---|---|---|---|---|
-| Variância | média | **alta** | baixa | baixa |
-| Movimento | baixa | média | mínima | mínima |
-| Densidade | baixa | **alta** | média | alta |
+| Dial       | Persuade (login, onboarding) | Experience (treino ao vivo, PR) | Operate (rotinas, ajustes) | Read (histórico, relatório) |
+| ---------- | ---------------------------- | ------------------------------- | -------------------------- | ----------------------------- |
+| Variância | média                       | **alta**                  | baixa                      | baixa                         |
+| Movimento  | baixa                        | média                          | mínima                    | mínima                       |
+| Densidade  | baixa                        | **alta**                  | média                     | alta                          |
 
 A ousadia fica concentrada na tela de treino ao vivo. Formulário e configuração não recebem
 espetáculo. A tela de treino é o único lugar onde o número vira arquitetura.
@@ -85,24 +87,25 @@ Uma única cor de acento. Neutros tintados para o âmbar (hue ~38°), nunca cinz
 
 ### Paleta escura (MVP)
 
-| Token | Hex | Uso | Contraste medido |
-|---|---|---|---|
-| `canvas` | `#121110` | fundo da aplicação | — |
-| `surface` | `#1A1917` | linha agrupada, tab bar, sheet | 1.07 vs canvas |
-| `raised` | `#232120` | input, botão secundário, linha pressionada | 1.18 vs canvas |
-| `border` | `#2E2B28` | contorno de card e sheet (decorativo) | 1.34 |
-| `rule` | `#3A3632` | hairline entre linhas de dado | 1.58 |
-| `borderStrong` | `#787067` | contorno de input, indicador de foco | **3.61** vs surface |
-| `textMuted` | `#9A9188` | anotação de margem, label, texto desabilitado | **5.18** no pior caso |
-| `textSecondary` | `#B8B0A6` | corpo secundário, unidade `kg` | 7.48 |
-| `textPrimary` | `#F2EEE8` | texto principal, giz | 13.87 |
-| `accent` | `#F5B23D` | ação primária, PR, série concluída | 8.64 |
-| `accentPressed` | `#D9931A` | estado pressionado do acento | 7.31 |
-| `accentTint` | `#2B2218` | fundo de linha selecionada ou de destaque | 1.19 |
-| `danger` | `#F2665C` | apagar, erro de validação. Nunca decorativo. | 5.21 |
-| `onAccent` | `#121110` | texto sobre âmbar | 10.17 |
+| Token             | Hex         | Uso                                             | Contraste medido            |
+| ----------------- | ----------- | ----------------------------------------------- | --------------------------- |
+| `canvas`        | `#121110` | fundo da aplicação                            | —                          |
+| `surface`       | `#1A1917` | linha agrupada, tab bar, sheet                  | 1.07 vs canvas              |
+| `raised`        | `#232120` | input, botão secundário, linha pressionada    | 1.18 vs canvas              |
+| `border`        | `#2E2B28` | contorno de card e sheet (decorativo)           | 1.34                        |
+| `rule`          | `#3A3632` | hairline entre linhas de dado                   | 1.58                        |
+| `borderStrong`  | `#787067` | contorno de input, indicador de foco            | **3.61** vs surface   |
+| `textMuted`     | `#9A9188` | anotação de margem, label, texto desabilitado | **5.18** no pior caso |
+| `textSecondary` | `#B8B0A6` | corpo secundário, unidade `kg`               | 7.48                        |
+| `textPrimary`   | `#F2EEE8` | texto principal, giz                            | 13.87                       |
+| `accent`        | `#F5B23D` | ação primária, PR, série concluída         | 8.64                        |
+| `accentPressed` | `#D9931A` | estado pressionado do acento                    | 7.31                        |
+| `accentTint`    | `#2B2218` | fundo de linha selecionada ou de destaque       | 1.19                        |
+| `danger`        | `#F2665C` | apagar, erro de validação. Nunca decorativo.  | 5.21                        |
+| `onAccent`      | `#121110` | texto sobre âmbar                              | 10.17                       |
 
 ### Regras de cor
+
 - **Um acento só.** Não existe cor de sucesso verde. Série concluída é âmbar. Adicionar verde para
   "rescue" de layout é falha, não solução.
 - **Vermelho é destrutivo.** Excluir rotina, erro de formulário, sessão abandonada. Se um elemento
@@ -113,6 +116,7 @@ Uma única cor de acento. Neutros tintados para o âmbar (hue ~38°), nunca cinz
 - Nada de opacidade para indicar estado. Estado é troca de token.
 
 ### Tema claro (pós-MVP)
+
 Paleta própria em papel quente (`#F7F5F1` de canvas, tinta `#1A1917`), mesmo acento, com âmbar
 escurecido para `#8A6410` quando precisar de contraste sobre papel. Não é inversão da escura.
 
@@ -126,24 +130,25 @@ garantida e `42,5` ocupa a mesma largura que `40,0`.
 
 ### Escala (razão 1,2 sobre base 16)
 
-| Token | Família | Tamanho | Entrelinha | Peso | Uso |
-|---|---|---|---|---|---|
-| `label` | Mono | 12 | 16 | 500 | Cabeçalho de seção, chip, anotação de margem. Caixa alta, tracking +0.08em. |
-| `caption` | Sans | 13 | 18 | 400 | Texto auxiliar, timestamp, dica de campo. |
-| `body` | Sans | 16 | 24 | 400 | Texto padrão, nome de exercício. |
-| `bodyStrong` | Sans | 16 | 24 | 600 | Nome de exercício ativo, valor editável. |
-| `title3` | Sans | 19 | 26 | 600 | Título de seção, título de sheet. |
-| `title2` | Sans | 23 | 30 | 600 | Título de tela. |
-| `title1` | Sans | 28 | 32 | 600 | Título de tela principal, nome de rotina. |
-| `display` | Sans | 34 | 38 | 600 | Número de destaque em dashboard (volume da semana). |
-| `numeral` | Mono | 56 | 56 | 500 | Peso/reps em edição na tela de treino. |
-| `numeralXL` | Mono | 88 | 84 | 500 | Único por tela. Peso da série ativa. |
+| Token          | Família | Tamanho | Entrelinha | Peso | Uso                                                                              |
+| -------------- | -------- | ------- | ---------- | ---- | -------------------------------------------------------------------------------- |
+| `label`      | Mono     | 12      | 16         | 500  | Cabeçalho de seção, chip, anotação de margem. Caixa alta, tracking +0.08em. |
+| `caption`    | Sans     | 13      | 18         | 400  | Texto auxiliar, timestamp, dica de campo.                                        |
+| `body`       | Sans     | 16      | 24         | 400  | Texto padrão, nome de exercício.                                               |
+| `bodyStrong` | Sans     | 16      | 24         | 600  | Nome de exercício ativo, valor editável.                                       |
+| `title3`     | Sans     | 19      | 26         | 600  | Título de seção, título de sheet.                                            |
+| `title2`     | Sans     | 23      | 30         | 600  | Título de tela.                                                                 |
+| `title1`     | Sans     | 28      | 32         | 600  | Título de tela principal, nome de rotina.                                       |
+| `display`    | Sans     | 34      | 38         | 600  | Número de destaque em dashboard (volume da semana).                             |
+| `numeral`    | Mono     | 56      | 56         | 500  | Peso/reps em edição na tela de treino.                                         |
+| `numeralXL`  | Mono     | 88      | 84         | 500  | Único por tela. Peso da série ativa.                                           |
 
 Tracking: `numeral` e `numeralXL` em `-0.02em`. `label` em `+0.08em`. Corpo em `0`.
 Medida de linha: máximo 68 caracteres. Em 390px de largura isso nunca é problema, mas no web
 (Expo web) o conteúdo para em 640px.
 
 ### Regras de tipografia
+
 - Peso máximo é 600. Não existe 700 nem 800 no sistema.
 - Itálico não é usado. Ênfase é peso e cor, não itálico.
 - Nunca dois tamanhos na mesma linha sem alinhamento óptico. Número e unidade alinham pela linha
@@ -152,6 +157,7 @@ Medida de linha: máximo 68 caracteres. Em 390px de largura isso nunca é proble
 - Números em contexto de lista podem ser `body` desde que Mono.
 
 ### Marca
+
 `GYMBRO` em Plex Sans SemiBold, caixa alta, tracking `-0.02em`, cor `textPrimary`.
 Sem símbolo, sem mascote, sem ponto final. O ícone do app é a letra `G` no mesmo peso, âmbar sobre
 `canvas`, com 18% de padding de safe area.
@@ -161,29 +167,33 @@ Sem símbolo, sem mascote, sem ponto final. O ícone do app é a letra `G` no me
 ## 6. Espaço, raio, elevação
 
 ### Espaçamento (base 4)
+
 `2, 4, 8, 12, 16, 20, 24, 32, 40, 48, 64`. Nenhum valor fora dessa lista.
 O `Spacing` atual em `theme.ts` mantém os apelidos `half, one, two, three, four, five, six` e
 ganha `threeHalf = 12` e `fourHalf = 20`.
 
-| Uso | Valor |
-|---|---|
-| Gutter lateral de tela | 20 |
+| Uso                              | Valor                                                   |
+| -------------------------------- | ------------------------------------------------------- |
+| Gutter lateral de tela           | 20                                                      |
 | Padding interno de linha de dado | 16 vertical, 0 horizontal (a régua corre até a borda) |
-| Gap entre label e campo | 8 (sempre menor que o gap entre campos, que é 20) |
-| Padding de sheet | 20 |
-| Altura de alvo de toque | mínimo 48 |
+| Gap entre label e campo          | 8 (sempre menor que o gap entre campos, que é 20)      |
+| Padding de sheet                 | 20                                                      |
+| Altura de alvo de toque          | mínimo 48                                              |
 
 ### Raio
+
 `2` chip e tag · `6` input e botão · `10` card e sheet pequeno · `16` sheet · `999` apenas o
 indicador de aba ativa e o badge de PR.
 
 Raio pequeno de propósito. Objeto de precisão tem canto firme.
 
 ### Elevação
+
 Sem sombra em superfície normal. Hierarquia é feita por degrau de superfície (`canvas` →
 `surface` → `raised`) e por régua. Única exceção: sheet modal no iOS recebe sombra nativa.
 
 ### Grade
+
 4 colunas em 320, 4 em 390, 8 em 768. Gutter 20 até 640, 32 acima disso. Largura máxima de
 conteúdo 640 no web. A borda esquerda do conteúdo alinha em todas as seções, sem exceção.
 
@@ -203,13 +213,13 @@ conteúdo 640 no web. A borda esquerda do conteúdo alinha em todas as seções,
 
 ## 8. Movimento
 
-| Situação | Duração | Curva |
-|---|---|---|
-| Toque, hover, foco | 120ms | `ease-out` |
-| Troca de estado de linha, chip, badge | 160ms | `ease-out` |
-| Entrada de sheet / modal | 200ms | `ease-out` |
-| Saída de sheet / modal | 160ms | `ease-in` |
-| Troca de dígito do numeral | 180ms, deslocamento vertical de 8px | `ease-out`, sem mola |
+| Situação                            | Duração                           | Curva                  |
+| ------------------------------------- | ----------------------------------- | ---------------------- |
+| Toque, hover, foco                    | 120ms                               | `ease-out`           |
+| Troca de estado de linha, chip, badge | 160ms                               | `ease-out`           |
+| Entrada de sheet / modal              | 200ms                               | `ease-out`           |
+| Saída de sheet / modal               | 160ms                               | `ease-in`            |
+| Troca de dígito do numeral           | 180ms, deslocamento vertical de 8px | `ease-out`, sem mola |
 
 - Anima só `transform` e `opacity`. Nunca `width`, `height`, `top`, `left`.
 - Sem mola, sem bounce, sem overshoot. O app é um instrumento.
@@ -225,16 +235,16 @@ conteúdo 640 no web. A borda esquerda do conteúdo alinha em todas as seções,
 Todo elemento interativo entrega os oito. Componente com metade disso está incompleto, por bonito
 que seja.
 
-| Estado | Regra visual |
-|---|---|
-| default | `textPrimary` sobre `canvas`, régua em `rule` |
-| hover (web) | fundo `surface`, régua mantida |
-| pressed | fundo `raised`, 120ms, sem fade de opacidade |
-| focus-visible (web) | contorno 2px `borderStrong`, offset 2px. Nunca remover outline. |
-| disabled | texto `textMuted`, fundo `raised`, sem contorno, sem animação |
-| loading | numeral substituído por 3 barras de `rule` pulsando em opacidade 0.4→0.8, nunca spinner circular |
-| empty | uma frase em `caption` `textMuted` + uma ação em `accent` |
-| error | texto `danger` em `caption` abaixo do campo + contorno `danger`. Mensagem diz o que fazer. |
+| Estado              | Regra visual                                                                                         |
+| ------------------- | ---------------------------------------------------------------------------------------------------- |
+| default             | `textPrimary` sobre `canvas`, régua em `rule`                                                 |
+| hover (web)         | fundo `surface`, régua mantida                                                                    |
+| pressed             | fundo `raised`, 120ms, sem fade de opacidade                                                       |
+| focus-visible (web) | contorno 2px `borderStrong`, offset 2px. Nunca remover outline.                                    |
+| disabled            | texto `textMuted`, fundo `raised`, sem contorno, sem animação                                  |
+| loading             | numeral substituído por 3 barras de `rule` pulsando em opacidade 0.4→0.8, nunca spinner circular |
+| empty               | uma frase em `caption` `textMuted` + uma ação em `accent`                                    |
+| error               | texto `danger` em `caption` abaixo do campo + contorno `danger`. Mensagem diz o que fazer.     |
 
 Ação primária: fundo `accent`, texto `onAccent`, altura 48, raio 6, largura total.
 Ação secundária: fundo `raised`, texto `textPrimary`.
