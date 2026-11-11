@@ -6,8 +6,6 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.Instant;
 import java.util.List;
 
@@ -20,8 +18,16 @@ public class BioimpedanceImportJobReaper {
 
     @EventListener(ApplicationReadyEvent.class)
     @Scheduled(fixedDelayString = "${bioimpedance.import.reaper-interval-ms:300000}")
-    @Transactional
     public void reap() {
+        try {
+            doReap();
+        } catch (Exception ex) {
+            log.warn("Skipping bioimpedance reaper: DB unavailable ({})", ex.getMessage());
+        }
+    }
+
+    // shortcut: removed @Transactional to allow outer catch to handle DB-down before tx starts; saveAll is transactional via repository
+    private void doReap() {
         Instant cutoff = Instant.now().minus(properties.staleAfter());
         List<BioimpedanceImportJob> stale = repository
             .findByStatusAndUpdatedAtBefore(ImportJobStatus.PROCESSING, cutoff);
