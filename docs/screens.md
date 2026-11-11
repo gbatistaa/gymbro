@@ -302,10 +302,14 @@ A revisão é obrigatória: o parser é heurístico e o usuário precisa corrigi
 
 ---
 
-## 6. Decisões pendentes
+## 6. Decisões fechadas
 
-1. Histórico e Biblioteca de exercícios ficam dentro de **Treinar**, ou Histórico vai para
-   **Progresso**? Histórico vai para progresso
-2. O filtro de músculos usa lista fixa no front ou novo endpoint? o ideal é que o mesmo endpoint no backend aceite filtro ordenação e paginação se não existe implemente
-3. Volume por músculo entra no Progresso já na v1 (com N chamadas) ou espera endpoint de agregação? já entra na v1
-4. Troca de senha entra no Perfil junto com o restante, exigindo endpoint novo, ou fica para depois? entra junto inclusive uma migration para adicionar mais um campo o de nome de usuário, e o usuário no mesmo campo ao fazer login, vai poder se logar usando o email cadastrado ou o username
+1. **Histórico fica na aba Progresso.** A Biblioteca de exercícios continua em **Treinar**.
+2. **O endpoint de exercícios aceita filtro, ordenação e paginação.** Filtro por músculo e paginação
+   já existiam; ordenação e a lista de músculos entram no backend.
+3. **Volume por músculo entra na v1**, com endpoint de agregação próprio
+   (`GET /api/dashboard/muscle-volume`), não com N chamadas no cliente.
+4. **Troca de senha entra no Perfil agora**, junto com `username` (migration nova) e login por e-mail
+   **ou** username no mesmo campo.
+
+O plano de implementação derivado destas decisões está em `tasks/plan.md`.
