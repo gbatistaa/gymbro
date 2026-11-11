@@ -38,7 +38,7 @@ public class AuthController {
         HttpServletRequest request
     ) {
         // verificar o limite antes de tocar em BCrypt evita que força bruta consuma CPU do servidor
-        String rateLimitKey = request.getRemoteAddr() + "|" + dto.email();
+        String rateLimitKey = request.getRemoteAddr() + "|" + dto.identifier().toLowerCase();
         loginRateLimiter.checkAllowed(rateLimitKey);
         try {
             ResponseEntity<UserDto> response = sessionResponse(HttpStatus.OK, authService.login(dto));

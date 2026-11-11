@@ -2045,17 +2045,17 @@
       "LoginDto" : {
         "type" : "object",
         "properties" : {
-          "email" : {
+          "identifier" : {
             "type" : "string",
-            "format" : "email",
-            "minLength" : 1
+            "maxLength" : 254,
+            "minLength" : 0
           },
           "password" : {
             "type" : "string",
             "minLength" : 1
           }
         },
-        "required" : [ "email", "password" ]
+        "required" : [ "identifier", "password" ]
       },
       "FinishSessionRequest" : {
         "type" : "object",

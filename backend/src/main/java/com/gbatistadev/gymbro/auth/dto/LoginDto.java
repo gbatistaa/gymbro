@@ -1,17 +1,17 @@
 package com.gbatistadev.gymbro.auth.dto;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 import java.io.Serializable;
 
 /**
- * DTO for {@code POST /api/auth/login}.
+ * DTO for {@code POST /api/auth/login}. O identificador aceita e-mail ou username.
  */
 public record LoginDto(
-    @NotBlank(message = "Email is required")
-    @Email(message = "Email must be valid")
-    String email,
+    @NotBlank(message = "Identifier is required")
+    @Size(max = 254, message = "Identifier must have at most 254 characters")
+    String identifier,
 
     @NotBlank(message = "Password is required")
     String password

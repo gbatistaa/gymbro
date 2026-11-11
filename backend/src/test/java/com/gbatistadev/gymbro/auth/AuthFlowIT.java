@@ -192,6 +192,34 @@ class AuthFlowIT {
             "a sessão expirada deve ser removida no login, não acumular");
     }
 
+    @Test
+    @DisplayName("login accepts the registered email or username")
+    void loginAcceptsEmailOrUsername() throws Exception {
+        String email = "id-" + UUID.randomUUID() + "@example.com";
+        String username = "u" + UUID.randomUUID().toString().substring(0, 8);
+        MvcResult registered = mockMvc.perform(post("/api/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"name":"Id User","username":"%s","email":"%s","password":"password123"}
+                    """.formatted(username, email)))
+            .andExpect(status().isCreated())
+            .andReturn();
+        String userId = JsonPath.read(registered.getResponse().getContentAsString(), "$.id");
+
+        for (String identifier : new String[]{email, username.toUpperCase()}) {
+            MvcResult login = mockMvc.perform(post("/api/auth/login")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""
+                        {"identifier":"%s","password":"password123"}
+                        """.formatted(identifier)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(userId))
+                .andReturn();
+            assertEquals(2, login.getResponse().getHeaders("Set-Cookie").size(),
+                "cada login emite os dois cookies de sessão");
+        }
+    }
+
     private ResultActions refresh(String refreshToken) throws Exception {
         return mockMvc.perform(post("/api/auth/refresh")
             .cookie(new Cookie(AuthCookies.REFRESH, refreshToken)));
@@ -215,7 +243,7 @@ class AuthFlowIT {
         MvcResult login = mockMvc.perform(post("/api/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
-                    {"email":"%s","password":"password123"}
+                    {"identifier":"%s","password":"password123"}
                     """.formatted(email)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.createdAt").exists())

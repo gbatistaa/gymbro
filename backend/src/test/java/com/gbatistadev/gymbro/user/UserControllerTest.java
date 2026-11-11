@@ -181,7 +181,7 @@ class UserControllerTest {
         // o login cria uma linha em refresh_tokens: é a prova de que a cascata do banco rodou
         mockMvc.perform(post("/api/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"email\":\"" + email + "\",\"password\":\"password123\"}"))
+                .content("{\"identifier\":\"" + email + "\",\"password\":\"password123\"}"))
             .andExpect(status().isOk());
         assertEquals(1, refreshTokenRepository.findAllByUserId(user.getId()).size());
 

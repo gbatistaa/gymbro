@@ -14,6 +14,12 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
 	boolean existsByUsernameIgnoreCase(String username);
 
+	@Query("""
+		SELECT u FROM User u
+		WHERE lower(u.email) = lower(:identifier) OR lower(u.username) = lower(:identifier)
+	""")
+	Optional<User> findByIdentifier(@Param("identifier") String identifier);
+
 	@Query("SELECT u.id AS id, u.name AS name, u.email AS email, u.username AS username, u.createdAt AS createdAt, u.timezone AS timezone FROM User u WHERE u.id = :id")
 	Optional<UserSummaryProjection> findSummaryById(@Param("id") UUID id);
 }

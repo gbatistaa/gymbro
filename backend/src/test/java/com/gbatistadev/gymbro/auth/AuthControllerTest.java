@@ -49,7 +49,10 @@ class AuthControllerTest {
         {"name":"João Silva","username":"joao.silva","email":"joao@example.com","password":"password123"}
         """;
     private static final String LOGIN_BODY = """
-        {"email":"joao@example.com","password":"password123"}
+        {"identifier":"joao@example.com","password":"password123"}
+        """;
+    private static final String LOGIN_BODY_USERNAME = """
+        {"identifier":"JOAO.SILVA","password":"password123"}
         """;
 
     @Mock
@@ -107,7 +110,7 @@ class AuthControllerTest {
     @DisplayName("login returns 200, sets HttpOnly cookies and keeps tokens out of the body")
     void shouldLoginAndSetSessionCookies() throws Exception {
         User user = existingUser("password123");
-        when(userRepository.findByEmail("joao@example.com")).thenReturn(Optional.of(user));
+        when(userRepository.findByIdentifier("joao@example.com")).thenReturn(Optional.of(user));
 
         MvcResult result = mockMvc.perform(post("/api/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -133,7 +136,7 @@ class AuthControllerTest {
     @DisplayName("login never leaks the password hash")
     void shouldNotLeakPasswordHashOnLogin() throws Exception {
         User user = existingUser("password123");
-        when(userRepository.findByEmail("joao@example.com")).thenReturn(Optional.of(user));
+        when(userRepository.findByIdentifier("joao@example.com")).thenReturn(Optional.of(user));
 
         mockMvc.perform(post("/api/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -143,15 +146,29 @@ class AuthControllerTest {
     }
 
     @Test
+    @DisplayName("login with username in any case returns 200")
+    void shouldLoginWithUsername() throws Exception {
+        User user = existingUser("password123");
+        when(userRepository.findByIdentifier("JOAO.SILVA")).thenReturn(Optional.of(user));
+
+        mockMvc.perform(post("/api/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(LOGIN_BODY_USERNAME))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.email").value("joao@example.com"))
+            .andExpect(jsonPath("$.username").value("joao.silva"));
+    }
+
+    @Test
     @DisplayName("login with wrong password returns 401 ErrorResponse")
     void shouldRejectWrongPassword() throws Exception {
         User user = existingUser("password123");
-        when(userRepository.findByEmail("joao@example.com")).thenReturn(Optional.of(user));
+        when(userRepository.findByIdentifier("joao@example.com")).thenReturn(Optional.of(user));
 
         mockMvc.perform(post("/api/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
-                    {"email":"joao@example.com","password":"wrong-password"}
+                    {"identifier":"joao@example.com","password":"wrong-password"}
                     """))
             .andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.status").value(401))
@@ -161,14 +178,28 @@ class AuthControllerTest {
     }
 
     @Test
-    @DisplayName("login with unknown email returns the same 401 (no user enumeration)")
-    void shouldRejectUnknownEmail() throws Exception {
-        when(userRepository.findByEmail("ghost@example.com")).thenReturn(Optional.empty());
+    @DisplayName("login with unknown identifier returns the same 401 (no user enumeration)")
+    void shouldRejectUnknownIdentifier() throws Exception {
+        when(userRepository.findByIdentifier("ghost")).thenReturn(Optional.empty());
 
         mockMvc.perform(post("/api/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
-                    {"email":"ghost@example.com","password":"password123"}
+                    {"identifier":"ghost","password":"password123"}
+                    """))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.message").value("Invalid credentials"));
+    }
+
+    @Test
+    @DisplayName("login with unknown email returns the same 401 (no user enumeration)")
+    void shouldRejectUnknownEmail() throws Exception {
+        when(userRepository.findByIdentifier("ghost@example.com")).thenReturn(Optional.empty());
+
+        mockMvc.perform(post("/api/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"identifier":"ghost@example.com","password":"password123"}
                     """))
             .andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.message").value("Invalid credentials"));
@@ -275,12 +306,12 @@ class AuthControllerTest {
     @Test
     @DisplayName("a successful error response always carries an errors array (empty when unused)")
     void shouldAlwaysIncludeErrorsArray() throws Exception {
-        when(userRepository.findByEmail("ghost@example.com")).thenReturn(Optional.empty());
+        when(userRepository.findByIdentifier("ghost@example.com")).thenReturn(Optional.empty());
 
         mockMvc.perform(post("/api/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
-                    {"email":"ghost@example.com","password":"password123"}
+                    {"identifier":"ghost@example.com","password":"password123"}
                     """))
             .andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.errors").isArray())
@@ -291,9 +322,9 @@ class AuthControllerTest {
     @DisplayName("the sixth failed login from the same origin returns 429 with Retry-After")
     void shouldRateLimitRepeatedFailures() throws Exception {
         User user = existingUser("password123");
-        when(userRepository.findByEmail("joao@example.com")).thenReturn(Optional.of(user));
+        when(userRepository.findByIdentifier("joao@example.com")).thenReturn(Optional.of(user));
         String wrong = """
-            {"email":"joao@example.com","password":"wrong-password"}
+            {"identifier":"joao@example.com","password":"wrong-password"}
             """;
 
         for (int attempt = 1; attempt <= 5; attempt++) {
@@ -315,9 +346,9 @@ class AuthControllerTest {
     @DisplayName("a successful login clears the failure counter")
     void shouldResetCounterOnSuccess() throws Exception {
         User user = existingUser("password123");
-        when(userRepository.findByEmail("joao@example.com")).thenReturn(Optional.of(user));
+        when(userRepository.findByIdentifier("joao@example.com")).thenReturn(Optional.of(user));
         String wrong = """
-            {"email":"joao@example.com","password":"wrong-password"}
+            {"identifier":"joao@example.com","password":"wrong-password"}
             """;
 
         for (int attempt = 1; attempt <= 4; attempt++) {

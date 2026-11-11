@@ -54,7 +54,7 @@ public class AuthService {
 
     @Transactional
     public AuthSession login(LoginDto dto) {
-        User user = userRepository.findByEmail(dto.email())
+        User user = userRepository.findByIdentifier(dto.identifier())
             .orElseThrow(() -> new UnauthorizedException("Invalid credentials"));
 
         if (!passwordEncoder.matches(dto.password(), user.getPasswordHash())) {

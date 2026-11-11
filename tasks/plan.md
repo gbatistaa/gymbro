@@ -54,7 +54,7 @@ substitui** e não toca nos arquivos daquela pasta.
 
 - [x] Task 1: Migration `users.username` com backfill e unicidade
 - [x] Task 2: `username` no domínio, nos DTOs e no cadastro
-- [ ] Task 3: Login por e-mail ou username
+- [x] Task 3: Login por e-mail ou username
 - [ ] Task 4: `PUT /api/users/me/password`
 - [ ] Task 5: Ordenação e lista de músculos em exercícios
 - [ ] Task 6: Resumo de rotina na listagem (`exerciseCount`, `lastPerformedAt`)
@@ -217,17 +217,17 @@ lower(:identifier)`.
 
 **Acceptance criteria:**
 
-- [ ] `LoginDto` vira `{ identifier, password }`, com `@NotBlank` e limite de tamanho
-- [ ] Login com e-mail cadastrado → `200` e cookies
-- [ ] Login com username cadastrado (qualquer caixa) → `200` e cookies
-- [ ] Identificador inexistente e senha errada devolvem o mesmo `401 UNAUTHENTICATED`
-- [ ] Rate limiter mantém a chave por IP + identificador (não quebra por campo nulo)
+- [x] `LoginDto` vira `{ identifier, password }`, com `@NotBlank` e `@Size(max 254)`
+- [x] Login com e-mail cadastrado → `200` e cookies
+- [x] Login com username cadastrado (qualquer caixa) → `200` e cookies
+- [x] Identificador inexistente e senha errada devolvem o mesmo `401 UNAUTHENTICATED`
+- [x] Rate limiter mantém a chave por IP + identificador normalizado em minúsculas
 
 **Verification:**
 
-- [ ] Tests pass: `./mvnw -Dtest=AuthControllerTest,AuthFlowIT test`
-- [ ] Build succeeds: `./mvnw test`
-- [ ] Manual: dois `curl` de login, um por e-mail e um por username, ambos 200 com `Set-Cookie`
+- [x] Tests pass: `./mvnw -Dtest=AuthControllerTest,AuthFlowIT test` (27 testes)
+- [x] Build succeeds: `./mvnw test` (170 testes)
+- [x] Manual: coberto por `AuthFlowIT.loginAcceptsEmailOrUsername` (e-mail e username em caixa alta)
 
 **Dependencies:** Task 2
 **Files likely touched:**
