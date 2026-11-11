@@ -1,9 +1,11 @@
 "use client";
 
+import { useSetAtom } from "jotai";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { signUpSchema, type SignUpInput } from "@/contracts/auth";
-import { register } from "./api";
+import { sessionAtom } from "@/stores/session";
+import { getMe, login, register } from "./api";
 import styles from "./components/auth.module.css";
 import { AuthField } from "./components/auth-field";
 import { AuthHeader } from "./components/auth-header";
@@ -11,6 +13,7 @@ import { AuthNotice } from "./components/auth-notice";
 import { AuthSubmit } from "./components/auth-submit";
 import { AuthSwitch } from "./components/auth-switch";
 import { describeAuthError, toFieldErrors, type FieldErrors } from "./errors";
+import { safeNextPath } from "./next-path";
 
 type SignUpFormProps = {
   next?: string;
@@ -18,6 +21,8 @@ type SignUpFormProps = {
 
 export function SignUpForm({ next }: SignUpFormProps) {
   const router = useRouter();
+  const setSession = useSetAtom(sessionAtom);
+  const destination = safeNextPath(next);
   const [values, setValues] = useState<SignUpInput>({
     name: "",
     email: "",
@@ -27,9 +32,10 @@ export function SignUpForm({ next }: SignUpFormProps) {
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const signInHref = next
-    ? `/signin?next=${encodeURIComponent(next)}`
-    : "/signin";
+  const signInHref =
+    destination !== "/"
+      ? `/signin?next=${encodeURIComponent(destination)}`
+      : "/signin";
 
   function setField(field: keyof SignUpInput, value: string) {
     setValues((current) => ({ ...current, [field]: value }));
@@ -54,12 +60,27 @@ export function SignUpForm({ next }: SignUpFormProps) {
     setFormError(null);
     setIsSubmitting(true);
 
+    let accountCreated = false;
+
     try {
       await register(parsed.data);
-      const params = new URLSearchParams({ registered: "1" });
-      if (next) params.set("next", next);
-      router.replace(`/signin?${params.toString()}`);
+      accountCreated = true;
+
+      const tokens = await login({
+        email: parsed.data.email,
+        password: parsed.data.password,
+      });
+      const user = await getMe(tokens.accessToken);
+      setSession({ tokens, user });
+      router.replace(destination);
     } catch (error) {
+      if (accountCreated) {
+        const params = new URLSearchParams({ registered: "1" });
+        if (destination !== "/") params.set("next", destination);
+        router.replace(`/signin?${params.toString()}`);
+        return;
+      }
+
       const described = describeAuthError(error);
       setFieldErrors(described.fields);
       setFormError(described.message);
