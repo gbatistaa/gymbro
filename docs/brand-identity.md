@@ -1,10 +1,9 @@
-# Gymbro — Identidade Visual
+# Gymbro — Identidade visual e style guide
 
-Documento de identidade do produto. Toda decisão aqui foi escolhida explicitamente; nada veio do
-template do Expo. É a fonte de verdade para `mobile/src/constants/theme.ts`, `tailwind.config.js`
-e para o desenho das telas.
+Fonte de verdade visual e de experiência para o PWA Gymbro. Independente de framework: cores,
+tipografia, comportamento e navegação devem ser implementados com os recursos do stack web escolhido.
 
-Última atualização: entrevista concluída, sistema fechado.
+Última atualização: direção visual PWA — escuro, verde e azul.
 
 ---
 
@@ -13,345 +12,321 @@ e para o desenho das telas.
 > O caderno de treino de quem já treina: registra carga, série e volume sem atrito e devolve a
 > próxima decisão de progressão.
 
-O valor do app está no número correto na hora certa. Não está em motivação, confete ou ilustração.
-Toda escolha visual abaixo deriva disso.
+O valor está no número correto na hora certa. A interface pode ter mais presença visual, mas nunca
+à custa de clareza, velocidade ou confiança. Sem motivação genérica, confete ou decoração que
+compita com os dados.
 
 ---
 
 ## 1. Posicionamento
 
-| Dimensão           | Decisão                                                                                       |
-| ------------------- | ---------------------------------------------------------------------------------------------- |
-| Usuário central    | Intermediário, 1 a 3 anos de treino. Sabe o que é PR, volume e deload.                       |
-| Sensação ao abrir | Ferramenta séria de progressão. Precisa, silenciosa, confiável.                             |
-| Tema                | **Escuro apenas** no MVP. Claro entra depois como paleta própria, nunca como inversão. |
-| Marca               | **Gymbro**, wordmark tipográfico.                                                       |
-| Ambição visual    | Estrutura convencional de app + **um elemento-assinatura forte**.                        |
-| Idioma e unidade    | PT-BR, kg, decimal com vírgula (`42,5 kg`).                                                 |
-| Navegação         | 4 abas: Início, Treinar, Progresso, Perfil.                                                   |
+| Dimensão | Decisão |
+| --- | --- |
+| Usuário central | Intermediário, 1 a 3 anos de treino; conhece PR, volume e deload. |
+| Sensação | Ferramenta séria, precisa e confiável, com energia visual controlada. |
+| Plataforma | PWA web, mobile-first, escuro no MVP. Tema claro futuro terá paleta própria. |
+| Marca | Gymbro, wordmark tipográfico. |
+| Idioma e unidade | PT-BR, kg, decimal com vírgula (`42,5 kg`). |
+| Navegação autenticada | Início, Treinar, Progresso, Perfil. Barra inferior no mobile. |
 
-### Contexto de uso que manda no design
+### Contexto de uso
 
-Quatro vezes por semana, no meio do treino, uma mão livre, dedo com suor, luz dura de academia,
-sinal instável. Cada toque a mais é custo. Cada ambiguidade numérica é erro de treino.
+Uso durante o treino, muitas vezes com uma mão livre, dedo suado, luz forte e sinal instável. Toques
+desnecessários e números ambíguos são erros de experiência, não detalhes estéticos. A interface
+deve ser legível, responsiva, tolerante a conexão instável e rápida de operar.
 
-### Proibido
+### Não fazer
 
-- Gradiente roxo/azul, glassmorphism como superfície padrão, card com borda lateral colorida.
-- Copy motivacional: "supere seus limites", "desbloqueie", "transforme-se".
-- Confete como recompensa principal. PR é dado, não festa.
-- Ícone de chama, emoji no lugar de ícone, três cards iguais de ícone no onboarding.
-- Emoji em qualquer lugar da interface.
-
----
-
-## 2. Dials
-
-| Dial       | Persuade (login, onboarding) | Experience (treino ao vivo, PR) | Operate (rotinas, ajustes) | Read (histórico, relatório) |
-| ---------- | ---------------------------- | ------------------------------- | -------------------------- | ----------------------------- |
-| Variância | média                       | **alta**                  | baixa                      | baixa                         |
-| Movimento  | baixa                        | média                          | mínima                    | mínima                       |
-| Densidade  | baixa                        | **alta**                  | média                     | alta                          |
-
-A ousadia fica concentrada na tela de treino ao vivo. Formulário e configuração não recebem
-espetáculo. A tela de treino é o único lugar onde o número vira arquitetura.
+- Âmbar como acento, gradiente roxo, glassmorphism como superfície padrão ou cards com borda lateral colorida.
+- Copy motivacional (“supere seus limites”, “desbloqueie”, “transforme-se”).
+- Gamificação, confete ou ilustração de atleta como recompensa ou conteúdo principal.
+- Emoji como ícone; ícone sem rótulo em ação destrutiva; formulários sem labels visíveis.
+- Usar verde e azul de forma intercambiável para comunicar o mesmo estado.
 
 ---
 
-## 3. Elemento-assinatura: **caderno de treino**
+## 2. Direção visual
 
-O app é desenhado como uma folha de registro de treino, não como um feed de cards. Cinco regras
-que valem em toda tela. Se uma tela viola uma delas, a tela está errada.
+### Style guide: caderno técnico com energia
 
-1. **Régua, não caixa.** Dados vivem em linhas separadas por uma hairline de 1px (`rule #3A3632`).
-   Card com sombra é exceção, nunca o padrão de lista. Uma lista de exercícios não é uma pilha de
-   cards.
-2. **Número alinhado à direita, sempre tabular.** Toda coluna numérica (kg, reps, séries, volume,
-   %) usa Plex Mono e alinha à direita. Números nunca centralizam, nunca são proporcionais.
-3. **Anotação na margem.** Metadado curto (variação, `+2,5 kg`, `RPE 8`, `há 6 d`) vive numa
-   gutter fixa à esquerda ou à direita, em Plex Mono 12px, cor `text-muted`. É o que faz a tela
-   parecer um registro e não um dashboard.
-4. **Cabeçalho de seção em mono, caixa alta, com régua que corre até a borda.** Ex.: `SEMANA 45`
-   seguido de linha até o fim da coluna. Sem ícone decorativo ao lado.
-5. **Um único numeral gigante por tela.** Apenas a entrada de série da tela de treino tem direito
-   ao numeral de 88px. Se duas coisas gritam, nada grita.
+O sistema combina a estrutura editorial de um registro de treino com uma presença mais viva. O
+“caderno” continua sendo a assinatura: linhas, colunas numéricas alinhadas e anotações compactas.
+O caráter mais vivo vem do contraste entre preto profundo, verde elétrico nas ações e azul limpo
+em informação, além de uma camada gráfica discreta nas telas de entrada — não de cartões coloridos
+ou efeitos espalhados por todas as telas.
 
-O elemento-assinatura não é uma textura, é uma disciplina de layout. Custa zero de performance e
-não envelhece.
+- **Superfícies:** planas, escuras e organizadas por níveis de fundo e linhas finas; sombras só para
+  sobreposição que realmente precise de elevação.
+- **Destaque:** uma ação primária evidente por contexto. Na tela de treino, o dado ativo pode ganhar
+  escala; nas demais telas, a hierarquia vem de tipografia e espaçamento.
+- **Textura de marca:** linhas de registro, pequenas etiquetas mono e um brilho radial verde/azul
+  muito sutil somente em fundos de autenticação. Não usar como fundo de conteúdo ou como gradiente
+  de botão.
+- **Forma:** cantos firmes e raio pequeno. Evitar o aspecto de dashboard montado com cards idênticos.
+- **Ícones:** uma família consistente de ícones SVG (por exemplo, Lucide), traço simples; sempre
+  acompanhados por rótulos quando a função não for universalmente óbvia.
+
+### Dials por contexto
+
+| Contexto | Variação | Movimento | Densidade |
+| --- | --- | --- | --- |
+| Entrar / criar conta | Média, com assinatura visual discreta | Baixa | Baixa |
+| Treino ao vivo / PR | Alta, concentrada no número ativo | Média | Alta |
+| Rotinas / perfil | Baixa | Mínima | Média |
+| Histórico / relatório | Baixa | Mínima | Alta |
+
+---
+
+## 3. Elemento-assinatura: caderno de treino
+
+1. **Régua, não caixa.** Dados vivem em linhas separadas por `rule`; cards com sombra são exceção.
+2. **Número tabular e alinhado à direita.** Carga, reps, séries, volume e percentuais usam IBM Plex
+   Mono ou fonte mono equivalente, com alinhamento à direita.
+3. **Anotação na margem.** Variação, `+2,5 kg`, `RPE 8` e `há 6 d` usam a fonte mono, pequena e
+   legível, alinhada em uma gutter consistente.
+4. **Cabeçalho de seção editorial.** Label mono em caixa alta, seguida por uma régua que completa
+   a linha; sem ícone decorativo.
+5. **Um único numeral gigante por tela.** Reservado para o valor da série ativa no treino.
+
+Essa assinatura é disciplina de composição, não textura: deve continuar reconhecível sem efeitos.
 
 ---
 
 ## 4. Cor
 
-Uma única cor de acento. Neutros tintados para o âmbar (hue ~38°), nunca cinza puro.
-
 ### Paleta escura (MVP)
 
-| Token             | Hex         | Uso                                             | Contraste medido            |
-| ----------------- | ----------- | ----------------------------------------------- | --------------------------- |
-| `canvas`        | `#121110` | fundo da aplicação                            | —                          |
-| `surface`       | `#1A1917` | linha agrupada, tab bar, sheet                  | 1.07 vs canvas              |
-| `raised`        | `#232120` | input, botão secundário, linha pressionada    | 1.18 vs canvas              |
-| `border`        | `#2E2B28` | contorno de card e sheet (decorativo)           | 1.34                        |
-| `rule`          | `#3A3632` | hairline entre linhas de dado                   | 1.58                        |
-| `borderStrong`  | `#787067` | contorno de input, indicador de foco            | **3.61** vs surface   |
-| `textMuted`     | `#9A9188` | anotação de margem, label, texto desabilitado | **5.18** no pior caso |
-| `textSecondary` | `#B8B0A6` | corpo secundário, unidade `kg`               | 7.48                        |
-| `textPrimary`   | `#F2EEE8` | texto principal, giz                            | 13.87                       |
-| `accent`        | `#F5B23D` | ação primária, PR, série concluída         | 8.64                        |
-| `accentPressed` | `#D9931A` | estado pressionado do acento                    | 7.31                        |
-| `accentTint`    | `#2B2218` | fundo de linha selecionada ou de destaque       | 1.19                        |
-| `danger`        | `#F2665C` | apagar, erro de validação. Nunca decorativo.  | 5.21                        |
-| `onAccent`      | `#121110` | texto sobre âmbar                              | 10.17                       |
+| Token | Hex | Uso |
+| --- | --- | --- |
+| `canvas` | `#080B0A` | Fundo principal, preto com leve matiz verde. |
+| `surface` | `#101715` | Navegação inferior, grupos e superfícies discretas. |
+| `raised` | `#18221D` | Campos, botão secundário e estado pressionado neutro. |
+| `border` | `#29352E` | Contornos decorativos de superfície. |
+| `rule` | `#35443B` | Separadores de dados. |
+| `borderStrong` | `#8AA99A` | Foco visível e contorno funcional. |
+| `textMuted` | `#A6B5AC` | Anotações e texto auxiliar; não usar para texto essencial sem conferir contraste. |
+| `textSecondary` | `#C6D2CC` | Corpo secundário e unidades. |
+| `textPrimary` | `#F1F7F3` | Texto principal. |
+| `accent` | `#4ADE80` | Verde: ação primária, série concluída, progresso positivo. |
+| `accentPressed` | `#22C55E` | Verde em estado pressionado. |
+| `accentTint` | `#10271A` | Realce de seleção ou linha em progresso. |
+| `info` | `#60A5FA` | Azul: links, informação, navegação contextual e dados informativos. |
+| `infoTint` | `#101F32` | Fundo discreto para conteúdo informativo azul. |
+| `danger` | `#F87171` | Erro, exclusão e ação destrutiva; nunca decorativo. |
+| `onAccent` | `#07110A` | Texto/ícone escuro sobre botão verde. |
 
-### Regras de cor
+Papéis são semânticos: verde significa ação/progresso; azul significa informação/link. O azul não
+substitui o verde em botões primários ou séries concluídas. Vermelho é reservado para erro ou
+destruição. Não depender só da cor para comunicar estados: incluir texto, ícone ou forma.
 
-- **Um acento só.** Não existe cor de sucesso verde. Série concluída é âmbar. Adicionar verde para
-  "rescue" de layout é falha, não solução.
-- **Vermelho é destrutivo.** Excluir rotina, erro de formulário, sessão abandonada. Se um elemento
-  vermelho não destrói nada, ele está errado.
-- **Estagnação e alerta** usam `accent` em contorno e `textMuted` no texto, nunca vermelho.
-- Texto sobre âmbar é sempre `onAccent`, nunca branco (branco sobre âmbar dá 1.86:1).
-- Desabilitado usa `textMuted` sobre `raised` e mantém contraste ≥ 4.5. Cinza sobre cinza é bug.
-- Nada de opacidade para indicar estado. Estado é troca de token.
+Contraste deve ser verificado para cada par real de texto/fundo conforme WCAG AA: 4,5:1 para texto
+normal e 3:1 para texto grande e elementos gráficos relevantes. `rule` e bordas decorativas não
+precisam funcionar como texto. Não declarar contraste aprovado sem medir o par em uso.
 
-### Tema claro (pós-MVP)
+### Tema claro (futuro)
 
-Paleta própria em papel quente (`#F7F5F1` de canvas, tinta `#1A1917`), mesmo acento, com âmbar
-escurecido para `#8A6410` quando precisar de contraste sobre papel. Não é inversão da escura.
+Será uma paleta própria, com fundo de papel e tinta escura. Não inverter os tokens da paleta escura;
+revalidar contraste e estados antes de disponibilizar.
 
 ---
 
 ## 5. Tipografia
 
-**Famílias:** IBM Plex Sans (interface) + IBM Plex Mono (todo número, toda anotação de margem).
-Duas famílias, nunca três. Plex Mono é monoespaçada por construção, então a tabularidade é
-garantida e `42,5` ocupa a mesma largura que `40,0`.
+**Famílias:** IBM Plex Sans para interface e IBM Plex Mono para números e anotações. Manter duas
+famílias; se não estiverem disponíveis localmente, usar fallback sans-serif/monospace equivalente.
 
-### Escala (razão 1,2 sobre base 16)
+| Token | Família | Tamanho / linha | Peso | Uso |
+| --- | --- | --- | --- | --- |
+| `label` | Mono | 12 / 16 | 500 | Seções, chips e notas; caixa alta, tracking `0.08em`. |
+| `caption` | Sans | 13 / 18 | 400 | Ajuda, metadados e dicas. |
+| `body` | Sans | 16 / 24 | 400 | Texto padrão e nomes de exercício. |
+| `bodyStrong` | Sans | 16 / 24 | 600 | Valor ou exercício ativo. |
+| `title3` | Sans | 19 / 26 | 600 | Seção e diálogo. |
+| `title2` | Sans | 23 / 30 | 600 | Título de tela. |
+| `title1` | Sans | 28 / 32 | 600 | Título principal. |
+| `display` | Sans | 34 / 38 | 600 | Métrica de destaque fora do treino ao vivo. |
+| `numeral` | Mono | 56 / 56 | 500 | Edição de carga ou reps. |
+| `numeralXL` | Mono | 88 / 84 | 500 | Um valor ativo na tela de treino. |
 
-| Token          | Família | Tamanho | Entrelinha | Peso | Uso                                                                              |
-| -------------- | -------- | ------- | ---------- | ---- | -------------------------------------------------------------------------------- |
-| `label`      | Mono     | 12      | 16         | 500  | Cabeçalho de seção, chip, anotação de margem. Caixa alta, tracking +0.08em. |
-| `caption`    | Sans     | 13      | 18         | 400  | Texto auxiliar, timestamp, dica de campo.                                        |
-| `body`       | Sans     | 16      | 24         | 400  | Texto padrão, nome de exercício.                                               |
-| `bodyStrong` | Sans     | 16      | 24         | 600  | Nome de exercício ativo, valor editável.                                       |
-| `title3`     | Sans     | 19      | 26         | 600  | Título de seção, título de sheet.                                            |
-| `title2`     | Sans     | 23      | 30         | 600  | Título de tela.                                                                 |
-| `title1`     | Sans     | 28      | 32         | 600  | Título de tela principal, nome de rotina.                                       |
-| `display`    | Sans     | 34      | 38         | 600  | Número de destaque em dashboard (volume da semana).                             |
-| `numeral`    | Mono     | 56      | 56         | 500  | Peso/reps em edição na tela de treino.                                         |
-| `numeralXL`  | Mono     | 88      | 84         | 500  | Único por tela. Peso da série ativa.                                           |
-
-Tracking: `numeral` e `numeralXL` em `-0.02em`. `label` em `+0.08em`. Corpo em `0`.
-Medida de linha: máximo 68 caracteres. Em 390px de largura isso nunca é problema, mas no web
-(Expo web) o conteúdo para em 640px.
-
-### Regras de tipografia
-
-- Peso máximo é 600. Não existe 700 nem 800 no sistema.
-- Itálico não é usado. Ênfase é peso e cor, não itálico.
-- Nunca dois tamanhos na mesma linha sem alinhamento óptico. Número e unidade alinham pela linha
-  de base: `42,5` em `numeral`, `kg` em `body` `textSecondary`, separados por 4px.
-- Decimal sempre com vírgula. Separador de milhar com ponto: `12.480 kg`.
-- Números em contexto de lista podem ser `body` desde que Mono.
+Tracking dos numerais: `-0.02em`; corpo: `0`. Peso máximo `600`, sem itálico. Alinhar número e
+unidade pela linha de base (`42,5` + `kg`). Decimal com vírgula; milhar com ponto (`12.480 kg`).
+Texto corrido deve ter medida confortável, idealmente até 68 caracteres por linha.
 
 ### Marca
 
-`GYMBRO` em Plex Sans SemiBold, caixa alta, tracking `-0.02em`, cor `textPrimary`.
-Sem símbolo, sem mascote, sem ponto final. O ícone do app é a letra `G` no mesmo peso, âmbar sobre
-`canvas`, com 18% de padding de safe area.
+`GYMBRO` em Plex Sans SemiBold, caixa alta, tracking `-0.02em`, cor `textPrimary`; sem mascote ou
+ponto final. Ícone PWA: letra `G` tipográfica em `accent` sobre `canvas`, com respiro amplo. Não
+reintroduzir o âmbar.
 
 ---
 
-## 6. Espaço, raio, elevação
+## 6. Layout, espaçamento e forma
 
-### Espaçamento (base 4)
+### Espaçamento
 
-`2, 4, 8, 12, 16, 20, 24, 32, 40, 48, 64`. Nenhum valor fora dessa lista.
-O `Spacing` atual em `theme.ts` mantém os apelidos `half, one, two, three, four, five, six` e
-ganha `threeHalf = 12` e `fourHalf = 20`.
+Escala base 4: `2, 4, 8, 12, 16, 20, 24, 32, 40, 48, 64`. Gutter lateral de 20px no mobile, 32px
+em telas maiores; conteúdo com largura máxima de 640px nas telas de leitura/formulário. Alvos de
+toque com pelo menos 48×48px e espaçamento suficiente para evitar toques acidentais.
 
-| Uso                              | Valor                                                   |
-| -------------------------------- | ------------------------------------------------------- |
-| Gutter lateral de tela           | 20                                                      |
-| Padding interno de linha de dado | 16 vertical, 0 horizontal (a régua corre até a borda) |
-| Gap entre label e campo          | 8 (sempre menor que o gap entre campos, que é 20)      |
-| Padding de sheet                 | 20                                                      |
-| Altura de alvo de toque          | mínimo 48                                              |
+| Uso | Valor |
+| --- | --- |
+| Gutter lateral mobile | 20px |
+| Linha de dado | 16px vertical; régua até a borda do conteúdo |
+| Label até campo | 8px |
+| Espaço entre campos | 20px |
+| Padding de painel/modal | 20px |
+| Alvo de toque | mínimo 48×48px |
 
-### Raio
+### Raios e elevação
 
-`2` chip e tag · `6` input e botão · `10` card e sheet pequeno · `16` sheet · `999` apenas o
-indicador de aba ativa e o badge de PR.
+`2px` chip/tag · `6px` campo/botão · `10px` painel pequeno · `16px` modal · `999px` apenas pílula
+ou indicador. Sem sombra em superfície comum; elevar apenas menus, diálogos e overlays.
 
-Raio pequeno de propósito. Objeto de precisão tem canto firme.
+### Responsividade
 
-### Elevação
-
-Sem sombra em superfície normal. Hierarquia é feita por degrau de superfície (`canvas` →
-`surface` → `raised`) e por régua. Única exceção: sheet modal no iOS recebe sombra nativa.
-
-### Grade
-
-4 colunas em 320, 4 em 390, 8 em 768. Gutter 20 até 640, 32 acima disso. Largura máxima de
-conteúdo 640 no web. A borda esquerda do conteúdo alinha em todas as seções, sem exceção.
+Projetar primeiro para 320–430px, sem rolagem horizontal. Em telas maiores, limitar a coluna de
+conteúdo e usar o espaço adicional sem esticar formulários ou dados. Respeitar safe areas do
+navegador e reservar espaço para a barra inferior fixa. Conferir pelo menos 320, 375, 768 e 1024px.
 
 ---
 
-## 7. Ícones e imagem
+## 7. Autenticação, rotas e navegação
 
-- **Uma família:** Feather, via `@expo/vector-icons`, traço 2px, grade 24px, cor herdada do texto.
-  Tamanhos permitidos: 16, 20, 24. Nunca 32.
-- Nenhuma foto de atleta. Nenhuma ilustração. Estado vazio é texto em `textMuted` mais uma ação,
-  não uma arte.
-- Ícones de aba: `home`, `play`, `trending-up`, `user`. Aba ativa é `accent` e ganha o indicador
-  de 2px; inativa é `textMuted`. Sem rótulo de texto na tab bar.
-- O ícone nunca substitui um rótulo em ação destrutiva.
+### Antes de autenticar
 
----
+- `/signin` é a tela de entrada padrão para quem não tem sessão válida.
+- `/signup` permite criar conta e oferece retorno claro para signin.
+- Login e cadastro são páginas simples, focadas na tarefa, com labels persistentes, erros junto ao
+  campo, estado de envio e feedback para sucesso/falha. Nunca usar placeholder como único label.
+- Uma rota privada sem sessão não pode renderizar dados ou controles privados. O guard do cliente
+  encaminha para `/signin` e pode preservar o destino pretendido para depois do login.
+- Ao abrir uma rota privada diretamente ou atualizar a página, validar a sessão antes de mostrar
+  conteúdo autenticado. Durante a validação, exibir estado de carregamento neutro, não conteúdo
+  privado nem um flash da tela de destino.
 
-## 8. Movimento
+### Contrato com o backend
 
-| Situação                            | Duração                           | Curva                  |
-| ------------------------------------- | ----------------------------------- | ---------------------- |
-| Toque, hover, foco                    | 120ms                               | `ease-out`           |
-| Troca de estado de linha, chip, badge | 160ms                               | `ease-out`           |
-| Entrada de sheet / modal              | 200ms                               | `ease-out`           |
-| Saída de sheet / modal               | 160ms                               | `ease-in`            |
-| Troca de dígito do numeral           | 180ms, deslocamento vertical de 8px | `ease-out`, sem mola |
+O PWA controla navegação e apresentação; isso não substitui autorização no servidor. APIs privadas
+devem validar a sessão em cada requisição e responder `401 Unauthorized` quando ela estiver ausente
+ou inválida (`403` para usuário autenticado sem permissão). O cliente limpa/atualiza o estado de
+sessão e encaminha para `/signin` em caso de `401`. Endpoints de página servidos pelo backend podem
+redirecionar para signin se esse for o modelo de entrega, mas APIs não devem devolver HTML de login
+como substituto de resposta de erro. Nunca confiar apenas no guard de frontend para proteger dados.
 
-- Anima só `transform` e `opacity`. Nunca `width`, `height`, `top`, `left`.
-- Sem mola, sem bounce, sem overshoot. O app é um instrumento.
-- PR não dispara animação de confete. O badge `PR` entra em 160ms e vibra uma vez (`expo-haptics`,
-  `impactLight`).
-- `prefers-reduced-motion` e `AccessibilityInfo.isReduceMotionEnabled`: todo movimento vira troca
-  instantânea de estado, exceto o feedback háptico.
+### Navegação autenticada
 
----
-
-## 9. Estados obrigatórios
-
-Todo elemento interativo entrega os oito. Componente com metade disso está incompleto, por bonito
-que seja.
-
-| Estado              | Regra visual                                                                                         |
-| ------------------- | ---------------------------------------------------------------------------------------------------- |
-| default             | `textPrimary` sobre `canvas`, régua em `rule`                                                 |
-| hover (web)         | fundo `surface`, régua mantida                                                                    |
-| pressed             | fundo `raised`, 120ms, sem fade de opacidade                                                       |
-| focus-visible (web) | contorno 2px `borderStrong`, offset 2px. Nunca remover outline.                                    |
-| disabled            | texto `textMuted`, fundo `raised`, sem contorno, sem animação                                  |
-| loading             | numeral substituído por 3 barras de `rule` pulsando em opacidade 0.4→0.8, nunca spinner circular |
-| empty               | uma frase em `caption` `textMuted` + uma ação em `accent`                                    |
-| error               | texto `danger` em `caption` abaixo do campo + contorno `danger`. Mensagem diz o que fazer.     |
-
-Ação primária: fundo `accent`, texto `onAccent`, altura 48, raio 6, largura total.
-Ação secundária: fundo `raised`, texto `textPrimary`.
-Ação destrutiva: texto `danger`, sem fundo, sempre com confirmação.
+- Quatro destinos: **Início**, **Treinar**, **Progresso**, **Perfil**.
+- Mobile: barra inferior fixa, considerando safe area, com ícone e rótulo visível em cada aba; aba
+  ativa indicada por cor e forma/peso além da cor. Cada destino tem alvo de pelo menos 48×48px.
+- Ícones sem rótulo acessível não são permitidos. A navegação funciona por teclado e leitor de tela;
+  estado ativo é exposto semanticamente.
+- Em telas largas, a navegação pode se adaptar a uma barra lateral ou cabeçalho, mantendo destinos,
+  rótulos e hierarquia. A navegação não pode ocupar área de conteúdo do treino.
+- Cada rota autenticada suporta deep link e recarregamento sem perder o destino; o guard continua
+  sendo aplicado.
 
 ---
 
-## 10. Tokens para implementação
+## 8. Ícones, estados e feedback
 
-```ts
-// mobile/src/constants/theme.ts
-export const Colors = {
-  dark: {
-    canvas: '#121110',
-    surface: '#1A1917',
-    raised: '#232120',
-    border: '#2E2B28',
-    rule: '#3A3632',
-    borderStrong: '#787067',
-    textMuted: '#9A9188',
-    textSecondary: '#B8B0A6',
-    textPrimary: '#F2EEE8',
-    accent: '#F5B23D',
-    accentPressed: '#D9931A',
-    accentTint: '#2B2218',
-    danger: '#F2665C',
-    onAccent: '#121110',
-  },
-} as const;
+Use uma família consistente de ícones SVG, tamanhos de 16, 20 ou 24px e cor herdada do token. Ícone
+decorativo é oculto de tecnologias assistivas; ícone de ação tem nome acessível. Nunca usar emoji.
+Estados vazios são texto curto mais uma ação útil, sem ilustração obrigatória.
 
-export const FontFamily = {
-  sans: 'PlexSans_400Regular',
-  sansMedium: 'PlexSans_500Medium',
-  sansSemiBold: 'PlexSans_600SemiBold',
-  mono: 'PlexMono_400Regular',
-  monoMedium: 'PlexMono_500Medium',
-} as const;
+| Estado | Regra |
+| --- | --- |
+| Padrão | Texto `textPrimary`, estrutura legível e separadores `rule`. |
+| Hover | Em dispositivos com hover, realce discreto sem depender dele para descobrir ações. |
+| Pressionado | Fundo/tom `raised` ou token semântico; feedback imediato. |
+| Foco visível | Contorno de pelo menos 2px, offset visível; nunca remover outline sem substituto. |
+| Desabilitado | Aparência distinta e estado semântico correto; manter texto legível. |
+| Carregando | Informar que a ação está em andamento e evitar envio duplicado; reservar espaço. |
+| Vazio | Uma frase clara e uma ação em `accent` ou link `info`. |
+| Erro | Mensagem junto ao campo, instrução acionável e contorno `danger`; associar ao campo. |
 
-export const Type = {
-  label:       { fontFamily: FontFamily.monoMedium, fontSize: 12, lineHeight: 16, letterSpacing: 0.96, textTransform: 'uppercase' },
-  caption:     { fontFamily: FontFamily.sans, fontSize: 13, lineHeight: 18 },
-  body:        { fontFamily: FontFamily.sans, fontSize: 16, lineHeight: 24 },
-  bodyStrong:  { fontFamily: FontFamily.sansSemiBold, fontSize: 16, lineHeight: 24 },
-  title3:      { fontFamily: FontFamily.sansSemiBold, fontSize: 19, lineHeight: 26 },
-  title2:      { fontFamily: FontFamily.sansSemiBold, fontSize: 23, lineHeight: 30 },
-  title1:      { fontFamily: FontFamily.sansSemiBold, fontSize: 28, lineHeight: 32 },
-  display:     { fontFamily: FontFamily.sansSemiBold, fontSize: 34, lineHeight: 38 },
-  numeral:     { fontFamily: FontFamily.monoMedium, fontSize: 56, lineHeight: 56, letterSpacing: -1.1 },
-  numeralXL:   { fontFamily: FontFamily.monoMedium, fontSize: 88, lineHeight: 84, letterSpacing: -1.8 },
-} as const;
+Botão primário: verde, texto `onAccent`, largura total em formulário e altura mínima 48px, raio 6px.
+Secundário: superfície `raised` e texto principal. Destrutivo: `danger`, confirmação quando houver
+perda de dados. Erros e sucesso devem ter texto/ícone além da cor.
 
-export const Spacing = {
-  half: 2, one: 4, two: 8, threeHalf: 12, three: 16, fourHalf: 20,
-  four: 24, five: 32, six: 40, seven: 48, eight: 64,
-} as const;
+---
 
-export const Radius = { chip: 2, control: 6, card: 10, sheet: 16, pill: 999 } as const;
-export const Gutter = 20;
-export const MaxContentWidth = 640;
-export const MinTapTarget = 48;
-```
+## 9. Movimento
 
-```js
-// tailwind.config.js
-theme: {
-  extend: {
-    colors: {
-      canvas: '#121110', surface: '#1A1917', raised: '#232120',
-      border: '#2E2B28', rule: '#3A3632', borderStrong: '#787067',
-      muted: '#9A9188', secondary: '#B8B0A6', primary: '#F2EEE8',
-      accent: '#F5B23D', accentPressed: '#D9931A', accentTint: '#2B2218',
-      danger: '#F2665C', onAccent: '#121110',
-    },
-    borderRadius: { chip: '2px', control: '6px', card: '10px', sheet: '16px' },
-  },
+| Situação | Duração | Curva |
+| --- | --- | --- |
+| Foco, hover, pressão | 120ms | ease-out |
+| Mudança de linha/chip/estado | 160ms | ease-out |
+| Entrada de diálogo | 200ms | ease-out |
+| Saída de diálogo | 160ms | ease-in |
+| Troca de numeral | até 180ms, deslocamento vertical sutil | ease-out |
+
+Animar preferencialmente `transform` e `opacity`; não animar dimensões/layout. Sem bounce ou
+confete. Respeitar `prefers-reduced-motion: reduce`, removendo deslocamento e transições não
+essenciais. O movimento deve explicar mudança de estado, não atrasar o registro de uma série.
+
+---
+
+## 10. Tokens de referência para web
+
+Valores de cor e geometria em propriedades CSS reutilizáveis (ou tokens equivalentes no framework):
+
+```css
+:root {
+  color-scheme: dark;
+  --color-canvas: #080B0A;
+  --color-surface: #101715;
+  --color-raised: #18221D;
+  --color-border: #29352E;
+  --color-rule: #35443B;
+  --color-border-strong: #8AA99A;
+  --color-text-muted: #A6B5AC;
+  --color-text-secondary: #C6D2CC;
+  --color-text-primary: #F1F7F3;
+  --color-accent: #4ADE80;
+  --color-accent-pressed: #22C55E;
+  --color-accent-tint: #10271A;
+  --color-info: #60A5FA;
+  --color-info-tint: #101F32;
+  --color-danger: #F87171;
+  --color-on-accent: #07110A;
+  --radius-chip: 2px;
+  --radius-control: 6px;
+  --radius-panel: 10px;
+  --radius-modal: 16px;
+  --content-max: 640px;
+  --tap-target-min: 48px;
 }
 ```
 
-Dependências que a implementação exige (nenhuma instalada hoje):
-`npx expo install @expo-google-fonts/ibm-plex-sans @expo-google-fonts/ibm-plex-mono @expo/vector-icons`
-`expo-font` já está no projeto. `expo-haptics` é opcional, só para o feedback de PR e de série.
+Fontes IBM Plex devem ser servidas de forma compatível com o PWA (preferir arquivos locais/otimizados
+para evitar dependência de rede durante o treino). Números devem usar `font-variant-numeric: tabular-nums`
+como reforço, mesmo com fonte mono.
 
 ---
 
-## 11. Checklist de verificação
+## 11. Checklist antes de publicar uma tela
 
-Antes de considerar uma tela pronta:
-
-- [ ] Em 3 segundos, dá para dizer o que a tela faz.
-- [ ] A borda esquerda do conteúdo alinha com a tela anterior.
-- [ ] Todo número está em Mono, tabular, alinhado à direita, com vírgula decimal.
-- [ ] Nenhuma tela tem dois numerais gigantes.
-- [ ] Toda lista de dado usa régua, não card com sombra.
-- [ ] Nenhum texto abaixo de 4.5:1 e nenhum alvo de toque abaixo de 48×48.
-- [ ] Os oito estados existem em cada elemento interativo.
-- [ ] Em 320px nada quebra, transborda ou encolhe abaixo de 12px.
-- [ ] Removendo toda decoração, a hierarquia continua de pé.
-- [ ] Nenhum emoji, nenhuma copy motivacional, nenhuma segunda cor de acento.
-- [ ] `npx tsc --noEmit` e `npx expo lint` passam.
+- [ ] Em três segundos, está claro o que a tela faz.
+- [ ] A hierarquia ainda funciona sem decoração ou cor.
+- [ ] Números usam mono/tabular, alinham à direita e seguem formato PT-BR.
+- [ ] Uma lista de dados usa régua, não uma pilha de cards com sombra.
+- [ ] Pares de texto/fundo atendem WCAG AA; foco é visível.
+- [ ] Há labels, erros associados aos campos, loading e proteção contra envio duplicado.
+- [ ] A tela funciona com teclado, leitor de tela e `prefers-reduced-motion`.
+- [ ] Em 320px não há overflow; alvos de toque têm pelo menos 48×48px.
+- [ ] A barra inferior respeita safe area e não encobre conteúdo.
+- [ ] Estados e navegação não dependem apenas de verde/azul ou apenas de ícones.
+- [ ] Nenhuma tela privada aparece antes de a sessão ser validada.
+- [ ] Nenhum emoji, copy motivacional, âmbar ou gamificação decorativa.
 
 ---
 
-## 12. Ordem de implementação
+## 12. Sequência de implementação visual
 
-1. Tokens (`theme.ts`, `tailwind.config.js`) e carregamento das fontes no `_layout.tsx`.
-2. Primitivos: `Text` tipado por token, `Rule`, `DataRow`, `Label`, `Button`, `Numeral`.
-3. Casca: 4 abas com ícones Feather e indicador de aba ativa.
-4. Tela de treino ao vivo (o elemento-assinatura em escala máxima).
-5. Início, Progresso, Perfil.
-6. Revisão de contraste e de estados tela a tela.
+1. Implementar tokens CSS e carregar IBM Plex Sans/Mono.
+2. Criar primitivos reutilizáveis: texto por escala, régua, linha de dado, label, botão e numeral.
+3. Construir signin/signup e estados de formulário; aplicar o guard de rotas privadas e o contrato
+   de sessão com a API.
+4. Construir casca autenticada com as quatro abas e navegação responsiva.
+5. Construir a tela de treino ao vivo, concentrando nela o numeral e a maior densidade.
+6. Construir Início, Progresso e Perfil; revisar acessibilidade, contraste e estados em cada tela.
