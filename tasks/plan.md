@@ -52,7 +52,7 @@ substitui** e não toca nos arquivos daquela pasta.
 
 ### Fase 1 — Backend habilitando as telas
 
-- [ ] Task 1: Migration `users.username` com backfill e unicidade
+- [x] Task 1: Migration `users.username` com backfill e unicidade
 - [ ] Task 2: `username` no domínio, nos DTOs e no cadastro
 - [ ] Task 3: Login por e-mail ou username
 - [ ] Task 4: `PUT /api/users/me/password`
@@ -151,19 +151,19 @@ numérico, e só então recebe `NOT NULL` e índice único por `lower(username)`
 
 **Acceptance criteria:**
 
-- [ ] `V12__users_username.sql` com `-- author: jacob`, no padrão das migrations existentes
-- [ ] Usuário `joao.silva@x.com` sem colisão vira `joao.silva`
-- [ ] Duas contas com a mesma parte local terminam com sufixos distintos (`joao`, `joao2`)
-- [ ] Username resultante casa `^[a-z0-9_](?:[a-z0-9_.]*[a-z0-9_])?$` e tem 3–30 caracteres
-- [ ] `NOT NULL` aplicado depois do backfill; índice único `lower(username)`
-- [ ] Migration roda duas vezes sem erro em base já migrada (Flyway controla; assert de idempotência
+- [x] `V12__users_username.sql` com `-- author: jacob`, no padrão das migrations existentes
+- [x] Usuário `joao.silva@x.com` sem colisão vira `joao.silva`
+- [x] Duas contas com a mesma parte local terminam com sufixos distintos (`joao.silva`, `joao.silva2`)
+- [x] Username resultante casa `^[a-z0-9_]([a-z0-9_.]*[a-z0-9_])?$` e tem 3–30 caracteres
+- [x] `NOT NULL` aplicado depois do backfill; índice único `lower(username)`
+- [x] Migration roda duas vezes sem erro em base já migrada (Flyway controla; assert de idempotência
       do backfill por `WHERE username IS NULL`)
 
 **Verification:**
 
-- [ ] Tests pass: `./mvnw -Dtest=GymbroApplicationTests test` (contexto + Flyway)
-- [ ] Build succeeds: `./mvnw test`
-- [ ] Manual: `\d users` mostra a coluna e o índice único
+- [x] Tests pass: `./mvnw -Dtest=UsernameMigrationIT test` e `./mvnw test` (163 testes)
+- [x] Build succeeds: `./mvnw test`
+- [x] Manual: coberto por asserção em `information_schema`/`pg_indexes` no `UsernameMigrationIT`
 
 **Dependencies:** None
 **Files likely touched:**

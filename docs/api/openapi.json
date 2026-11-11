@@ -1896,12 +1896,6 @@
           "container" : {
             "type" : "boolean"
           },
-          "object" : {
-            "type" : "boolean"
-          },
-          "number" : {
-            "type" : "boolean"
-          },
           "nodeType" : {
             "type" : "string",
             "enum" : [ "ARRAY", "BINARY", "BOOLEAN", "MISSING", "NULL", "NUMBER", "OBJECT", "POJO", "STRING" ]
@@ -1918,7 +1912,13 @@
           "valueNode" : {
             "type" : "boolean"
           },
+          "object" : {
+            "type" : "boolean"
+          },
           "pojo" : {
+            "type" : "boolean"
+          },
+          "number" : {
             "type" : "boolean"
           },
           "floatingPointNumber" : {
@@ -2164,14 +2164,14 @@
             "type" : "string",
             "format" : "uuid"
           },
+          "email" : {
+            "type" : "string"
+          },
           "createdAt" : {
             "type" : "string",
             "format" : "date-time"
           },
           "timezone" : {
-            "type" : "string"
-          },
-          "email" : {
             "type" : "string"
           }
         }

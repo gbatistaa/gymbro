@@ -91,9 +91,22 @@ class UsernameMigrationIT {
         assertThat(usernames.values()).allMatch(name -> name.length() >= 3 && name.length() <= 30);
         assertThat(usernames.values()).doesNotHaveDuplicates();
 
-        assertThatThrownBy(() -> insertUser("dup@x.com", "JOAO.SILVA"))
+        assertThat(isUsernameNullable())
+            .as("NOT NULL aplicado depois do backfill")
+            .isFalse();
+        assertThat(uniqueIndexDefinition())
+            .as("unicidade insensível a caixa")
+            .contains("UNIQUE INDEX", "lower", "username");
+
+        assertThatThrownBy(() -> insertUser("dup@x.com", "joao.silva"))
+            .as("o mesmo username não pode existir duas vezes")
             .isInstanceOf(SQLException.class)
             .hasMessageContaining("uk_users_username");
+
+        assertThatThrownBy(() -> insertUser("case@x.com", "JOAO.SILVA"))
+            .as("o CHECK exige minúsculas, que é o que torna a unicidade insensível a caixa")
+            .isInstanceOf(SQLException.class)
+            .hasMessageContaining("ck_users_username_format");
     }
 
     private void migrateTo(String version) {
@@ -160,5 +173,29 @@ class UsernameMigrationIT {
             }
         }
         return result;
+    }
+
+    private boolean isUsernameNullable() throws SQLException {
+        return singleBoolean("""
+            SELECT is_nullable = 'YES' FROM information_schema.columns
+            WHERE table_name = 'users' AND column_name = 'username'
+            """);
+    }
+
+    private String uniqueIndexDefinition() throws SQLException {
+        try (Connection connection = connect();
+             Statement statement = connection.createStatement();
+             ResultSet rows = statement.executeQuery(
+                 "SELECT indexdef FROM pg_indexes WHERE indexname = 'uk_users_username'")) {
+            return rows.next() ? rows.getString("indexdef") : "";
+        }
+    }
+
+    private boolean singleBoolean(String sql) throws SQLException {
+        try (Connection connection = connect();
+             Statement statement = connection.createStatement();
+             ResultSet rows = statement.executeQuery(sql)) {
+            return rows.next() && rows.getBoolean(1);
+        }
     }
 }
