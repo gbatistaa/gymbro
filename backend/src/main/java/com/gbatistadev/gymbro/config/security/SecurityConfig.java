@@ -40,7 +40,8 @@ public class SecurityConfig {
         };
 
         return http
-            .csrf(AbstractHttpConfigurer::disable) // stateless Bearer auth: no ambient credential, so no CSRF surface
+            // Cookies de sessão usam SameSite=Strict: requisições cross-site não os carregam.
+            .csrf(AbstractHttpConfigurer::disable)
             .cors(Customizer.withDefaults())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .exceptionHandling(exceptions -> exceptions.authenticationEntryPoint(entryPoint))

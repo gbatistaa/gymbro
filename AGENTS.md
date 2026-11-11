@@ -60,10 +60,13 @@ alterar o frontend.
 ### HTTP e autenticação
 
 - Não crie instâncias de Axios ou chamadas `fetch` avulsas. Use o cliente de `web/src/lib/http.ts`.
-- Respostas `401` devem limpar a sessão (quando ela existir) e levar para `/signin`, preservando o
-  destino em `?next=`. O interceptor de `web/src/lib/http.ts` já faz o redirecionamento.
+- Tokens de sessão ficam em cookies `HttpOnly` definidos pelo backend. O PWA nunca lê, persiste ou
+  envia access token em `Authorization: Bearer`; o Jotai guarda apenas os dados públicos do usuário.
+- Respostas `401` tentam um refresh via cookie uma única vez. Se falhar, limpe a sessão e vá para
+  `/signin`, preservando o destino em `?next=`. O interceptor de `web/src/lib/http.ts` cuida disso.
 - Rotas privadas não podem renderizar dados antes de a sessão ser validada; o cliente nunca é a
   autorização final. O backend continua responsável por validar cada requisição.
+- CORS com credenciais exige origens explícitas; nunca use `*` com cookies.
 - Segredos nunca usam o prefixo `NEXT_PUBLIC_`. Apenas `web/.env.example` é versionado.
 
 ## Estrutura de referência

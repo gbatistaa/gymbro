@@ -4,13 +4,13 @@ import com.gbatistadev.gymbro.TestcontainersConfiguration;
 import com.gbatistadev.gymbro.user.RefreshToken;
 import com.gbatistadev.gymbro.user.RefreshTokenRepository;
 import com.jayway.jsonpath.JsonPath;
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -38,40 +38,31 @@ class AuthFlowIT {
     private RefreshTokenRepository refreshTokenRepository;
 
     @Test
-    @DisplayName("register → login with body tokens → 401 without header → refresh → retry → 200")
+    @DisplayName("register sets cookies → 200 with cookie → 401 without cookie → refresh → 200")
     void fullAuthFlow() throws Exception {
         String email = "flow-" + UUID.randomUUID() + "@example.com";
-        Login login = registerAndLogin(email);
+        Session session = register(email);
 
-        // bearer válido → dados resumidos
-        mockMvc.perform(get("/api/users/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + login.accessToken()))
+        mockMvc.perform(get("/api/users/me").cookie(accessCookie(session)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.email").value(email))
             .andExpect(jsonPath("$.name").value("Flow User"))
             .andExpect(jsonPath("$.createdAt").exists())
             .andExpect(jsonPath("$.passwordHash").doesNotExist());
 
-        // sem header → 401 no shape padrão
         mockMvc.perform(get("/api/users/me"))
             .andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.status").value(401))
             .andExpect(jsonPath("$.code").value("UNAUTHENTICATED"))
             .andExpect(jsonPath("$.path").value("/api/users/me"));
 
-        // refresh pelo corpo → novo access token
         MvcResult refreshed = mockMvc.perform(post("/api/auth/refresh")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                    {"refreshToken":"%s"}
-                    """.formatted(login.refreshToken())))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.tokenType").value("Bearer"))
-            .andExpect(jsonPath("$.refreshToken").value(login.refreshToken()))
+                .cookie(new Cookie(AuthCookies.REFRESH, session.refreshToken())))
+            .andExpect(status().isNoContent())
             .andReturn();
-        String newAccess = JsonPath.read(refreshed.getResponse().getContentAsString(), "$.accessToken");
 
-        // retry da requisição original com o access novo → 200
-        mockMvc.perform(get("/api/users/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + newAccess))
+        mockMvc.perform(get("/api/users/me")
+                .cookie(new Cookie(AuthCookies.ACCESS, cookieValue(refreshed, AuthCookies.ACCESS))))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.email").value(email));
     }
@@ -80,21 +71,17 @@ class AuthFlowIT {
     @DisplayName("refresh with expires_at in the past → 401 ErrorResponse")
     void expiredRefreshIsRejected() throws Exception {
         String email = "expired-" + UUID.randomUUID() + "@example.com";
-        Login login = registerAndLogin(email);
+        Session session = register(email);
 
         RefreshToken stored = refreshTokenRepository
-            .findAllByUserId(UUID.fromString(login.userId()))
+            .findAllByUserId(UUID.fromString(session.userId()))
             .stream()
             .findFirst()
             .orElseThrow();
         stored.setExpiresAt(Instant.now().minusSeconds(60));
         refreshTokenRepository.save(stored);
 
-        mockMvc.perform(post("/api/auth/refresh")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                    {"refreshToken":"%s"}
-                    """.formatted(login.refreshToken())))
+        refresh(session.refreshToken())
             .andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.status").value(401))
             .andExpect(jsonPath("$.code").value("UNAUTHENTICATED"))
@@ -103,65 +90,50 @@ class AuthFlowIT {
     }
 
     @Test
-    @DisplayName("logout revokes the refresh token, which can no longer be exchanged")
+    @DisplayName("logout revokes the refresh cookie, which can no longer be exchanged")
     void logoutRevokesRefreshToken() throws Exception {
         String email = "logout-" + UUID.randomUUID() + "@example.com";
-        Login login = registerAndLogin(email);
+        Session session = register(email);
 
         mockMvc.perform(post("/api/auth/logout")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                    {"refreshToken":"%s"}
-                    """.formatted(login.refreshToken())))
+                .cookie(new Cookie(AuthCookies.REFRESH, session.refreshToken())))
             .andExpect(status().isNoContent());
 
-        mockMvc.perform(post("/api/auth/refresh")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                    {"refreshToken":"%s"}
-                    """.formatted(login.refreshToken())))
+        refresh(session.refreshToken())
             .andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.message").value("Invalid refresh token"));
     }
 
     @Test
-    @DisplayName("the access token stays valid after logout until it expires (stateless JWT)")
+    @DisplayName("the access cookie stays valid after logout until it expires (stateless JWT)")
     void logoutDoesNotRevokeTheAccessToken() throws Exception {
         String email = "logout-access-" + UUID.randomUUID() + "@example.com";
-        Login login = registerAndLogin(email);
+        Session session = register(email);
 
         mockMvc.perform(post("/api/auth/logout")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                    {"refreshToken":"%s"}
-                    """.formatted(login.refreshToken())))
+                .cookie(new Cookie(AuthCookies.REFRESH, session.refreshToken())))
             .andExpect(status().isNoContent());
 
         // documenta o limite real do stateless: sem lista de revogação, o access vale até expirar
-        mockMvc.perform(get("/api/users/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + login.accessToken()))
+        mockMvc.perform(get("/api/users/me").cookie(accessCookie(session)))
             .andExpect(status().isOk());
     }
 
     @Test
-    @DisplayName("logout without a refresh token revokes every session of the authenticated user")
+    @DisplayName("logout with only the access cookie revokes every session of the user")
     void logoutWithoutTokenRevokesAllSessions() throws Exception {
         String email = "logout-all-" + UUID.randomUUID() + "@example.com";
-        Login login = registerAndLogin(email);
+        Session session = register(email);
 
-        mockMvc.perform(post("/api/auth/logout")
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + login.accessToken()))
+        mockMvc.perform(post("/api/auth/logout").cookie(accessCookie(session)))
             .andExpect(status().isNoContent());
 
-        mockMvc.perform(post("/api/auth/refresh")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                    {"refreshToken":"%s"}
-                    """.formatted(login.refreshToken())))
+        refresh(session.refreshToken())
             .andExpect(status().isUnauthorized());
     }
 
     @Test
-    @DisplayName("logout without a refresh token and without authentication returns 401")
+    @DisplayName("logout without cookies returns 401")
     void logoutWithoutTokenRequiresAuthentication() throws Exception {
         mockMvc.perform(post("/api/auth/logout"))
             .andExpect(status().isUnauthorized())
@@ -170,17 +142,15 @@ class AuthFlowIT {
     }
 
     @Test
-    @DisplayName("logout is idempotent: revoking an already revoked token still returns 204")
+    @DisplayName("logout is idempotent: revoking an already revoked cookie still returns 204")
     void logoutIsIdempotent() throws Exception {
         String email = "logout-twice-" + UUID.randomUUID() + "@example.com";
-        Login login = registerAndLogin(email);
-        String body = """
-            {"refreshToken":"%s"}
-            """.formatted(login.refreshToken());
+        Session session = register(email);
+        Cookie refreshCookie = new Cookie(AuthCookies.REFRESH, session.refreshToken());
 
-        mockMvc.perform(post("/api/auth/logout").contentType(MediaType.APPLICATION_JSON).content(body))
+        mockMvc.perform(post("/api/auth/logout").cookie(refreshCookie))
             .andExpect(status().isNoContent());
-        mockMvc.perform(post("/api/auth/logout").contentType(MediaType.APPLICATION_JSON).content(body))
+        mockMvc.perform(post("/api/auth/logout").cookie(refreshCookie))
             .andExpect(status().isNoContent());
     }
 
@@ -188,30 +158,25 @@ class AuthFlowIT {
     @DisplayName("two logins keep independent sessions: revoking one leaves the other usable")
     void devicesKeepIndependentSessions() throws Exception {
         String email = "devices-" + UUID.randomUUID() + "@example.com";
-        Login mobile = registerAndLogin(email);
-        Tokens web = login(email);
+        Session first = register(email);
+        Session second = login(email);
 
-        // o segundo login não derruba o primeiro
-        refresh(mobile.refreshToken()).andExpect(status().isOk());
-        refresh(web.refreshToken()).andExpect(status().isOk());
+        refresh(first.refreshToken()).andExpect(status().isNoContent());
+        refresh(second.refreshToken()).andExpect(status().isNoContent());
 
-        // encerrar o mobile não afeta o web
         mockMvc.perform(post("/api/auth/logout")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                    {"refreshToken":"%s"}
-                    """.formatted(mobile.refreshToken())))
+                .cookie(new Cookie(AuthCookies.REFRESH, first.refreshToken())))
             .andExpect(status().isNoContent());
 
-        refresh(mobile.refreshToken()).andExpect(status().isUnauthorized());
-        refresh(web.refreshToken()).andExpect(status().isOk());
+        refresh(first.refreshToken()).andExpect(status().isUnauthorized());
+        refresh(second.refreshToken()).andExpect(status().isNoContent());
     }
 
     @Test
     @DisplayName("an expired session row is pruned on the next login")
     void expiredSessionsArePrunedOnLogin() throws Exception {
         String email = "prune-" + UUID.randomUUID() + "@example.com";
-        Login first = registerAndLogin(email);
+        Session first = register(email);
 
         RefreshToken expired = refreshTokenRepository
             .findAllByUserId(UUID.fromString(first.userId()))
@@ -229,42 +194,56 @@ class AuthFlowIT {
 
     private ResultActions refresh(String refreshToken) throws Exception {
         return mockMvc.perform(post("/api/auth/refresh")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("""
-                {"refreshToken":"%s"}
-                """.formatted(refreshToken)));
+            .cookie(new Cookie(AuthCookies.REFRESH, refreshToken)));
     }
 
-    private Login registerAndLogin(String email) throws Exception {
+    private Session register(String email) throws Exception {
         MvcResult registered = mockMvc.perform(post("/api/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                     {"name":"Flow User","email":"%s","password":"password123"}
                     """.formatted(email)))
             .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.createdAt").exists())
             .andReturn();
-        String userId = JsonPath.read(registered.getResponse().getContentAsString(), "$.id");
 
-        Tokens tokens = login(email);
-        return new Login(userId, tokens.accessToken(), tokens.refreshToken());
+        return sessionFrom(registered);
     }
 
-    private Tokens login(String email) throws Exception {
+    private Session login(String email) throws Exception {
         MvcResult login = mockMvc.perform(post("/api/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                     {"email":"%s","password":"password123"}
                     """.formatted(email)))
             .andExpect(status().isOk())
+            .andExpect(jsonPath("$.createdAt").exists())
             .andReturn();
 
-        String body = login.getResponse().getContentAsString();
-        return new Tokens(
-            JsonPath.read(body, "$.accessToken"),
-            JsonPath.read(body, "$.refreshToken"));
+        return sessionFrom(login);
     }
 
-    private record Tokens(String accessToken, String refreshToken) {}
+    private Session sessionFrom(MvcResult result) throws Exception {
+        String userId = JsonPath.read(result.getResponse().getContentAsString(), "$.id");
+        return new Session(
+            userId,
+            cookieValue(result, AuthCookies.ACCESS),
+            cookieValue(result, AuthCookies.REFRESH));
+    }
 
-    private record Login(String userId, String accessToken, String refreshToken) {}
+    private Cookie accessCookie(Session session) {
+        return new Cookie(AuthCookies.ACCESS, session.accessToken());
+    }
+
+    private String cookieValue(MvcResult result, String name) {
+        String header = result.getResponse().getHeaders("Set-Cookie").stream()
+            .filter(value -> value.startsWith(name + "="))
+            .findFirst()
+            .orElseThrow(() -> new AssertionError("cookie ausente: " + name));
+        int separator = header.indexOf(';');
+        int end = separator < 0 ? header.length() : separator;
+        return header.substring((name + "=").length(), end);
+    }
+
+    private record Session(String userId, String accessToken, String refreshToken) {}
 }

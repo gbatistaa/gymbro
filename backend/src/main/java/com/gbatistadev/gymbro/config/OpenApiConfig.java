@@ -1,5 +1,6 @@
 package com.gbatistadev.gymbro.config;
 
+import com.gbatistadev.gymbro.auth.AuthCookies;
 import com.gbatistadev.gymbro.errors.ErrorResponse;
 import com.gbatistadev.gymbro.errors.FieldErrorDto;
 import io.swagger.v3.core.converter.ModelConverters;
@@ -24,14 +25,21 @@ public class OpenApiConfig {
 
     @Bean
     OpenAPI gymbroOpenApi() {
-        // declarado sem exigência global: /api/auth/** é público e o resto é autenticado por header
+        // declarado sem exigência global: /api/auth/** é público e o resto é autenticado.
+        // O PWA usa cookieAuth; bearerAuth fica para clientes não-browser.
         return new OpenAPI()
             .info(new Info().title("Gymbro API").version("1"))
-            .components(new Components().addSecuritySchemes("bearerAuth",
-                new SecurityScheme()
-                    .type(SecurityScheme.Type.HTTP)
-                    .scheme("bearer")
-                    .bearerFormat("JWT")));
+            .components(new Components()
+                .addSecuritySchemes("cookieAuth",
+                    new SecurityScheme()
+                        .type(SecurityScheme.Type.APIKEY)
+                        .in(SecurityScheme.In.COOKIE)
+                        .name(AuthCookies.ACCESS))
+                .addSecuritySchemes("bearerAuth",
+                    new SecurityScheme()
+                        .type(SecurityScheme.Type.HTTP)
+                        .scheme("bearer")
+                        .bearerFormat("JWT")));
     }
 
     @Bean

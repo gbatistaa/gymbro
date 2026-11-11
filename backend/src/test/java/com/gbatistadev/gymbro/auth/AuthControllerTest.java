@@ -10,7 +10,7 @@ import com.gbatistadev.gymbro.user.UserMapper;
 import com.gbatistadev.gymbro.user.UserMapperImpl;
 import com.gbatistadev.gymbro.user.UserRepository;
 import com.gbatistadev.gymbro.user.UserService;
-import com.jayway.jsonpath.JsonPath;
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -71,30 +71,40 @@ class AuthControllerTest {
         jwtService = new JwtService(properties);
         AuthService authService = new AuthService(
             userService, userRepository, refreshTokenRepository,
-            encoder, jwtService, properties);
+            encoder, jwtService, properties, mapper);
+        AuthCookies authCookies = new AuthCookies(properties, false, "Strict", "");
         loginRateLimiter = new LoginRateLimiter(5, java.time.Duration.ofMinutes(15));
-        mockMvc = MockMvcBuilders.standaloneSetup(new AuthController(authService, loginRateLimiter))
+        mockMvc = MockMvcBuilders.standaloneSetup(
+                new AuthController(authService, authCookies, loginRateLimiter))
             .setControllerAdvice(new GlobalExceptionHandler())
             .build();
     }
 
     @Test
-    @DisplayName("register returns 201 with user data and no password hash")
+    @DisplayName("register returns 201, sets session cookies and never leaks tokens or password hash")
     void shouldRegisterUser() throws Exception {
+        User user = existingUser("password123");
         when(userRepository.existsByEmail("joao@example.com")).thenReturn(false);
+        when(userRepository.findByEmail("joao@example.com")).thenReturn(Optional.of(user));
 
-        mockMvc.perform(post("/api/auth/register")
+        MvcResult result = mockMvc.perform(post("/api/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(REGISTER_BODY))
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.name").value("João Silva"))
             .andExpect(jsonPath("$.email").value("joao@example.com"))
-            .andExpect(jsonPath("$.passwordHash").doesNotExist());
+            .andExpect(jsonPath("$.passwordHash").doesNotExist())
+            .andExpect(jsonPath("$.accessToken").doesNotExist())
+            .andExpect(jsonPath("$.refreshToken").doesNotExist())
+            .andExpect(header().string("Cache-Control", "no-store"))
+            .andReturn();
+
+        assertSessionCookies(result);
     }
 
     @Test
-    @DisplayName("login returns 200 with bearer tokens in the body and no Set-Cookie")
-    void shouldLoginAndReturnTokensInBody() throws Exception {
+    @DisplayName("login returns 200, sets HttpOnly cookies and keeps tokens out of the body")
+    void shouldLoginAndSetSessionCookies() throws Exception {
         User user = existingUser("password123");
         when(userRepository.findByEmail("joao@example.com")).thenReturn(Optional.of(user));
 
@@ -102,20 +112,17 @@ class AuthControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(LOGIN_BODY))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.tokenType").value("Bearer"))
-            .andExpect(jsonPath("$.expiresIn").value(900))
-            .andExpect(jsonPath("$.accessToken").isNotEmpty())
-            .andExpect(jsonPath("$.refreshToken").isNotEmpty())
-            .andExpect(header().doesNotExist("Set-Cookie"))
+            .andExpect(jsonPath("$.email").value("joao@example.com"))
+            .andExpect(jsonPath("$.accessToken").doesNotExist())
+            .andExpect(jsonPath("$.refreshToken").doesNotExist())
             .andExpect(header().string("Cache-Control", "no-store"))
             .andReturn();
 
-        String body = result.getResponse().getContentAsString();
-        String accessToken = JsonPath.read(body, "$.accessToken");
-        String refreshToken = JsonPath.read(body, "$.refreshToken");
+        String accessToken = assertSessionCookies(result);
+        String refreshToken = cookieValue(result, AuthCookies.REFRESH);
 
         assertEquals(user.getId(), jwtService.parseAccessToken(accessToken),
-            "access token deve autenticar como o usuário");
+            "access token do cookie deve autenticar como o usuário");
         assertEquals(3, accessToken.split("\\.").length, "access token deve ser um JWT");
         assertEquals(43, refreshToken.length(), "32 bytes em base64url sem padding");
         assertTrue(refreshToken.matches("[A-Za-z0-9_-]+"));
@@ -167,8 +174,8 @@ class AuthControllerTest {
     }
 
     @Test
-    @DisplayName("refresh returns a new parseable access token in the body and no Set-Cookie")
-    void shouldRefreshAccessToken() throws Exception {
+    @DisplayName("refresh reads the cookie and sets a new access cookie without exposing tokens")
+    void shouldRefreshAccessTokenFromCookie() throws Exception {
         User user = existingUser("password123");
         RefreshToken stored = new RefreshToken();
         stored.setTokenHash("a".repeat(64));
@@ -178,24 +185,18 @@ class AuthControllerTest {
             .thenReturn(Optional.of(stored));
 
         MvcResult result = mockMvc.perform(post("/api/auth/refresh")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                    {"refreshToken":"raw-token"}
-                    """))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.tokenType").value("Bearer"))
-            .andExpect(jsonPath("$.expiresIn").value(900))
-            .andExpect(jsonPath("$.refreshToken").value("raw-token"))
-            .andExpect(header().doesNotExist("Set-Cookie"))
+                .cookie(new Cookie(AuthCookies.REFRESH, "raw-token")))
+            .andExpect(status().isNoContent())
+            .andExpect(header().string("Cache-Control", "no-store"))
             .andReturn();
 
-        String accessToken = JsonPath.read(result.getResponse().getContentAsString(), "$.accessToken");
+        String accessToken = cookieValue(result, AuthCookies.ACCESS);
         assertEquals(user.getId(), jwtService.parseAccessToken(accessToken),
-            "o access token devolvido deve autenticar como o usuário");
+            "o access token do cookie deve autenticar como o usuário");
     }
 
     @Test
-    @DisplayName("refresh without a body returns 401 ErrorResponse")
+    @DisplayName("refresh without the cookie returns 401 ErrorResponse")
     void shouldRejectRefreshWithoutToken() throws Exception {
         mockMvc.perform(post("/api/auth/refresh"))
             .andExpect(status().isUnauthorized())
@@ -206,28 +207,22 @@ class AuthControllerTest {
     }
 
     @Test
-    @DisplayName("refresh with a blank token returns the same 401")
+    @DisplayName("refresh with a blank cookie returns the same 401")
     void shouldRejectBlankRefreshToken() throws Exception {
         mockMvc.perform(post("/api/auth/refresh")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                    {"refreshToken":"  "}
-                    """))
+                .cookie(new Cookie(AuthCookies.REFRESH, "")))
             .andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.message").value("Invalid refresh token"));
     }
 
     @Test
-    @DisplayName("refresh with unknown or expired token returns the same 401")
+    @DisplayName("refresh with unknown or expired cookie token returns the same 401")
     void shouldRejectUnknownOrExpiredRefreshToken() throws Exception {
         when(refreshTokenRepository.findValidByTokenHash(anyString(), any(java.time.Instant.class)))
             .thenReturn(Optional.empty());
 
         mockMvc.perform(post("/api/auth/refresh")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                    {"refreshToken":"expired-token"}
-                    """))
+                .cookie(new Cookie(AuthCookies.REFRESH, "expired-token")))
             .andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.message").value("Invalid refresh token"));
     }
@@ -312,6 +307,34 @@ class AuthControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(wrong))
             .andExpect(status().isUnauthorized());
+    }
+
+    private String assertSessionCookies(MvcResult result) {
+        String accessHeader = setCookieHeader(result, AuthCookies.ACCESS);
+        String refreshHeader = setCookieHeader(result, AuthCookies.REFRESH);
+
+        assertTrue(accessHeader.contains("HttpOnly"), accessHeader);
+        assertTrue(accessHeader.contains("SameSite=Strict"), accessHeader);
+        assertTrue(accessHeader.contains("Path=/api"), accessHeader);
+        assertTrue(refreshHeader.contains("HttpOnly"), refreshHeader);
+        assertTrue(refreshHeader.contains("SameSite=Strict"), refreshHeader);
+        assertTrue(refreshHeader.contains("Path=/api/auth"), refreshHeader);
+
+        return cookieValue(result, AuthCookies.ACCESS);
+    }
+
+    private String setCookieHeader(MvcResult result, String name) {
+        return result.getResponse().getHeaders("Set-Cookie").stream()
+            .filter(header -> header.startsWith(name + "="))
+            .findFirst()
+            .orElseThrow(() -> new AssertionError("cookie ausente: " + name));
+    }
+
+    private String cookieValue(MvcResult result, String name) {
+        String header = setCookieHeader(result, name);
+        int separator = header.indexOf(';');
+        int end = separator < 0 ? header.length() : separator;
+        return header.substring((name + "=").length(), end);
     }
 
     private User existingUser(String rawPassword) {

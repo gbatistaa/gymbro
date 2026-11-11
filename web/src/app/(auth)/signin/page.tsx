@@ -9,16 +9,11 @@ export const metadata: Metadata = {
 export const instant = false;
 
 type SignInPageProps = {
-  searchParams: Promise<{ next?: string; registered?: string }>;
+  searchParams: Promise<{ next?: string }>;
 };
 
 export default async function SignInPage({ searchParams }: SignInPageProps) {
   const params = await searchParams;
 
-  return (
-    <SignInForm
-      next={params.next}
-      registered={params.registered === "1"}
-    />
-  );
+  return <SignInForm next={params.next} />;
 }

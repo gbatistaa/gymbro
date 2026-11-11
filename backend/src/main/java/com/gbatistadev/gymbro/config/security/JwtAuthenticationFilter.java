@@ -1,9 +1,11 @@
 package com.gbatistadev.gymbro.config.security;
 
+import com.gbatistadev.gymbro.auth.AuthCookies;
 import com.gbatistadev.gymbro.config.jwt.JwtService;
 import com.gbatistadev.gymbro.errors.exceptions.UnauthorizedException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +32,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
-        String token = bearerToken(request.getHeader(HttpHeaders.AUTHORIZATION));
+        // PWA usa o cookie HttpOnly; o Bearer fica como fallback para clientes não-browser.
+        String token = accessCookie(request);
+        if (token == null) {
+            token = bearerToken(request.getHeader(HttpHeaders.AUTHORIZATION));
+        }
         if (token != null) {
             try {
                 var userId = jwtService.parseAccessToken(token);
@@ -42,6 +48,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         }
         filterChain.doFilter(request, response);
+    }
+
+    private String accessCookie(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null) {
+            return null;
+        }
+
+        for (Cookie cookie : cookies) {
+            if (AuthCookies.ACCESS.equals(cookie.getName())) {
+                String value = cookie.getValue();
+                return value == null || value.isBlank() ? null : value;
+            }
+        }
+
+        return null;
     }
 
     // RFC 7235: o nome do esquema é case-insensitive; o token nunca é logado.

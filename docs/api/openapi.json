@@ -759,25 +759,17 @@
       "post" : {
         "tags" : [ "auth-controller" ],
         "operationId" : "refresh",
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/RefreshRequest"
-              }
-            }
+        "parameters" : [ {
+          "name" : "gymbro_refresh",
+          "in" : "cookie",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
           }
-        },
+        } ],
         "responses" : {
           "200" : {
-            "description" : "OK",
-            "content" : {
-              "*/*" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/AuthTokensDto"
-                }
-              }
-            }
+            "description" : "OK"
           }
         }
       }
@@ -786,15 +778,14 @@
       "post" : {
         "tags" : [ "auth-controller" ],
         "operationId" : "logout",
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/RefreshRequest"
-              }
-            }
+        "parameters" : [ {
+          "name" : "gymbro_refresh",
+          "in" : "cookie",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
           }
-        },
+        } ],
         "responses" : {
           "200" : {
             "description" : "OK"
@@ -822,7 +813,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/AuthTokensDto"
+                  "$ref" : "#/components/schemas/UserDto"
                 }
               }
             }
@@ -1905,6 +1896,12 @@
           "container" : {
             "type" : "boolean"
           },
+          "object" : {
+            "type" : "boolean"
+          },
+          "number" : {
+            "type" : "boolean"
+          },
           "nodeType" : {
             "type" : "string",
             "enum" : [ "ARRAY", "BINARY", "BOOLEAN", "MISSING", "NULL", "NUMBER", "OBJECT", "POJO", "STRING" ]
@@ -1921,13 +1918,7 @@
           "valueNode" : {
             "type" : "boolean"
           },
-          "object" : {
-            "type" : "boolean"
-          },
           "pojo" : {
-            "type" : "boolean"
-          },
-          "number" : {
             "type" : "boolean"
           },
           "floatingPointNumber" : {
@@ -2041,32 +2032,6 @@
           }
         },
         "required" : [ "email", "name", "password" ]
-      },
-      "RefreshRequest" : {
-        "type" : "object",
-        "properties" : {
-          "refreshToken" : {
-            "type" : "string"
-          }
-        }
-      },
-      "AuthTokensDto" : {
-        "type" : "object",
-        "properties" : {
-          "accessToken" : {
-            "type" : "string"
-          },
-          "tokenType" : {
-            "type" : "string"
-          },
-          "expiresIn" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "refreshToken" : {
-            "type" : "string"
-          }
-        }
       },
       "LoginDto" : {
         "type" : "object",
@@ -2199,14 +2164,14 @@
             "type" : "string",
             "format" : "uuid"
           },
-          "email" : {
-            "type" : "string"
-          },
           "createdAt" : {
             "type" : "string",
             "format" : "date-time"
           },
           "timezone" : {
+            "type" : "string"
+          },
+          "email" : {
             "type" : "string"
           }
         }
@@ -2598,6 +2563,11 @@
       }
     },
     "securitySchemes" : {
+      "cookieAuth" : {
+        "type" : "apiKey",
+        "name" : "gymbro_access",
+        "in" : "cookie"
+      },
       "bearerAuth" : {
         "type" : "http",
         "scheme" : "bearer",

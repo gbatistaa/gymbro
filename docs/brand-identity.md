@@ -206,12 +206,15 @@ navegador e reservar espaço para a barra inferior fixa. Conferir pelo menos 320
 
 ### Contrato com o backend
 
-O PWA controla navegação e apresentação; isso não substitui autorização no servidor. APIs privadas
-devem validar a sessão em cada requisição e responder `401 Unauthorized` quando ela estiver ausente
-ou inválida (`403` para usuário autenticado sem permissão). O cliente limpa/atualiza o estado de
-sessão e encaminha para `/signin` em caso de `401`. Endpoints de página servidos pelo backend podem
-redirecionar para signin se esse for o modelo de entrega, mas APIs não devem devolver HTML de login
-como substituto de resposta de erro. Nunca confiar apenas no guard de frontend para proteger dados.
+O PWA controla navegação e apresentação; isso não substitui autorização no servidor. A sessão usa
+cookies `HttpOnly` definidos pelo backend: access token de curta duração e refresh token restrito ao
+fluxo de autenticação. O front nunca lê nem persiste tokens; guarda apenas os dados públicos do
+usuário. APIs privadas devem validar a sessão em cada requisição e responder `401 Unauthorized`
+quando ela estiver ausente ou inválida (`403` para usuário autenticado sem permissão). O cliente
+tenta renovar a sessão pelo cookie e, se falhar, limpa o estado e encaminha para `/signin`.
+Endpoints de página servidos pelo backend podem redirecionar para signin se esse for o modelo de
+entrega, mas APIs não devem devolver HTML de login como substituto de resposta de erro. Nunca
+confiar apenas no guard de frontend para proteger dados.
 
 ### Navegação autenticada
 

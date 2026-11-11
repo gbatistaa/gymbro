@@ -272,12 +272,6 @@
   margin: 0;
 }
 
-.noticeInfo {
-  border-color: color-mix(in srgb, var(--color-info) 32%, transparent);
-  background: var(--color-info-tint);
-  color: var(--color-info);
-}
-
 .noticeDanger {
   border-color: color-mix(in srgb, var(--color-danger) 32%, transparent);
   background: color-mix(in srgb, var(--color-danger) 8%, transparent);

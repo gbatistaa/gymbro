@@ -1,9 +1,13 @@
 import { atomWithStorage } from "jotai/utils";
-import type { AuthTokens, UserSummary } from "@/contracts/auth";
+import type { UserSummary } from "@/contracts/auth";
+
+export const SESSION_STORAGE_KEY = "gymbro.session";
 
 export type Session = {
-  tokens: AuthTokens;
   user: UserSummary;
 };
 
-export const sessionAtom = atomWithStorage<Session | null>("gymbro.session", null);
+export const sessionAtom = atomWithStorage<Session | null>(
+  SESSION_STORAGE_KEY,
+  null,
+);

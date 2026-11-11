@@ -1,6 +1,5 @@
 package com.gbatistadev.gymbro.auth;
 
-import com.gbatistadev.gymbro.auth.dto.AuthTokensDto;
 import com.gbatistadev.gymbro.auth.dto.LoginDto;
 import com.gbatistadev.gymbro.config.jwt.JwtProperties;
 import com.gbatistadev.gymbro.config.jwt.JwtService;
@@ -8,12 +7,12 @@ import com.gbatistadev.gymbro.errors.exceptions.UnauthorizedException;
 import com.gbatistadev.gymbro.user.RefreshToken;
 import com.gbatistadev.gymbro.user.RefreshTokenRepository;
 import com.gbatistadev.gymbro.user.User;
+import com.gbatistadev.gymbro.user.UserMapper;
 import com.gbatistadev.gymbro.user.UserRepository;
 import com.gbatistadev.gymbro.user.UserService;
 import com.gbatistadev.gymbro.user.dto.CreateUserDto;
 import com.gbatistadev.gymbro.user.dto.UserDto;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -39,13 +38,22 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final JwtProperties jwtProperties;
+    private final UserMapper userMapper;
 
-    public UserDto register(CreateUserDto dto) {
-        return userService.create(dto);
+    /**
+     * Cria a conta e já abre a sessão. O cadastro do PWA não deve exigir um segundo login.
+     */
+    @Transactional
+    public AuthSession register(CreateUserDto dto) {
+        UserDto userDto = userService.create(dto);
+        User user = userRepository.findByEmail(dto.email())
+            .orElseThrow(() -> new IllegalStateException("User missing after registration"));
+
+        return issueSession(user, userDto);
     }
 
     @Transactional
-    public ResponseEntity<AuthTokensDto> login(LoginDto dto) {
+    public AuthSession login(LoginDto dto) {
         User user = userRepository.findByEmail(dto.email())
             .orElseThrow(() -> new UnauthorizedException("Invalid credentials"));
 
@@ -53,16 +61,12 @@ public class AuthService {
             throw new UnauthorizedException("Invalid credentials");
         }
 
-        String refreshToken = generateRefreshToken();
-        saveRefreshToken(user, refreshToken);
-        String accessToken = jwtService.createAccessToken(user.getId(), user.getEmail());
-
-        return tokensResponse(accessToken, refreshToken);
+        return issueSession(user, userMapper.toDto(user));
     }
 
     // rotação de refresh não implementada (open question do plan); upgrade = trocar o hash a cada uso
     @Transactional(readOnly = true)
-    public ResponseEntity<AuthTokensDto> refresh(String rawRefreshToken) {
+    public AuthSession refresh(String rawRefreshToken) {
         if (rawRefreshToken == null || rawRefreshToken.isBlank()) {
             throw new UnauthorizedException("Invalid refresh token");
         }
@@ -74,24 +78,13 @@ public class AuthService {
         User user = refreshToken.getUser();
         String accessToken = jwtService.createAccessToken(user.getId(), user.getEmail());
 
-        return tokensResponse(accessToken, rawRefreshToken);
-    }
-
-    // no-store: a resposta carrega credenciais e não pode ser gravada por cache de proxy ou navegador
-    private ResponseEntity<AuthTokensDto> tokensResponse(String accessToken, String refreshToken) {
-        return ResponseEntity.ok()
-            .header(HttpHeaders.CACHE_CONTROL, "no-store")
-            .body(new AuthTokensDto(
-                accessToken,
-                "Bearer",
-                jwtProperties.expirationMs() / 1000,
-                refreshToken));
+        return new AuthSession(userMapper.toDto(user), accessToken, rawRefreshToken);
     }
 
     /**
-     * Revoga a sessão. Com um refresh token no corpo, apaga aquele token — quem o possui já poderia
-     * autenticar com ele, então a posse é a autorização. Sem token no corpo, exige autenticação e
-     * encerra todas as sessões do usuário.
+     * Revoga a sessão. Com o refresh token do cookie, apaga aquele token — quem o possui já poderia
+     * autenticar com ele, então a posse é a autorização. Sem refresh token no cookie, exige
+     * autenticação e encerra todas as sessões do usuário.
      *
      * <p>O access token (JWT) continua válido até expirar: não há lista de revogação.
      * {@code shortcut: access token sem revogação, upgrade = jti + denylist até o exp}
@@ -116,6 +109,14 @@ public class AuthService {
         }
         refreshTokenRepository.deleteByUserId(userId);
         return ResponseEntity.noContent().build();
+    }
+
+    private AuthSession issueSession(User user, UserDto userDto) {
+        String refreshToken = generateRefreshToken();
+        saveRefreshToken(user, refreshToken);
+        String accessToken = jwtService.createAccessToken(user.getId(), user.getEmail());
+
+        return new AuthSession(userDto, accessToken, refreshToken);
     }
 
     private String generateRefreshToken() {

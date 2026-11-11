@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { loginSchema, type LoginInput } from "@/contracts/auth";
 import { sessionAtom } from "@/stores/session";
-import { getMe, login } from "./api";
+import { login } from "./api";
 import styles from "./components/auth.module.css";
 import { AuthField } from "./components/auth-field";
 import { AuthHeader } from "./components/auth-header";
@@ -17,20 +17,21 @@ import { safeNextPath } from "./next-path";
 
 type SignInFormProps = {
   next?: string;
-  registered?: boolean;
 };
 
-export function SignInForm({ next, registered = false }: SignInFormProps) {
+export function SignInForm({ next }: SignInFormProps) {
   const router = useRouter();
   const setSession = useSetAtom(sessionAtom);
+  const destination = safeNextPath(next);
   const [values, setValues] = useState<LoginInput>({ email: "", password: "" });
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const signUpHref = next
-    ? `/signup?next=${encodeURIComponent(next)}`
-    : "/signup";
+  const signUpHref =
+    destination !== "/"
+      ? `/signup?next=${encodeURIComponent(destination)}`
+      : "/signup";
 
   function setField(field: keyof LoginInput, value: string) {
     setValues((current) => ({ ...current, [field]: value }));
@@ -56,10 +57,9 @@ export function SignInForm({ next, registered = false }: SignInFormProps) {
     setIsSubmitting(true);
 
     try {
-      const tokens = await login(parsed.data);
-      const user = await getMe(tokens.accessToken);
-      setSession({ tokens, user });
-      router.replace(safeNextPath(next));
+      const user = await login(parsed.data);
+      setSession({ user });
+      router.replace(destination);
     } catch (error) {
       const described = describeAuthError(error);
       setFieldErrors(described.fields);
@@ -77,11 +77,7 @@ export function SignInForm({ next, registered = false }: SignInFormProps) {
         description="Volte ao seu caderno e registre o treino de hoje."
       />
 
-      {registered ? (
-        <AuthNotice tone="info">Conta criada. Entre para continuar.</AuthNotice>
-      ) : null}
-
-      {formError ? <AuthNotice tone="danger">{formError}</AuthNotice> : null}
+      {formError ? <AuthNotice>{formError}</AuthNotice> : null}
 
       <form className={styles.form} onSubmit={handleSubmit} noValidate>
         <AuthField

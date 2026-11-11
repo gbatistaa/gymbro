@@ -10,20 +10,21 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.List;
 
 /**
- * CORS para os alvos web do PWA e do Expo (nativo não usa CORS).
+ * CORS do PWA.
  *
- * <p>Sem {@code allowCredentials}: a autenticação vai em {@code Authorization: Bearer}, não em
- * cookie, então credencial de origem não é necessária — e liberá-la amplia a superfície sem ganho.
+ * <p>{@code allowCredentials} é necessário para o navegador enviar os cookies HttpOnly de sessão.
+ * Em troca, os cookies usam SameSite=Strict e a lista de origens nunca pode ser wildcard.
  */
 @Configuration
 public class CorsConfig {
 
     @Bean
     CorsConfigurationSource corsConfigurationSource(
-        @Value("${app.cors.allowed-origins:http://localhost:3000,http://localhost:8081}") List<String> allowedOrigins
+        @Value("${app.cors.allowed-origins:http://localhost:3000}") List<String> allowedOrigins
     ) {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(allowedOrigins);
+        config.setAllowCredentials(true);
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         config.setMaxAge(3600L);

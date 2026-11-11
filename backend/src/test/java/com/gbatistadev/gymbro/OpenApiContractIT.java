@@ -54,8 +54,10 @@ class OpenApiContractIT {
         assertTrue(errorSchema.isObject(), "ErrorResponse precisa estar nos schemas");
         assertTrue(errorSchema.at("/properties/code").isObject(), "`code` deve aparecer no contrato");
         assertTrue(errorSchema.at("/properties/errors").isObject(), "`errors` deve aparecer no contrato");
+        assertTrue(contract.at("/components/securitySchemes/cookieAuth").isObject(),
+            "o contrato deve declarar o cookie de sessão do PWA");
         assertTrue(contract.at("/components/securitySchemes/bearerAuth").isObject(),
-            "o contrato deve declarar o esquema Bearer");
+            "o contrato deve declarar o esquema Bearer para clientes não-browser");
 
         Files.createDirectories(SNAPSHOT.getParent());
         Files.writeString(SNAPSHOT,

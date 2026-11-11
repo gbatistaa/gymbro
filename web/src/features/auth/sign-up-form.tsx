@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { signUpSchema, type SignUpInput } from "@/contracts/auth";
 import { sessionAtom } from "@/stores/session";
-import { getMe, login, register } from "./api";
+import { register } from "./api";
 import styles from "./components/auth.module.css";
 import { AuthField } from "./components/auth-field";
 import { AuthHeader } from "./components/auth-header";
@@ -60,27 +60,11 @@ export function SignUpForm({ next }: SignUpFormProps) {
     setFormError(null);
     setIsSubmitting(true);
 
-    let accountCreated = false;
-
     try {
-      await register(parsed.data);
-      accountCreated = true;
-
-      const tokens = await login({
-        email: parsed.data.email,
-        password: parsed.data.password,
-      });
-      const user = await getMe(tokens.accessToken);
-      setSession({ tokens, user });
+      const user = await register(parsed.data);
+      setSession({ user });
       router.replace(destination);
     } catch (error) {
-      if (accountCreated) {
-        const params = new URLSearchParams({ registered: "1" });
-        if (destination !== "/") params.set("next", destination);
-        router.replace(`/signin?${params.toString()}`);
-        return;
-      }
-
       const described = describeAuthError(error);
       setFieldErrors(described.fields);
       setFormError(described.message);
@@ -97,7 +81,7 @@ export function SignUpForm({ next }: SignUpFormProps) {
         description="Um cadastro curto para registrar o treino de hoje."
       />
 
-      {formError ? <AuthNotice tone="danger">{formError}</AuthNotice> : null}
+      {formError ? <AuthNotice>{formError}</AuthNotice> : null}
 
       <form className={styles.form} onSubmit={handleSubmit} noValidate>
         <AuthField

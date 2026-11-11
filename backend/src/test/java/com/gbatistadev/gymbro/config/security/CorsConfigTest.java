@@ -16,21 +16,22 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(TestcontainersConfiguration.class)
-@DisplayName("CORS for the Expo web target")
+@DisplayName("CORS for the PWA")
 class CorsConfigTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @Test
-    @DisplayName("preflight from the allowed origin is answered without authentication")
-    void shouldAnswerPreflight() throws Exception {
+    @DisplayName("preflight from the PWA origin is answered with credentials")
+    void shouldAnswerPwaPreflight() throws Exception {
         mockMvc.perform(options("/api/playlists")
-                .header("Origin", "http://localhost:8081")
+                .header("Origin", "http://localhost:3000")
                 .header("Access-Control-Request-Method", "GET")
-                .header("Access-Control-Request-Headers", "authorization"))
+                .header("Access-Control-Request-Headers", "content-type"))
             .andExpect(status().isOk())
-            .andExpect(header().string("Access-Control-Allow-Origin", "http://localhost:8081"))
+            .andExpect(header().string("Access-Control-Allow-Origin", "http://localhost:3000"))
+            .andExpect(header().string("Access-Control-Allow-Credentials", "true"))
             .andExpect(header().exists("Access-Control-Allow-Methods"));
     }
 
