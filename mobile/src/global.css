@@ -1,9 +1,0 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-/* Alvo web. As famílias nativas vêm de `expo-font`; aqui é o fallback do navegador. */
-:root {
-  --font-display: IBMPlexSans, 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
-  --font-mono: IBMPlexMono, 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
-}
