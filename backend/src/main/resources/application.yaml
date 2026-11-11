@@ -48,8 +48,8 @@ app:
     public: ${OPENAPI_PUBLIC:true}
 
   cors:
-    # alvo web do Expo; nativo ignora CORS
-    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:8081}
+    # PWA web (3000) e Expo web (8081); nativo ignora CORS
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:8081}
   auth:
     rate-limit:
       max-attempts: ${LOGIN_MAX_ATTEMPTS:5}

@@ -1,11 +1,14 @@
 import { z } from "zod";
 
-export const authUserSchema = z.object({
+export const userSummarySchema = z.object({
   id: z.uuid(),
   name: z.string(),
   email: z.email(),
   timezone: z.string(),
   createdAt: z.iso.datetime({ offset: true }),
+});
+
+export const authUserSchema = userSummarySchema.extend({
   updatedAt: z.iso.datetime({ offset: true }),
 });
 
@@ -32,6 +35,7 @@ export const refreshRequestSchema = z.object({
 });
 
 export type AuthUser = z.infer<typeof authUserSchema>;
+export type UserSummary = z.infer<typeof userSummarySchema>;
 export type AuthTokens = z.infer<typeof authTokensSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type SignUpInput = z.infer<typeof signUpSchema>;

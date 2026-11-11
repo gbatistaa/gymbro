@@ -10,7 +10,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.List;
 
 /**
- * CORS só para o alvo web do Expo (nativo não usa CORS).
+ * CORS para os alvos web do PWA e do Expo (nativo não usa CORS).
  *
  * <p>Sem {@code allowCredentials}: a autenticação vai em {@code Authorization: Bearer}, não em
  * cookie, então credencial de origem não é necessária — e liberá-la amplia a superfície sem ganho.
@@ -20,7 +20,7 @@ public class CorsConfig {
 
     @Bean
     CorsConfigurationSource corsConfigurationSource(
-        @Value("${app.cors.allowed-origins:http://localhost:8081}") List<String> allowedOrigins
+        @Value("${app.cors.allowed-origins:http://localhost:3000,http://localhost:8081}") List<String> allowedOrigins
     ) {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(allowedOrigins);

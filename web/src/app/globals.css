@@ -1,0 +1,69 @@
+:root {
+  color-scheme: dark;
+
+  --color-canvas: #080b0a;
+  --color-surface: #101715;
+  --color-raised: #18221d;
+  --color-border: #29352e;
+  --color-rule: #35443b;
+  --color-border-strong: #8aa99a;
+  --color-text-muted: #a6b5ac;
+  --color-text-secondary: #c6d2cc;
+  --color-text-primary: #f1f7f3;
+  --color-accent: #4ade80;
+  --color-accent-pressed: #22c55e;
+  --color-accent-tint: #10271a;
+  --color-info: #60a5fa;
+  --color-info-tint: #101f32;
+  --color-danger: #f87171;
+  --color-on-accent: #07110a;
+
+  --radius-chip: 2px;
+  --radius-control: 6px;
+  --radius-panel: 10px;
+  --radius-modal: 16px;
+  --content-max: 640px;
+  --tap-target-min: 48px;
+
+  --font-sans: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, "SFMono-Regular", monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-canvas);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+::selection {
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
