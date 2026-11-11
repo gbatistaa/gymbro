@@ -244,6 +244,20 @@ class AuthControllerTest {
     }
 
     @Test
+    @DisplayName("register without a username is rejected as a validation failure")
+    void shouldRejectMissingUsername() throws Exception {
+        mockMvc.perform(post("/api/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"name":"João Silva","email":"joao@example.com","password":"password123"}
+                    """))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
+            .andExpect(jsonPath("$.errors[*].field", containsInAnyOrder("username")))
+            .andExpect(jsonPath("$.errors[0].message").value("Username is required"));
+    }
+
+    @Test
     @DisplayName("an invalid username is reported on its own field")
     void shouldRejectInvalidUsername() throws Exception {
         mockMvc.perform(post("/api/auth/register")

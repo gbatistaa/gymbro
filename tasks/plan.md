@@ -53,7 +53,7 @@ substitui** e não toca nos arquivos daquela pasta.
 ### Fase 1 — Backend habilitando as telas
 
 - [x] Task 1: Migration `users.username` com backfill e unicidade
-- [ ] Task 2: `username` no domínio, nos DTOs e no cadastro
+- [x] Task 2: `username` no domínio, nos DTOs e no cadastro
 - [ ] Task 3: Login por e-mail ou username
 - [ ] Task 4: `PUT /api/users/me/password`
 - [ ] Task 5: Ordenação e lista de músculos em exercícios
@@ -182,18 +182,19 @@ conflito próprio.
 
 **Acceptance criteria:**
 
-- [ ] `User.username` mapeado, `NOT NULL`
-- [ ] `CreateUserDto` recebe `username` com `@Pattern` (3–30, minúsculas/dígitos/`_`/`.`) e
-      normalização para minúsculas no service
-- [ ] Username duplicado → `409 RESOURCE_ALREADY_EXISTS` com mensagem distinta do e-mail
-- [ ] `UserDto` e `UserSummaryProjection` devolvem `username`
-- [ ] `POST /api/auth/register` com três campos inválidos devolve três itens em `errors[]`
+- [x] `User.username` mapeado, `NOT NULL`
+- [x] `CreateUserDto` recebe `username` com `@NotBlank`, `@Size(3–30)` e `@Pattern` (letras, dígitos,
+      `_`, `.`); o service normaliza para minúsculas
+- [x] Username duplicado → `409 RESOURCE_ALREADY_EXISTS` com mensagem distinta do e-mail e
+      `errors:[{field:"username"}]`
+- [x] `UserDto` e `UserSummaryProjection` devolvem `username`
+- [x] `POST /api/auth/register` com três campos inválidos devolve três itens em `errors[]`
 
 **Verification:**
 
-- [ ] Tests pass: `./mvnw -Dtest=UserServiceTest,UserControllerTest,AuthControllerTest test`
-- [ ] Build succeeds: `./mvnw test`
-- [ ] Manual: `POST /api/auth/register` sem username → `400 VALIDATION_FAILED`
+- [x] Tests pass: `./mvnw -Dtest=UserServiceTest,UserControllerTest,AuthControllerTest test`
+- [x] Build succeeds: `./mvnw test` (166 testes)
+- [x] `POST /api/auth/register` sem username → `400 VALIDATION_FAILED` (teste `shouldRejectMissingUsername`)
 
 **Dependencies:** Task 1
 **Files likely touched:**

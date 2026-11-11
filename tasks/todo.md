@@ -18,7 +18,7 @@ antes de começar a task, não depois.
 ## Fase 1 — Backend habilitando as telas
 
 - [x] Task 1: Migration `V12__users_username.sql` com backfill, `NOT NULL` e único por `lower(username)`
-- [ ] Task 2: `username` em `User`, `CreateUserDto`, `UserDto`, `UserSummaryProjection`, mapper e service
+- [x] Task 2: `username` em `User`, `CreateUserDto`, `UserDto`, `UserSummaryProjection`, mapper e service
 - [ ] Task 3: `LoginDto.identifier` e login por e-mail ou username
 - [ ] Task 4: `PUT /api/users/me/password` (400 `INVALID_CURRENT_PASSWORD`, nunca 401)
 - [ ] Task 5: `sort` com whitelist em `/api/exercises` + `GET /api/exercises/muscles`
