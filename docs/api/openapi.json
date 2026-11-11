@@ -544,6 +544,13 @@
             "format" : "int32",
             "default" : 20
           }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
         } ],
         "responses" : {
           "200" : {
@@ -1135,6 +1142,27 @@
               "*/*" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ExerciseStatsDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/exercises/muscles" : {
+      "get" : {
+        "tags" : [ "exercise-controller" ],
+        "operationId" : "muscles",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "type" : "string"
+                  }
                 }
               }
             }

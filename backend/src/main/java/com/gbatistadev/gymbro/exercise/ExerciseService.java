@@ -6,6 +6,7 @@ import com.gbatistadev.gymbro.common.mapper.PageMapper;
 import com.gbatistadev.gymbro.common.security.CurrentUser;
 import com.gbatistadev.gymbro.errors.exceptions.ConflictException;
 import com.gbatistadev.gymbro.errors.exceptions.ForbiddenException;
+import com.gbatistadev.gymbro.errors.exceptions.InvalidSortException;
 import com.gbatistadev.gymbro.errors.exceptions.NotFoundException;
 import com.gbatistadev.gymbro.errors.exceptions.ResourceAlreadyExistsException;
 import com.gbatistadev.gymbro.exercise.dto.CreateExerciseDto;
@@ -50,14 +51,16 @@ public class ExerciseService {
         return mapper.toDto(exercise);
     }
 
+    private static final Set<String> SORTABLE_FIELDS = Set.of("name", "createdAt", "incrementKg");
+
     @Transactional(readOnly = true)
     public PageDto<ExerciseDto> search(
-        String q, String muscle, boolean includeArchived, int page, int size
+        String q, String muscle, boolean includeArchived, int page, int size, String sort
     ) {
         PageRequest pageable = PageRequest.of(
             Math.max(page, 0),
             Math.clamp(size, 1, 100),
-            Sort.by("name"));
+            parseSort(sort));
 
         Page<ExerciseDto> result = repository
             .searchForUser(
@@ -69,6 +72,32 @@ public class ExerciseService {
             .map(mapper::toDto);
 
         return pageMapper.toDto(result);
+    }
+
+    @Transactional(readOnly = true)
+    public List<String> muscles() {
+        Map<String, String> byLower = new LinkedHashMap<>();
+        for (String muscle : repository.findDistinctPrimaryMuscles(currentUser.id())) {
+            // min binário: "Peito" vence "peito" em qualquer collation do banco
+            byLower.merge(muscle.toLowerCase(Locale.ROOT), muscle,
+                (current, candidate) -> candidate.compareTo(current) < 0 ? candidate : current);
+        }
+        return byLower.values().stream()
+            .sorted(String.CASE_INSENSITIVE_ORDER)
+            .toList();
+    }
+
+    // whitelist fechada: nenhum nome de coluna vindo do cliente chega ao SQL
+    private Sort parseSort(String sort) {
+        if (sort == null || sort.isBlank()) {
+            return Sort.by("name");
+        }
+        boolean descending = sort.startsWith("-");
+        String field = descending ? sort.substring(1) : sort;
+        if (!SORTABLE_FIELDS.contains(field)) {
+            throw new InvalidSortException(sort);
+        }
+        return descending ? Sort.by(Sort.Order.desc(field)) : Sort.by(Sort.Order.asc(field));
     }
 
 	@Transactional

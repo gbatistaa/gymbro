@@ -126,6 +126,46 @@ class ExerciseOwnershipIT {
             .andExpect(jsonPath("$.name").value("Renamed"));
     }
 
+    @Test
+    @DisplayName("sort orders by the whitelisted field and rejects unknown fields")
+    void shouldSortExercises() throws Exception {
+        UserDto userA = createUser("sort");
+        createExerciseWithMuscle(userA.getId(), "Ab-aaa", "Costas");
+        createExerciseWithMuscle(userA.getId(), "Zz-zzz", "Costas");
+
+        mockMvc.perform(get("/api/exercises")
+                .param("sort", "-name")
+                .header(HttpHeaders.AUTHORIZATION, bearer(userA)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content[0].name").value(org.hamcrest.Matchers.startsWith("Zz-zzz")));
+
+        mockMvc.perform(get("/api/exercises")
+                .param("sort", "bogus")
+                .header(HttpHeaders.AUTHORIZATION, bearer(userA)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"));
+    }
+
+    @Test
+    @DisplayName("muscles lists distinct primary muscles visible to the user")
+    void shouldListDistinctMuscles() throws Exception {
+        UserDto userA = createUser("muscles");
+        UserDto userB = createUser("muscles-other");
+        createExerciseWithMuscle(userA.getId(), "M1", "Peito");
+        createExerciseWithMuscle(userA.getId(), "M2", "peito");
+        createExerciseWithMuscle(userB.getId(), "M3", "Panturrilha");
+
+        // seed global: Abdômen, Bíceps, Costas, Ombro, Peito, Pernas, Tríceps
+        // 7 itens provam a deduplicação: sem ela seriam 9 (Peito e peito do usuário contam dobrado)
+        mockMvc.perform(get("/api/exercises/muscles")
+                .header(HttpHeaders.AUTHORIZATION, bearer(userA)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.length()").value(7))
+            .andExpect(jsonPath("$[*]", org.hamcrest.Matchers.hasItem("Abdômen")))
+            .andExpect(jsonPath("$[*]", org.hamcrest.Matchers.hasItem("Peito")))
+            .andExpect(jsonPath("$[*]", org.hamcrest.Matchers.not(org.hamcrest.Matchers.hasItem("Panturrilha"))));
+    }
+
     private UserDto createUser(String prefix) {
         return userService.create(new CreateUserDto(
             "User " + prefix,
@@ -141,6 +181,14 @@ class ExerciseOwnershipIT {
         exercise.setName(prefix + "-" + UUID.randomUUID());
         exercise.setPrimaryMuscle("chest");
         exercise.setSecondaryMuscle("triceps");
+        return repository.save(exercise);
+    }
+
+    private Exercise createExerciseWithMuscle(UUID userId, String prefix, String muscle) {
+        Exercise exercise = new Exercise();
+        exercise.setUserId(userId);
+        exercise.setName(prefix + "-" + UUID.randomUUID());
+        exercise.setPrimaryMuscle(muscle);
         return repository.save(exercise);
     }
 

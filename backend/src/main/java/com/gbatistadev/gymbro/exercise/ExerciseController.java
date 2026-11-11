@@ -15,6 +15,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -43,9 +44,15 @@ public class ExerciseController {
         @RequestParam(required = false) String muscle,
         @RequestParam(defaultValue = "false") boolean includeArchived,
         @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "20") int size
+        @RequestParam(defaultValue = "20") int size,
+        @RequestParam(required = false) String sort
     ) {
-        return ResponseEntity.ok(service.search(q, muscle, includeArchived, page, size));
+        return ResponseEntity.ok(service.search(q, muscle, includeArchived, page, size, sort));
+    }
+
+    @GetMapping("/muscles")
+    public ResponseEntity<List<String>> muscles() {
+        return ResponseEntity.ok(service.muscles());
     }
 
     @GetMapping("/{id}/stats")

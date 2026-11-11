@@ -5,6 +5,7 @@ import com.gbatistadev.gymbro.common.mapper.PageMapper;
 import com.gbatistadev.gymbro.common.security.CurrentUser;
 import com.gbatistadev.gymbro.errors.exceptions.ConflictException;
 import com.gbatistadev.gymbro.errors.exceptions.ForbiddenException;
+import com.gbatistadev.gymbro.errors.exceptions.InvalidSortException;
 import com.gbatistadev.gymbro.errors.exceptions.NotFoundException;
 import com.gbatistadev.gymbro.errors.exceptions.ResourceAlreadyExistsException;
 import com.gbatistadev.gymbro.exercise.dto.CreateExerciseDto;
@@ -111,12 +112,56 @@ class ExerciseServiceTest {
         when(pageMapper.toDto(ArgumentMatchers.<Page<ExerciseDto>>any()))
             .thenReturn(expected);
 
-        assertSame(expected, service.search(" supino ", " Peito ", false, 0, 20));
+        assertSame(expected, service.search(" supino ", " Peito ", false, 0, 20, null));
 
         ArgumentCaptor<Pageable> captor = ArgumentCaptor.forClass(Pageable.class);
         verify(repository).searchForUser(
             eq(userId), eq("supino"), eq("Peito"), eq(false), captor.capture());
         assertEquals(20, captor.getValue().getPageSize());
+    }
+
+    @Test
+    @DisplayName("search sorts by the whitelisted field, with - prefix for descending")
+    void shouldSortByWhitelistedField() {
+        Page<Exercise> page = new PageImpl<>(List.of(), PageRequest.of(0, 20), 0);
+
+        when(currentUser.id()).thenReturn(userId);
+        when(repository.searchForUser(
+            eq(userId), eq(""), eq(""), eq(false), any(Pageable.class)))
+            .thenReturn(page);
+        when(pageMapper.toDto(ArgumentMatchers.<Page<ExerciseDto>>any()))
+            .thenReturn(new PageDto<>(List.of(), 0, 20, 0, 0));
+
+        service.search(null, null, false, 0, 20, "-createdAt");
+
+        ArgumentCaptor<Pageable> captor = ArgumentCaptor.forClass(Pageable.class);
+        verify(repository).searchForUser(
+            eq(userId), eq(""), eq(""), eq(false), captor.capture());
+        assertEquals(
+            org.springframework.data.domain.Sort.by(
+                org.springframework.data.domain.Sort.Order.desc("createdAt")),
+            captor.getValue().getSort());
+    }
+
+    @Test
+    @DisplayName("search with an unknown sort field fails with VALIDATION_FAILED")
+    void shouldRejectUnknownSortField() {
+        // parseSort roda antes de qualquer acesso ao banco: nenhum stub é necessário
+        InvalidSortException exception = assertThrows(
+            InvalidSortException.class,
+            () -> service.search(null, null, false, 0, 20, "bogus"));
+
+        assertEquals("VALIDATION_FAILED", exception.getCode());
+    }
+
+    @Test
+    @DisplayName("muscles lists distinct primary muscles without duplicating by case")
+    void shouldListDistinctMuscles() {
+        when(currentUser.id()).thenReturn(userId);
+        when(repository.findDistinctPrimaryMuscles(userId))
+            .thenReturn(List.of("Peito", "peito", "Costas"));
+
+        assertEquals(List.of("Costas", "Peito"), service.muscles());
     }
 
     @Test

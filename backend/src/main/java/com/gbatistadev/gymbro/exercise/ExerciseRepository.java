@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -24,7 +25,6 @@ public interface ExerciseRepository extends JpaRepository<Exercise, UUID>, JpaSp
 		  AND (:includeArchived = true OR e.isArchived = false)
 		  AND (:q = '' OR LOWER(e.name) LIKE LOWER(CONCAT('%', :q, '%')))
 		  AND (:muscle = '' OR LOWER(e.primaryMuscle) = LOWER(:muscle))
-		ORDER BY e.name
 	""")
 	Page<Exercise> searchForUser(
 		@Param("userId") UUID userId,
@@ -32,6 +32,14 @@ public interface ExerciseRepository extends JpaRepository<Exercise, UUID>, JpaSp
 		@Param("muscle") String muscle,
 		@Param("includeArchived") boolean includeArchived,
 		Pageable pageable);
+
+	@Query("""
+		SELECT DISTINCT e.primaryMuscle FROM Exercise e
+		WHERE (e.userId IS NULL OR e.userId = :userId)
+		  AND e.isArchived = false
+		ORDER BY e.primaryMuscle
+	""")
+	List<String> findDistinctPrimaryMuscles(@Param("userId") UUID userId);
 
 	@Query("""
 		SELECT CASE WHEN COUNT(e) > 0 THEN true ELSE false END

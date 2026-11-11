@@ -4,6 +4,7 @@ import com.gbatistadev.gymbro.errors.exceptions.BadRequestException;
 import com.gbatistadev.gymbro.errors.exceptions.ConflictException;
 import com.gbatistadev.gymbro.errors.exceptions.ForbiddenException;
 import com.gbatistadev.gymbro.errors.exceptions.InvalidCurrentPasswordException;
+import com.gbatistadev.gymbro.errors.exceptions.InvalidSortException;
 import com.gbatistadev.gymbro.errors.exceptions.NotFoundException;
 import com.gbatistadev.gymbro.errors.exceptions.RateLimitedException;
 import com.gbatistadev.gymbro.errors.exceptions.ResourceAlreadyExistsException;
@@ -230,6 +231,14 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(InvalidCurrentPasswordException.class)
 	public ResponseEntity<ErrorResponse> handleInvalidCurrentPasswordException(
 		InvalidCurrentPasswordException ex,
+		HttpServletRequest request
+	) {
+		return respond(HttpStatus.BAD_REQUEST, ex.getCode(), ex.getMessage(), request);
+	}
+
+	@ExceptionHandler(InvalidSortException.class)
+	public ResponseEntity<ErrorResponse> handleInvalidSortException(
+		InvalidSortException ex,
 		HttpServletRequest request
 	) {
 		return respond(HttpStatus.BAD_REQUEST, ex.getCode(), ex.getMessage(), request);

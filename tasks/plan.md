@@ -56,7 +56,7 @@ substitui** e não toca nos arquivos daquela pasta.
 - [x] Task 2: `username` no domínio, nos DTOs e no cadastro
 - [x] Task 3: Login por e-mail ou username
 - [x] Task 4: `PUT /api/users/me/password`
-- [ ] Task 5: Ordenação e lista de músculos em exercícios
+- [x] Task 5: Ordenação e lista de músculos em exercícios
 - [ ] Task 6: Resumo de rotina na listagem (`exerciseCount`, `lastPerformedAt`)
 - [ ] Task 7: `GET /api/dashboard/muscle-volume`
 - [ ] Task 8: Fuso do usuário nos buckets mensais por exercício
@@ -279,18 +279,19 @@ devolve os músculos primários distintos visíveis ao usuário, para alimentar 
 
 **Acceptance criteria:**
 
-- [ ] `sort` aceita `name`, `createdAt`, `incrementKg`, com prefixo `-` para descendente
-- [ ] Valor inválido de `sort` → `400 VALIDATION_FAILED` (não cai silenciosamente no default)
-- [ ] Default continua `name` ascendente; `page`/`size`/`q`/`muscle` inalterados
-- [ ] `GET /api/exercises/muscles` devolve lista ordenada, sem duplicata por caixa, restrita ao
+- [x] `sort` aceita `name`, `createdAt`, `incrementKg`, com prefixo `-` para descendente
+- [x] Valor inválido de `sort` → `400 VALIDATION_FAILED` via `InvalidSortException`
+- [x] Default continua `name` ascendente; `page`/`size`/`q`/`muscle` inalterados
+- [x] `GET /api/exercises/muscles` devolve lista ordenada, sem duplicata por caixa, restrita ao
       catálogo global + exercícios do usuário
-- [ ] Nenhum nome de coluna vindo do cliente chega ao SQL
+- [x] Nenhum nome de coluna vindo do cliente chega ao SQL (whitelist + `Sort` tipado; `ORDER BY`
+      fixo removido do `searchForUser`)
 
 **Verification:**
 
-- [ ] Tests pass: `./mvnw -Dtest=ExerciseServiceTest,ExerciseOwnershipIT test`
-- [ ] Build succeeds: `./mvnw test`
-- [ ] Manual: `GET /api/exercises?sort=-createdAt&size=5` e `GET /api/exercises/muscles`
+- [x] Tests pass: `./mvnw -Dtest=ExerciseServiceTest,ExerciseOwnershipIT test` (20 testes)
+- [x] Build succeeds: `./mvnw test` (181 testes)
+- [x] Manual: coberto por `ExerciseOwnershipIT.shouldSortExercises` e `shouldListDistinctMuscles`
 
 **Dependencies:** None (paralelizável com Tasks 2–4)
 **Files likely touched:**
