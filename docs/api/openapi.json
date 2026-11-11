@@ -1325,6 +1325,9 @@
           "email" : {
             "type" : "string"
           },
+          "username" : {
+            "type" : "string"
+          },
           "timezone" : {
             "type" : "string"
           }
@@ -2020,6 +2023,12 @@
             "type" : "string",
             "minLength" : 1
           },
+          "username" : {
+            "type" : "string",
+            "maxLength" : 30,
+            "minLength" : 3,
+            "pattern" : "^[A-Za-z0-9_]([A-Za-z0-9_.]*[A-Za-z0-9_])?$"
+          },
           "email" : {
             "type" : "string",
             "format" : "email",
@@ -2031,7 +2040,7 @@
             "minLength" : 8
           }
         },
-        "required" : [ "email", "name", "password" ]
+        "required" : [ "email", "name", "password", "username" ]
       },
       "LoginDto" : {
         "type" : "object",
@@ -2170,6 +2179,9 @@
           "createdAt" : {
             "type" : "string",
             "format" : "date-time"
+          },
+          "username" : {
+            "type" : "string"
           },
           "timezone" : {
             "type" : "string"
