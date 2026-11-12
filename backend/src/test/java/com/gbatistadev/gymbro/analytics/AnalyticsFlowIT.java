@@ -128,6 +128,54 @@ class AnalyticsFlowIT {
     }
 
     @Test
+    @DisplayName("muscle volume aggregates finished sets by normalized muscle in the requested range")
+    void shouldAggregateMuscleVolume() throws Exception {
+        UserDto user = createUser();
+        String auth = bearer(user);
+        UserDto otherUser = createUser();
+        Instant now = Instant.now().truncatedTo(ChronoUnit.MICROS);
+        Instant from = now.minus(30, ChronoUnit.DAYS);
+        Exercise chest = createExercise(user.getId(), "Peito");
+        Exercise lowercaseChest = createExercise(user.getId(), "peito");
+        Exercise back = createExercise(user.getId(), "Costas");
+
+        WorkoutSession chestSession = session(user.getId(), SessionStatus.FINISHED, now.minus(1, ChronoUnit.DAYS));
+        addLog(chestSession, chest, 1, 40.0, 10, false);
+        addLog(chestSession, lowercaseChest, 1, 50.0, 8, false);
+        WorkoutSession backSession = session(user.getId(), SessionStatus.FINISHED, now.minus(2, ChronoUnit.DAYS));
+        addLog(backSession, back, 1, 60.0, 5, false);
+
+        WorkoutSession inProgress = session(user.getId(), SessionStatus.IN_PROGRESS, now);
+        addLog(inProgress, chest, 1, 100.0, 10, false);
+        WorkoutSession abandoned = session(user.getId(), SessionStatus.ABANDONED, now);
+        addLog(abandoned, chest, 1, 100.0, 10, false);
+        WorkoutSession older = session(
+            user.getId(), SessionStatus.FINISHED, from.minus(1, ChronoUnit.DAYS));
+        addLog(older, chest, 1, 100.0, 10, false);
+        WorkoutSession otherUsersSession = session(
+            otherUser.getId(), SessionStatus.FINISHED, now.minus(1, ChronoUnit.DAYS));
+        addLog(otherUsersSession, createExercise(otherUser.getId(), "Panturrilha"), 1, 500.0, 10, false);
+
+        mockMvc.perform(get("/api/dashboard/muscle-volume")
+                .param("from", from.toString())
+                .param("to", now.toString())
+                .header(HttpHeaders.AUTHORIZATION, auth))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.length()").value(2))
+            .andExpect(jsonPath("$[0].muscle").value("Peito"))
+            .andExpect(jsonPath("$[0].volume").value(800.0))
+            .andExpect(jsonPath("$[0].sets").value(2))
+            .andExpect(jsonPath("$[1].muscle").value("Costas"))
+            .andExpect(jsonPath("$[1].volume").value(300.0))
+            .andExpect(jsonPath("$[1].sets").value(1));
+
+        mockMvc.perform(get("/api/dashboard/muscle-volume")
+                .header(HttpHeaders.AUTHORIZATION, bearer(createUser())))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$").isEmpty());
+    }
+
+    @Test
     @DisplayName("analytics are scoped to the authenticated user")
     void shouldIsolateAnalyticsBetweenUsers() throws Exception {
         UserDto owner = createUser();
@@ -209,10 +257,23 @@ class AnalyticsFlowIT {
         bioimpedance.save(measurement);
     }
 
+    private WorkoutSession session(UUID userId, SessionStatus status, Instant startedAt) {
+        WorkoutSession session = new WorkoutSession();
+        session.setUserId(userId);
+        session.setStartedAt(startedAt);
+        session.setStatus(status);
+        session.setTotalVolume(0.0);
+        return sessions.save(session);
+    }
+
     private Exercise createExercise(UUID userId) {
+        return createExercise(userId, "chest");
+    }
+
+    private Exercise createExercise(UUID userId, String primaryMuscle) {
         Exercise exercise = new Exercise();
         exercise.setName("Exercise-" + UUID.randomUUID());
-        exercise.setPrimaryMuscle("chest");
+        exercise.setPrimaryMuscle(primaryMuscle);
         exercise.setUserId(userId);
         return exercises.save(exercise);
     }

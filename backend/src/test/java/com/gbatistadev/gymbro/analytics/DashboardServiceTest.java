@@ -15,10 +15,12 @@ import com.gbatistadev.gymbro.workout_session.WorkoutSessionRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.*;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -160,6 +162,26 @@ class DashboardServiceTest {
         assertEquals(Instant.parse("2026-11-08T15:00:00Z"),
             dashboard.weeks().getLast().weekStart(),
             "segunda 00:00 em Tóquio");
+    }
+
+    @Test
+    @DisplayName("defaults muscle volume to the last twelve calendar weeks in the user's time zone")
+    void shouldDefaultMuscleVolumeRangeInUserTimeZone() {
+        Instant now = Instant.parse("2026-11-12T12:00:00Z");
+        ZoneId userZone = ZoneId.of("Asia/Tokyo");
+        service = serviceWithUserTimeZone(now, userZone.getId());
+        when(currentUser.id()).thenReturn(userId);
+        when(logs.findMuscleVolume(eq(userId), any(Instant.class), any(Instant.class)))
+            .thenReturn(List.of());
+
+        assertTrue(service.muscleVolume(null, null).isEmpty());
+
+        ArgumentCaptor<Instant> range = ArgumentCaptor.forClass(Instant.class);
+        verify(logs).findMuscleVolume(eq(userId), range.capture(), range.capture());
+        LocalDate currentWeek = LocalDate.ofInstant(now, userZone)
+            .with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        assertEquals(currentWeek.minusWeeks(11).atStartOfDay(userZone).toInstant(), range.getAllValues().get(0));
+        assertEquals(currentWeek.plusWeeks(1).atStartOfDay(userZone).toInstant(), range.getAllValues().get(1));
     }
 
     private DashboardService serviceWithUserTimeZone(Instant now, String timeZone) {

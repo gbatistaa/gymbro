@@ -23,7 +23,7 @@ antes de começar a task, não depois.
 - [x] Task 4: `PUT /api/users/me/password` (400 `INVALID_CURRENT_PASSWORD`, nunca 401)
 - [x] Task 5: `sort` com whitelist em `/api/exercises` + `GET /api/exercises/muscles`
 - [x] Task 6: `PlaylistSummaryDto` com `exerciseCount` e `lastPerformedAt`
-- [ ] Task 7: `GET /api/dashboard/muscle-volume`
+- [x] Task 7: `GET /api/dashboard/muscle-volume`
 - [ ] Task 8: Fuso do usuário nos buckets mensais (`monthlyExerciseBuckets`)
 - [ ] Task 9: Regenerar `docs/api/openapi.json`
 

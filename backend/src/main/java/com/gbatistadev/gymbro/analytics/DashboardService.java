@@ -1,6 +1,7 @@
 package com.gbatistadev.gymbro.analytics;
 
 import com.gbatistadev.gymbro.analytics.dto.DashboardDto;
+import com.gbatistadev.gymbro.analytics.dto.MuscleVolumeDto;
 import com.gbatistadev.gymbro.bioimpedance.Bioimpedance;
 import com.gbatistadev.gymbro.bioimpedance.BioimpedanceRepository;
 import com.gbatistadev.gymbro.common.security.CurrentUser;
@@ -66,6 +67,22 @@ public class DashboardService {
             next == null ? null : next.getId(),
             next == null ? null : next.getName(),
             zone.getId());
+    }
+
+    @Transactional(readOnly = true)
+    public List<MuscleVolumeDto> muscleVolume(Instant from, Instant to) {
+        UUID userId = currentUser.id();
+        ZoneId zone = userZone(userId);
+        LocalDate currentWeek = LocalDate.now(clock.withZone(zone))
+            .with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        Instant rangeStart = from != null
+            ? from : currentWeek.minusWeeks(11).atStartOfDay(zone).toInstant();
+        Instant rangeEnd = to != null
+            ? to : currentWeek.plusWeeks(1).atStartOfDay(zone).toInstant();
+
+        return logs.findMuscleVolume(userId, rangeStart, rangeEnd).stream()
+            .map(row -> new MuscleVolumeDto(row.getMuscle(), row.getVolume(), row.getSets()))
+            .toList();
     }
 
     private ZoneId userZone(UUID userId) {

@@ -129,6 +129,23 @@ public interface WorkoutLogRepository extends JpaRepository<WorkoutLog, UUID> {
         @Param("to") Instant to,
         Pageable pageable);
 
+    @Query(value = """
+        SELECT initcap(lower(trim(e.primary_muscle))) AS "muscle",
+               SUM(l.weight * l.reps) AS "volume",
+               COUNT(*) AS "sets"
+        FROM workout_log l
+        JOIN workout_session s ON s.id = l.workout_session_id
+        JOIN exercises e ON e.id = l.exercise_id
+        WHERE s.user_id = :userId AND s.status = 'FINISHED'
+          AND s.started_at >= :from AND s.started_at < :to
+        GROUP BY lower(trim(e.primary_muscle))
+        ORDER BY SUM(l.weight * l.reps) DESC, lower(trim(e.primary_muscle))
+        """, nativeQuery = true)
+    List<MuscleVolumeProjection> findMuscleVolume(
+        @Param("userId") UUID userId,
+        @Param("from") Instant from,
+        @Param("to") Instant to);
+
     interface ExerciseAggregate {
         Long getSessionCount();
 
@@ -147,6 +164,14 @@ public interface WorkoutLogRepository extends JpaRepository<WorkoutLog, UUID> {
         Double getVolume();
 
         Double getBestE1rm();
+    }
+
+    interface MuscleVolumeProjection {
+        String getMuscle();
+
+        Double getVolume();
+
+        Long getSets();
     }
 
     interface LatestExerciseSession {

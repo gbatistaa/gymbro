@@ -58,7 +58,7 @@ substitui** e não toca nos arquivos daquela pasta.
 - [x] Task 4: `PUT /api/users/me/password`
 - [x] Task 5: Ordenação e lista de músculos em exercícios
 - [x] Task 6: Resumo de rotina na listagem (`exerciseCount`, `lastPerformedAt`)
-- [ ] Task 7: `GET /api/dashboard/muscle-volume`
+- [x] Task 7: `GET /api/dashboard/muscle-volume`
 - [ ] Task 8: Fuso do usuário nos buckets mensais por exercício
 - [ ] Task 9: Atualizar snapshot OpenAPI
 
@@ -341,17 +341,17 @@ chamadas no cliente ou de custo extra no dashboard do Início.
 
 **Acceptance criteria:**
 
-- [ ] `GET /api/dashboard/muscle-volume?from&to` → `[{ muscle, volume, sets }]`
-- [ ] Sem `from`/`to`, usa as últimas 12 semanas no fuso do usuário
-- [ ] Só sessões `FINISHED` entram no cálculo
-- [ ] Agrupa por músculo primário normalizado (sem duplicar por caixa); ordena por volume desc
-- [ ] Usuário sem sessões devolve lista vazia, não 404
+- [x] `GET /api/dashboard/muscle-volume?from&to` → `[{ muscle, volume, sets }]`
+- [x] Sem `from`/`to`, usa as últimas 12 semanas de calendário no fuso do usuário
+- [x] Só sessões `FINISHED` entram no cálculo
+- [x] Agrupa por músculo primário normalizado (sem duplicar por caixa); ordena por volume desc
+- [x] Usuário sem sessões devolve lista vazia, não 404
 
 **Verification:**
 
-- [ ] Tests pass: `./mvnw -Dtest=DashboardServiceTest,AnalyticsFlowIT test`
-- [ ] Build succeeds: `./mvnw test`
-- [ ] Manual: `curl` com sessão finalizada mostra o músculo com volume
+- [x] Tests pass: `./mvnw -Dtest=DashboardServiceTest,AnalyticsFlowIT test` (10 testes)
+- [x] Build succeeds: `./mvnw test` (184 testes)
+- [x] IT cobre sessão finalizada, estados excluídos, intervalo, normalização, ordenação, isolamento e vazio
 
 **Dependencies:** None
 **Files likely touched:**

@@ -1198,6 +1198,44 @@
         }
       }
     },
+    "/api/dashboard/muscle-volume" : {
+      "get" : {
+        "tags" : [ "dashboard-controller" ],
+        "operationId" : "muscleVolume",
+        "parameters" : [ {
+          "name" : "from",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }, {
+          "name" : "to",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/MuscleVolumeDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/bioimpedance/{id}/history" : {
       "get" : {
         "tags" : [ "bioimpedance-controller" ],
@@ -2562,6 +2600,22 @@
           "volume" : {
             "type" : "number",
             "format" : "double"
+          }
+        }
+      },
+      "MuscleVolumeDto" : {
+        "type" : "object",
+        "properties" : {
+          "muscle" : {
+            "type" : "string"
+          },
+          "volume" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "sets" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         }
       },
