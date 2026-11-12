@@ -68,7 +68,7 @@ class HttpBioimpedanceParserTest {
             assertEquals("2026-10-01T08:00:00Z", result.get("measuredAt").asText());
             assertEquals(82.4, result.get("bodyWeightKg").asDouble());
             assertTrue(result.get("skeletalMuscleMassKg").isNull());
-            assertEquals("skeletalMuscleMassKg", result.get("missingFields").get(0).asText());
+            assertEquals("skeletalMuscleMassKg", result.get("missingFields").get(0).textValue());
         } finally {
             server.stop(0);
         }
