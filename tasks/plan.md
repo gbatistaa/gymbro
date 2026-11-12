@@ -72,7 +72,7 @@ substitui** e não toca nos arquivos daquela pasta.
 
 - [x] Task 10: Contratos Zod dos domínios
 - [x] Task 11: `requestMaybe` + `useResource`
-- [ ] Task 12: `lib/format.ts` (PT-BR, kg, duração, datas relativas)
+- [x] Task 12: `lib/format.ts` (PT-BR, kg, duração, datas relativas)
 - [ ] Task 13: Primitivos em `components/ui/`
 - [ ] Task 14: Casca autenticada, barra inferior e guard de sessão
 - [ ] Task 15: Atualizar signin/signup para username e identificador
@@ -488,17 +488,18 @@ tela invente o próprio separador decimal.
 
 **Acceptance criteria:**
 
-- [ ] `formatKg(42.5)` → `42,5`; milhar com ponto (`12.480`)
-- [ ] `formatVolume` com unidade `kg` e `formatPercent` com vírgula
-- [ ] `formatDate`/`formatDateTime` no fuso do usuário (`Intl` com `timeZone` explícito)
-- [ ] `formatDuration` em `1h 12min` / `48min`
-- [ ] `formatRelative` em `há 6 d`, `hoje`, `ontem`
-- [ ] Nenhuma função devolve `-0` ou `NaN` para entrada nula (retorna `—`)
+- [x] `formatKg(42.5)` → `42,5`; milhar com ponto (`12.480`)
+- [x] `formatVolume` com unidade `kg` e `formatPercent` com vírgula
+- [x] `formatDate`/`formatDateTime` no fuso do usuário (`Intl` com `timeZone` explícito)
+- [x] `formatDuration` em `1h 12min` / `48min` (entrada em segundos)
+- [x] `formatRelative` em `há 6 d`, `hoje`, `ontem`
+- [x] Nenhuma função devolve `-0` ou `NaN` para entrada nula (retorna `—`)
 
 **Verification:**
 
-- [ ] Build succeeds: `pnpm typecheck`
-- [ ] Manual: conferir `42,5`, `12.480 kg`, `há 6 d` na tela de teste do Início
+- [x] Build succeeds: `pnpm lint && pnpm typecheck && pnpm build`
+- [x] Manual: verificado por script de asserção (`node` + `assert`) com 24 casos, incluindo
+      virada de dia por fuso
 
 **Dependencies:** None
 **Files likely touched:**
