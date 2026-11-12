@@ -25,13 +25,13 @@ antes de começar a task, não depois.
 - [x] Task 6: `PlaylistSummaryDto` com `exerciseCount` e `lastPerformedAt`
 - [x] Task 7: `GET /api/dashboard/muscle-volume`
 - [x] Task 8: Fuso do usuário nos buckets mensais (`monthlyExerciseBuckets`)
-- [ ] Task 9: Regenerar `docs/api/openapi.json`
+- [x] Task 9: Regenerar `docs/api/openapi.json`
 
 ### Checkpoint Fase 1
 
-- [ ] `cd backend && ./mvnw test` verde
-- [ ] Snapshot OpenAPI revisado: só adições esperadas
-- [ ] Login por e-mail e por username devolvem 200 com cookies
+- [x] `cd backend && ./mvnw test` verde (186 testes)
+- [x] Snapshot OpenAPI revisado: só adições esperadas
+- [x] Login por e-mail e por username devolvem 200 com cookies (`AuthFlowIT`)
 
 ## Fase 2 — Fundação do frontend
 

@@ -60,13 +60,13 @@ substitui** e não toca nos arquivos daquela pasta.
 - [x] Task 6: Resumo de rotina na listagem (`exerciseCount`, `lastPerformedAt`)
 - [x] Task 7: `GET /api/dashboard/muscle-volume`
 - [x] Task 8: Fuso do usuário nos buckets mensais por exercício
-- [ ] Task 9: Atualizar snapshot OpenAPI
+- [x] Task 9: Atualizar snapshot OpenAPI
 
 **Checkpoint Fase 1**
 
-- [ ] `cd backend && ./mvnw test` verde
-- [ ] `docs/api/openapi.json` regenerado com os novos campos e rotas
-- [ ] `curl` login com e-mail e com username devolvem 200
+- [x] `cd backend && ./mvnw test` verde
+- [x] `docs/api/openapi.json` regenerado com os novos campos e rotas
+- [x] Login com e-mail e com username devolvem 200 (coberto por `AuthFlowIT`)
 
 ### Fase 2 — Fundação do frontend
 
@@ -399,17 +399,18 @@ músculo.
 
 **Acceptance criteria:**
 
-- [ ] `OpenApiContractIT` passa e reescreve `docs/api/openapi.json`
-- [ ] Snapshot contém `LoginDto.identifier`, `PUT /api/users/me/password`,
+- [x] `OpenApiContractIT` passa e reescreve `docs/api/openapi.json`
+- [x] Snapshot contém `LoginDto.identifier`, `PUT /api/users/me/password`,
       `GET /api/exercises/muscles`, `GET /api/dashboard/muscle-volume`, `username` em `UserDto`
-- [ ] Nenhuma rota ou campo removido sem intenção
-- [ ] Diff do snapshot revisado linha a linha
+      — fixado por asserção no `OpenApiContractIT`
+- [x] Nenhuma rota ou campo removido sem intenção (diff contra HEAD vazio)
+- [x] Diff do snapshot revisado linha a linha
 
 **Verification:**
 
-- [ ] Tests pass: `./mvnw -Dtest=OpenApiContractIT test`
-- [ ] Build succeeds: `./mvnw test`
-- [ ] Manual: `git diff docs/api/openapi.json` mostra só as adições esperadas
+- [x] Tests pass: `./mvnw -Dtest=OpenApiContractIT test`
+- [x] Build succeeds: `./mvnw test` (186 testes)
+- [x] `git diff docs/api/openapi.json` sem remoções; 34 rotas publicadas
 
 **Dependencies:** Tasks 1–8
 **Files likely touched:**
