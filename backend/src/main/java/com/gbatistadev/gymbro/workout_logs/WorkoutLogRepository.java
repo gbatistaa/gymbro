@@ -75,8 +75,8 @@ public interface WorkoutLogRepository extends JpaRepository<WorkoutLog, UUID> {
         @Param("to") Instant to);
 
     @Query(value = """
-        SELECT (date_trunc('month', s.started_at AT TIME ZONE 'America/Sao_Paulo')
-                    AT TIME ZONE 'America/Sao_Paulo') AS "periodStart",
+        SELECT (date_trunc('month', s.started_at AT TIME ZONE CAST(:zone AS text))
+                    AT TIME ZONE CAST(:zone AS text)) AS "periodStart",
                SUM(l.weight * l.reps) AS "volume",
                MAX(CASE WHEN l.reps = 1 THEN l.weight
                         ELSE l.weight * (1 + l.reps / 30.0) END) AS "bestE1rm"
@@ -92,7 +92,8 @@ public interface WorkoutLogRepository extends JpaRepository<WorkoutLog, UUID> {
         @Param("userId") UUID userId,
         @Param("exerciseId") UUID exerciseId,
         @Param("from") Instant from,
-        @Param("to") Instant to);
+        @Param("to") Instant to,
+        @Param("zone") String zone);
 
     @Query(value = """
         SELECT DISTINCT ON (l.exercise_id)

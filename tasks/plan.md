@@ -59,7 +59,7 @@ substitui** e não toca nos arquivos daquela pasta.
 - [x] Task 5: Ordenação e lista de músculos em exercícios
 - [x] Task 6: Resumo de rotina na listagem (`exerciseCount`, `lastPerformedAt`)
 - [x] Task 7: `GET /api/dashboard/muscle-volume`
-- [ ] Task 8: Fuso do usuário nos buckets mensais por exercício
+- [x] Task 8: Fuso do usuário nos buckets mensais por exercício
 - [ ] Task 9: Atualizar snapshot OpenAPI
 
 **Checkpoint Fase 1**
@@ -371,15 +371,15 @@ chamadas no cliente ou de custo extra no dashboard do Início.
 
 **Acceptance criteria:**
 
-- [ ] A query recebe o `ZoneId` do usuário por parâmetro
-- [ ] Mesma sessão cai em meses diferentes para `America/Sao_Paulo` e `Asia/Tokyo`
-- [ ] `ExerciseStatsService` continua devolvendo `MonthlyBucketDto` com o mesmo shape
-- [ ] Nenhum literal de fuso permanece no repositório
+- [x] A query recebe o `ZoneId` do usuário por parâmetro
+- [x] Mesma sessão cai em meses diferentes para `America/Sao_Paulo` e `Asia/Tokyo`
+- [x] `ExerciseStatsService` continua devolvendo `MonthlyBucketDto` com o mesmo shape
+- [x] Nenhum literal de fuso permanece no repositório
 
 **Verification:**
 
-- [ ] Tests pass: `./mvnw -Dtest=ExerciseStatsServiceTest,AnalyticsFlowIT test`
-- [ ] Build succeeds: `./mvnw test`
+- [x] Tests pass: `./mvnw -Dtest=ExerciseStatsServiceTest,AnalyticsFlowIT test` (9 testes)
+- [x] Build succeeds: `./mvnw test` (186 testes)
 
 **Dependencies:** None
 **Files likely touched:**

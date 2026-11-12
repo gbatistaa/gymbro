@@ -12,6 +12,7 @@ import com.gbatistadev.gymbro.playlist_exercises.PlaylistExercise;
 import com.gbatistadev.gymbro.playlist_exercises.PlaylistExerciseRepository;
 import com.gbatistadev.gymbro.user.UserService;
 import com.gbatistadev.gymbro.user.dto.CreateUserDto;
+import com.gbatistadev.gymbro.user.dto.UpdateUserDto;
 import com.gbatistadev.gymbro.user.dto.UserDto;
 import com.gbatistadev.gymbro.workout_logs.WorkoutLog;
 import com.gbatistadev.gymbro.workout_logs.WorkoutLogRepository;
@@ -219,6 +220,26 @@ class AnalyticsFlowIT {
         mockMvc.perform(get("/api/exercises/{id}/stats", exercise.getId()).header(HttpHeaders.AUTHORIZATION, auth))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.bestE1rm").value(120.0));
+    }
+
+    @Test
+    @DisplayName("monthly buckets fall in the user's own month, not São Paulo's")
+    void shouldBucketMonthsInUserTimeZone() throws Exception {
+        UserDto user = createUser();
+        userService.update(new UpdateUserDto(null, null, "Asia/Tokyo"), user.getId());
+        String auth = bearer(user);
+        Exercise exercise = createExercise(user.getId());
+
+        // 31/10 16:00Z = 31/10 13:00 em São Paulo (outubro) e 01/11 01:00 em Tóquio (novembro)
+        WorkoutSession session = finishedSession(
+            user.getId(), Instant.parse("2026-10-31T16:00:00Z"), null);
+        addLog(session, exercise, 1, 100.0, 10, false);
+
+        mockMvc.perform(get("/api/exercises/{id}/stats", exercise.getId())
+                .header(HttpHeaders.AUTHORIZATION, auth))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.monthlyBuckets.length()").value(1))
+            .andExpect(jsonPath("$.monthlyBuckets[0].periodStart").value("2026-10-31T15:00:00Z"));
     }
 
     private WorkoutSession finishedSession(UUID userId, Instant startedAt, Playlist playlist) {

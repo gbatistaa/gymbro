@@ -6,11 +6,13 @@ import com.gbatistadev.gymbro.errors.exceptions.NotFoundException;
 import com.gbatistadev.gymbro.exercise.ExerciseRepository;
 import com.gbatistadev.gymbro.workout_logs.WorkoutLogRepository;
 import com.gbatistadev.gymbro.workout_session.SessionStatus;
+import com.gbatistadev.gymbro.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 
@@ -19,6 +21,7 @@ import java.util.UUID;
 public class ExerciseStatsService {
     private final WorkoutLogRepository logs;
     private final ExerciseRepository exercises;
+    private final UserRepository users;
     private final CurrentUser currentUser;
 
     @Transactional(readOnly = true)
@@ -29,12 +32,15 @@ public class ExerciseStatsService {
 
         Instant start = from != null ? from : Instant.EPOCH;
         Instant end = to != null ? to : Instant.now();
+        ZoneId zone = users.findById(userId)
+            .map(user -> ZoneId.of(user.getTimezone()))
+            .orElseThrow(() -> new NotFoundException("User not found: " + userId));
 
         WorkoutLogRepository.ExerciseAggregate aggregate = logs.aggregateExerciseStats(
             userId, exerciseId, SessionStatus.FINISHED, start, end);
 
         List<ExerciseStatsDto.MonthlyBucketDto> buckets = logs
-            .monthlyExerciseBuckets(userId, exerciseId, start, end)
+            .monthlyExerciseBuckets(userId, exerciseId, start, end, zone.getId())
             .stream()
             .map(bucket -> new ExerciseStatsDto.MonthlyBucketDto(
                 bucket.getPeriodStart(), bucket.getVolume(), bucket.getBestE1rm()))

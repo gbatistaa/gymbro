@@ -7,6 +7,8 @@ import com.gbatistadev.gymbro.exercise.Exercise;
 import com.gbatistadev.gymbro.exercise.ExerciseRepository;
 import com.gbatistadev.gymbro.workout_logs.WorkoutLogRepository;
 import com.gbatistadev.gymbro.workout_session.SessionStatus;
+import com.gbatistadev.gymbro.user.User;
+import com.gbatistadev.gymbro.user.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,6 +36,9 @@ class ExerciseStatsServiceTest {
     private ExerciseRepository exercises;
 
     @Mock
+    private UserRepository users;
+
+    @Mock
     private CurrentUser currentUser;
 
     @InjectMocks
@@ -53,6 +58,7 @@ class ExerciseStatsServiceTest {
 
         when(currentUser.id()).thenReturn(userId);
         when(exercises.findByIdForUser(exerciseId, userId)).thenReturn(Optional.of(new Exercise()));
+        when(users.findById(userId)).thenReturn(Optional.of(userInZone("America/Sao_Paulo")));
         when(logs.aggregateExerciseStats(
             eq(userId), eq(exerciseId), eq(SessionStatus.FINISHED), any(), any()))
             .thenReturn(aggregate);
@@ -61,7 +67,7 @@ class ExerciseStatsServiceTest {
         when(aggregate.getBestWeight()).thenReturn(100.0);
         when(aggregate.getBestE1rm()).thenReturn(133.33);
         when(aggregate.getLastPerformedAt()).thenReturn(last);
-        when(logs.monthlyExerciseBuckets(eq(userId), eq(exerciseId), any(), any()))
+        when(logs.monthlyExerciseBuckets(eq(userId), eq(exerciseId), any(), any(), eq("America/Sao_Paulo")))
             .thenReturn(List.of(bucket));
         when(bucket.getPeriodStart()).thenReturn(Instant.parse("2026-11-01T03:00:00Z"));
         when(bucket.getVolume()).thenReturn(800.0);
@@ -85,5 +91,35 @@ class ExerciseStatsServiceTest {
 
         assertThrows(NotFoundException.class, () -> service.stats(exerciseId, null, null));
         verifyNoInteractions(logs);
+    }
+
+    @Test
+    @DisplayName("passes the user's own time zone to the monthly bucket query")
+    void shouldUseUserTimeZoneForBuckets() {
+        when(currentUser.id()).thenReturn(userId);
+        when(exercises.findByIdForUser(exerciseId, userId)).thenReturn(Optional.of(new Exercise()));
+        when(users.findById(userId)).thenReturn(Optional.of(userInZone("Asia/Tokyo")));
+        when(logs.aggregateExerciseStats(
+            eq(userId), eq(exerciseId), eq(SessionStatus.FINISHED), any(), any()))
+            .thenReturn(mock(WorkoutLogRepository.ExerciseAggregate.class));
+        when(logs.monthlyExerciseBuckets(
+            eq(userId), eq(exerciseId), any(), any(), eq("Asia/Tokyo")))
+            .thenReturn(List.of());
+
+        service.stats(exerciseId, null, null);
+
+        verify(logs).monthlyExerciseBuckets(
+            eq(userId), eq(exerciseId), any(), any(), eq("Asia/Tokyo"));
+    }
+
+    private User userInZone(String timeZone) {
+        User user = new User();
+        user.setId(userId);
+        user.setName("Stats User");
+        user.setEmail("stats@example.com");
+        user.setUsername("stats_user");
+        user.setPasswordHash("$2a$10$not-used");
+        user.setTimezone(timeZone);
+        return user;
     }
 }
