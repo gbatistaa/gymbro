@@ -36,7 +36,7 @@ antes de começar a task, não depois.
 ## Fase 2 — Fundação do frontend
 
 - [x] Task 10: Contratos Zod (`auth` atualizado + `page`, `exercise`, `playlist`, `session`, `analytics`, `bioimpedance`)
-- [ ] Task 11: `requestMaybe` em `lib/http.ts` + `useResource`
+- [x] Task 11: `requestMaybe` em `lib/http.ts` + `useResource`
 - [ ] Task 12: `lib/format.ts` (kg, %, data no fuso, duração, relativo)
 - [ ] Task 13: Primitivos em `components/ui/` (SectionLabel, DataRow, Button, Field, EmptyState, ErrorState, Skeleton, Notice, ConfirmDialog)
 - [ ] Task 14: Casca `(app)`, barra inferior, guard de sessão; remover `app/page.tsx`

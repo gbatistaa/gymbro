@@ -71,7 +71,7 @@ substitui** e não toca nos arquivos daquela pasta.
 ### Fase 2 — Fundação do frontend
 
 - [x] Task 10: Contratos Zod dos domínios
-- [ ] Task 11: `requestMaybe` + `useResource`
+- [x] Task 11: `requestMaybe` + `useResource`
 - [ ] Task 12: `lib/format.ts` (PT-BR, kg, duração, datas relativas)
 - [ ] Task 13: Primitivos em `components/ui/`
 - [ ] Task 14: Casca autenticada, barra inferior e guard de sessão
@@ -460,16 +460,17 @@ padronizar `loading | error | data | reload` sem repetir 20 linhas por tela.
 
 **Acceptance criteria:**
 
-- [ ] `requestMaybe(config, schema)` devolve `T | null` e trata `204`/corpo vazio
-- [ ] `useResource(loader, deps)` devolve `{ data, error, isLoading, reload }` e ignora resposta de
-      chamada obsoleta após unmount
-- [ ] Erro de rede vira mensagem PT-BR acionável, reutilizando `apiErrorSchema`
-- [ ] Nenhuma chamada Axios nova fora de `lib/http.ts`
+- [x] `requestMaybe(config, schema)` devolve `T | null` e trata `204`/corpo vazio
+- [x] `useResource(key, loader)` devolve `{ data, error, isLoading, reload }` e ignora resposta de
+      chamada obsoleta após unmount (deps inline exigidas pela doc do React; ver §Notes)
+- [x] Erro de rede vira mensagem PT-BR acionável, reutilizando `apiErrorSchema`
+- [x] Nenhuma chamada Axios nova fora de `lib/http.ts`
 
 **Verification:**
 
-- [ ] Build succeeds: `cd web && pnpm lint && pnpm typecheck`
-- [ ] Manual: `GET /api/sessions/active` sem sessão ativa devolve `null` e a tela mostra estado vazio
+- [x] Build succeeds: `cd web && pnpm lint && pnpm typecheck && pnpm build`
+- [ ] Manual: `GET /api/sessions/active` sem sessão ativa devolve `null` — só verificável quando a
+      tela existir (Task 16)
 
 **Dependencies:** Task 10
 **Files likely touched:**

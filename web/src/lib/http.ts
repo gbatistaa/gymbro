@@ -97,3 +97,25 @@ export async function request<T>(
   const response = await http.request<unknown>(config);
   return schema.parse(response.data);
 }
+
+/**
+ * Igual a `request`, mas aceita ausência de corpo: `204` é resposta válida, não erro.
+ * Ex.: `GET /api/sessions/active` devolve `204` quando não há sessão em andamento.
+ */
+export async function requestMaybe<T>(
+  config: AxiosRequestConfig,
+  schema: z.ZodType<T>,
+): Promise<T | null> {
+  const response = await http.request<unknown>(config);
+
+  if (
+    response.status === 204 ||
+    response.data === "" ||
+    response.data === null ||
+    response.data === undefined
+  ) {
+    return null;
+  }
+
+  return schema.parse(response.data);
+}
