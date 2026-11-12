@@ -2,19 +2,33 @@ import axios from "axios";
 import type { ZodError } from "zod";
 import { apiErrorSchema } from "@/contracts/api-error";
 
-export type AuthField = "name" | "email" | "password";
+export type AuthField = "name" | "username" | "email" | "identifier" | "password";
 export type FieldErrors = Partial<Record<AuthField, string>>;
 
 const FIELD_MESSAGES: Record<AuthField, string> = {
   name: "Verifique o nome informado.",
+  username: "Verifique o usuário informado.",
   email: "Verifique o e-mail informado.",
+  identifier: "Verifique o e-mail ou usuário informado.",
   password: "Verifique a senha informada.",
 };
+
+const AUTH_FIELDS: readonly string[] = [
+  "name",
+  "username",
+  "email",
+  "identifier",
+  "password",
+];
+
+function isAuthField(value: string): value is AuthField {
+  return AUTH_FIELDS.includes(value);
+}
 
 const CODE_MESSAGES: Record<string, string> = {
   UNAUTHENTICATED: "E-mail ou senha inválidos.",
   TOO_MANY_ATTEMPTS: "Muitas tentativas. Aguarde alguns minutos e tente novamente.",
-  RESOURCE_ALREADY_EXISTS: "Já existe uma conta com este e-mail.",
+  RESOURCE_ALREADY_EXISTS: "Já existe uma conta com estes dados.",
   VALIDATION_FAILED: "Verifique os campos destacados.",
   MALFORMED_BODY: "Dados inválidos. Verifique os campos.",
   BAD_REQUEST: "Dados inválidos. Verifique os campos.",
@@ -25,7 +39,7 @@ export function toFieldErrors(error: ZodError): FieldErrors {
 
   for (const issue of error.issues) {
     const field = issue.path[0];
-    if (field === "name" || field === "email" || field === "password") {
+    if (typeof field === "string" && isAuthField(field)) {
       fields[field] ??= issue.message;
     }
   }
@@ -55,7 +69,7 @@ export function describeAuthError(error: unknown): {
 
   const fields: FieldErrors = {};
   for (const item of parsed.data.errors) {
-    if (item.field === "name" || item.field === "email" || item.field === "password") {
+    if (isAuthField(item.field)) {
       fields[item.field] = FIELD_MESSAGES[item.field];
     }
   }

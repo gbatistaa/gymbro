@@ -35,7 +35,7 @@ antes de começar a task, não depois.
 
 ## Fase 2 — Fundação do frontend
 
-- [ ] Task 10: Contratos Zod (`auth` atualizado + `page`, `exercise`, `playlist`, `session`, `analytics`, `bioimpedance`)
+- [x] Task 10: Contratos Zod (`auth` atualizado + `page`, `exercise`, `playlist`, `session`, `analytics`, `bioimpedance`)
 - [ ] Task 11: `requestMaybe` em `lib/http.ts` + `useResource`
 - [ ] Task 12: `lib/format.ts` (kg, %, data no fuso, duração, relativo)
 - [ ] Task 13: Primitivos em `components/ui/` (SectionLabel, DataRow, Button, Field, EmptyState, ErrorState, Skeleton, Notice, ConfirmDialog)
@@ -44,7 +44,7 @@ antes de começar a task, não depois.
 
 ## Checkpoint Fase 2
 
-- [ ] `cd web && pnpm lint && pnpm typecheck && pnpm build`
+- [ ] `cd web && pnpm lint && pnpm typecheck && pnpm build` (verde após a Task 10)
 - [ ] Rota privada sem sessão → `/signin?next=`
 - [ ] Sem flash de conteúdo privado durante a validação
 
@@ -100,7 +100,7 @@ antes de começar a task, não depois.
 
 ### Checkpoint Final
 
-- [ ] `cd web && pnpm lint && pnpm typecheck && pnpm build`
+- [ ] `cd web && pnpm lint && pnpm typecheck && pnpm build` (verde após a Task 10)
 - [ ] `cd backend && ./mvnw test`
 - [ ] Checklist §11 do `brand-identity.md` aplicado a cada tela
 

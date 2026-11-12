@@ -25,6 +25,7 @@ export function SignUpForm({ next }: SignUpFormProps) {
   const destination = safeNextPath(next);
   const [values, setValues] = useState<SignUpInput>({
     name: "",
+    username: "",
     email: "",
     password: "",
   });
@@ -92,6 +93,17 @@ export function SignUpForm({ next }: SignUpFormProps) {
           value={values.name}
           error={fieldErrors.name}
           onChange={(value) => setField("name", value)}
+        />
+
+        <AuthField
+          id="signup-username"
+          name="username"
+          label="Usuário"
+          autoComplete="username"
+          hint="3 a 30 caracteres: letras, números, ponto ou sublinhado"
+          value={values.username}
+          error={fieldErrors.username}
+          onChange={(value) => setField("username", value)}
         />
 
         <AuthField

@@ -23,7 +23,10 @@ export function SignInForm({ next }: SignInFormProps) {
   const router = useRouter();
   const setSession = useSetAtom(sessionAtom);
   const destination = safeNextPath(next);
-  const [values, setValues] = useState<LoginInput>({ email: "", password: "" });
+  const [values, setValues] = useState<LoginInput>({
+    identifier: "",
+    password: "",
+  });
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -81,14 +84,13 @@ export function SignInForm({ next }: SignInFormProps) {
 
       <form className={styles.form} onSubmit={handleSubmit} noValidate>
         <AuthField
-          id="signin-email"
-          name="email"
-          label="E-mail"
-          type="email"
-          autoComplete="email"
-          value={values.email}
-          error={fieldErrors.email}
-          onChange={(value) => setField("email", value)}
+          id="signin-identifier"
+          name="identifier"
+          label="E-mail ou usuário"
+          autoComplete="username"
+          value={values.identifier}
+          error={fieldErrors.identifier}
+          onChange={(value) => setField("identifier", value)}
         />
 
         <AuthField

@@ -70,7 +70,7 @@ substitui** e não toca nos arquivos daquela pasta.
 
 ### Fase 2 — Fundação do frontend
 
-- [ ] Task 10: Contratos Zod dos domínios
+- [x] Task 10: Contratos Zod dos domínios
 - [ ] Task 11: `requestMaybe` + `useResource`
 - [ ] Task 12: `lib/format.ts` (PT-BR, kg, duração, datas relativas)
 - [ ] Task 13: Primitivos em `components/ui/`
@@ -429,19 +429,20 @@ inferidos. Nada de tipo duplicado à mão.
 
 **Acceptance criteria:**
 
-- [ ] `contracts/auth.ts` atualizado: `userSummarySchema` com `username`, `loginSchema` com
+- [x] `contracts/auth.ts` atualizado: `userSummarySchema` com `username`, `loginSchema` com
       `identifier`, `signUpSchema` com `username`
-- [ ] Novos: `contracts/page.ts` (genérico), `exercise.ts`, `playlist.ts`, `session.ts`,
-      `analytics.ts`, `bioimpedance.ts`
-- [ ] `sessionStatusSchema` cobre `IN_PROGRESS | FINISHED | ABANDONED`
-- [ ] Campos anuláveis do backend são `nullish()`/`nullable()`, nunca `optional()` disfarçado
-- [ ] Datas usam `z.iso.datetime({ offset: true })`, como no contrato existente
-- [ ] Nenhum `as` para contornar schema
+- [x] Novos: `contracts/page.ts` (genérico), `exercise.ts`, `playlist.ts`, `session.ts`,
+      `analytics.ts`, `bioimpedance.ts` (+ `primitives.ts` com o formato de data compartilhado)
+- [x] `sessionStatusSchema` cobre `IN_PROGRESS | FINISHED | ABANDONED`
+- [x] Campos anuláveis do backend são `nullish()`/`nullable()`, nunca `optional()` disfarçado
+- [x] Datas usam `z.iso.datetime({ offset: true })`, centralizado em `contracts/primitives.ts`
+- [x] Nenhum `as` para contornar schema
 
 **Verification:**
 
-- [ ] Build succeeds: `cd web && pnpm typecheck`
-- [ ] Manual: cada endpoint usado por uma tela tem schema correspondente
+- [x] Build succeeds: `cd web && pnpm lint && pnpm typecheck && pnpm build`
+- [x] Manual: cada endpoint do snapshot OpenAPI tem schema (auth, página, exercício, rotina,
+      sessão, analytics, bioimpedância)
 
 **Dependencies:** Task 9
 **Files likely touched:**
