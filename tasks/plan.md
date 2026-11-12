@@ -57,7 +57,7 @@ substitui** e não toca nos arquivos daquela pasta.
 - [x] Task 3: Login por e-mail ou username
 - [x] Task 4: `PUT /api/users/me/password`
 - [x] Task 5: Ordenação e lista de músculos em exercícios
-- [ ] Task 6: Resumo de rotina na listagem (`exerciseCount`, `lastPerformedAt`)
+- [x] Task 6: Resumo de rotina na listagem (`exerciseCount`, `lastPerformedAt`)
 - [ ] Task 7: `GET /api/dashboard/muscle-volume`
 - [ ] Task 8: Fuso do usuário nos buckets mensais por exercício
 - [ ] Task 9: Atualizar snapshot OpenAPI
@@ -311,17 +311,17 @@ no cliente. `GET /api/playlists` passa a devolver um DTO de resumo com esses doi
 
 **Acceptance criteria:**
 
-- [ ] `PlaylistSummaryDto { id, name, description, archivedAt, exerciseCount, lastPerformedAt }`
-- [ ] `GET /api/playlists` devolve o resumo; `GET /{id}` continua com `PlaylistDetailDto`
-- [ ] Rotina nunca executada devolve `lastPerformedAt: null` e `exerciseCount: 0`
-- [ ] Uma query agregada por listagem, sem laço por rotina
-- [ ] `POST`/`PUT`/`clone`/`archive` continuam devolvendo `PlaylistDto` (sem quebra de contrato)
+- [x] `PlaylistSummaryDto { id, name, description, archivedAt, exerciseCount, lastPerformedAt }`
+- [x] `GET /api/playlists` devolve o resumo; `GET /{id}` continua com `PlaylistDetailDto`
+- [x] Rotina nunca executada devolve `lastPerformedAt: null` e `exerciseCount: 0`
+- [x] Uma query agregada por listagem, sem laço por rotina
+- [x] `POST`/`PUT`/`clone`/`archive` continuam devolvendo `PlaylistDto` (sem quebra de contrato)
 
 **Verification:**
 
-- [ ] Tests pass: `./mvnw -Dtest=PlaylistServiceTest,PlaylistFlowIT test`
-- [ ] Build succeeds: `./mvnw test`
-- [ ] Manual: `GET /api/playlists` mostra contagem e data da última sessão
+- [x] Tests pass: `./mvnw -Dtest=PlaylistServiceTest,PlaylistFlowIT test` (20 testes)
+- [x] Build succeeds: `./mvnw test` (182 testes)
+- [x] IT cobre contagem, rotina vazia, última sessão FINISHED, ignora IN_PROGRESS/ABANDONED e escopo por usuário
 
 **Dependencies:** None
 **Files likely touched:**

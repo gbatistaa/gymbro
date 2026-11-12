@@ -7,6 +7,7 @@ import com.gbatistadev.gymbro.exercise.Exercise;
 import com.gbatistadev.gymbro.exercise.ExerciseRepository;
 import com.gbatistadev.gymbro.playlist.dto.*;
 import com.gbatistadev.gymbro.playlist_exercises.PlaylistExercise;
+import com.gbatistadev.gymbro.workout_session.SessionStatus;
 import com.gbatistadev.gymbro.playlist_exercises.PlaylistExerciseRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -69,30 +70,25 @@ class PlaylistServiceTest {
     @Test
     @DisplayName("list returns only active playlists by default")
     void shouldListActivePlaylists() {
-        Playlist active = playlist(playlistId, null);
-        PlaylistDto expected = playlistDto();
+        PlaylistSummaryDto expected = playlistSummary(playlistId, 2, null);
 
         when(currentUser.id()).thenReturn(userId);
-        when(playlists.findByUserIdAndArchivedAtIsNullOrderByName(userId))
-            .thenReturn(List.of(active));
-        when(mapper.toDto(active)).thenReturn(expected);
+        when(playlists.findSummariesByUserId(userId, false, SessionStatus.FINISHED))
+            .thenReturn(List.of(expected));
 
         assertEquals(List.of(expected), service.list(false));
-        verify(playlists, never()).findByUserIdOrderByName(any());
     }
 
     @Test
     @DisplayName("list includes archived playlists when asked")
     void shouldListArchivedPlaylists() {
-        Playlist archived = playlist(playlistId, Instant.now());
-        PlaylistDto expected = playlistDto();
+        PlaylistSummaryDto expected = playlistSummary(playlistId, 0, null);
 
         when(currentUser.id()).thenReturn(userId);
-        when(playlists.findByUserIdOrderByName(userId)).thenReturn(List.of(archived));
-        when(mapper.toDto(archived)).thenReturn(expected);
+        when(playlists.findSummariesByUserId(userId, true, SessionStatus.FINISHED))
+            .thenReturn(List.of(expected));
 
         assertEquals(List.of(expected), service.list(true));
-        verify(playlists, never()).findByUserIdAndArchivedAtIsNullOrderByName(any());
     }
 
     @Test
@@ -353,6 +349,10 @@ class PlaylistServiceTest {
 
     private PlaylistDto playlistDto() {
         return new PlaylistDto(playlistId, "Push", null, null);
+    }
+
+    private PlaylistSummaryDto playlistSummary(UUID id, long exerciseCount, Instant lastPerformedAt) {
+        return new PlaylistSummaryDto(id, "Push", null, null, exerciseCount, lastPerformedAt);
     }
 
     private PlaylistExerciseDto itemDto(UUID id) {

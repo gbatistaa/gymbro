@@ -20,6 +20,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.UUID;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
@@ -128,6 +130,47 @@ class PlaylistFlowIT {
     }
 
     @Test
+    @DisplayName("playlist list summarizes exercise count and latest finished session")
+    void shouldSummarizePlaylists() throws Exception {
+        String auth = bearer(createUser());
+        String otherUserAuth = bearer(createUser());
+        Exercise first = createExercise("Summary first");
+        Exercise second = createExercise("Summary second");
+        String playlistId = createPlaylist(auth, "Summary routine");
+        String emptyPlaylistId = createPlaylist(auth, "Empty routine");
+        createPlaylist(otherUserAuth, "Other user's routine");
+        addExercise(auth, playlistId, first, 3);
+        addExercise(auth, playlistId, second, 4);
+
+        Instant olderFinishedAt = Instant.now().minusSeconds(30).truncatedTo(ChronoUnit.MICROS);
+        finishSession(auth, playlistId, first, olderFinishedAt);
+        Instant latestFinishedAt = Instant.now().minusSeconds(10).truncatedTo(ChronoUnit.MICROS);
+        finishSession(auth, playlistId, first, latestFinishedAt);
+
+        abandonSession(auth, playlistId, Instant.now().minusSeconds(1));
+
+        mockMvc.perform(post("/api/sessions")
+                .header(HttpHeaders.AUTHORIZATION, auth)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"playlistId":"%s"}
+                    """.formatted(playlistId)))
+            .andExpect(status().isCreated());
+
+        mockMvc.perform(get("/api/playlists").header(HttpHeaders.AUTHORIZATION, auth))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.length()").value(2))
+            .andExpect(jsonPath("$[?(@.id == '%s')].exerciseCount".formatted(playlistId))
+                .value(org.hamcrest.Matchers.contains(2)))
+            .andExpect(jsonPath("$[?(@.id == '%s')].lastPerformedAt".formatted(playlistId))
+                .value(org.hamcrest.Matchers.contains(latestFinishedAt.toString())))
+            .andExpect(jsonPath("$[?(@.id == '%s')].exerciseCount".formatted(emptyPlaylistId))
+                .value(org.hamcrest.Matchers.contains(0)))
+            .andExpect(jsonPath("$[?(@.id == '%s')].lastPerformedAt".formatted(emptyPlaylistId))
+                .value(org.hamcrest.Matchers.contains(org.hamcrest.Matchers.nullValue())));
+    }
+
+    @Test
     @DisplayName("a routine is invisible to other users")
     void shouldIsolatePlaylistsBetweenUsers() throws Exception {
         String owner = bearer(createUser());
@@ -225,5 +268,53 @@ class PlaylistFlowIT {
             .andExpect(status().isCreated())
             .andReturn();
         return JsonPath.read(result.getResponse().getContentAsString(), "$.id");
+    }
+
+    private void finishSession(
+        String auth, String playlistId, Exercise exercise, Instant startedAt
+    ) throws Exception {
+        String sessionId = JsonPath.read(mockMvc.perform(post("/api/sessions")
+                .header(HttpHeaders.AUTHORIZATION, auth)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"playlistId":"%s","startedAt":"%s"}
+                    """.formatted(playlistId, startedAt)))
+            .andExpect(status().isCreated())
+            .andReturn().getResponse().getContentAsString(), "$.id");
+
+        mockMvc.perform(post("/api/sessions/{id}/logs", sessionId)
+                .header(HttpHeaders.AUTHORIZATION, auth)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"clientLogId":"%s","exerciseId":"%s","weight":40,"reps":8}
+                    """.formatted(UUID.randomUUID(), exercise.getId())))
+            .andExpect(status().isCreated());
+
+        mockMvc.perform(patch("/api/sessions/{id}", sessionId)
+                .header(HttpHeaders.AUTHORIZATION, auth)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"status":"FINISHED"}
+                    """))
+            .andExpect(status().isOk());
+    }
+
+    private void abandonSession(String auth, String playlistId, Instant startedAt) throws Exception {
+        String sessionId = JsonPath.read(mockMvc.perform(post("/api/sessions")
+                .header(HttpHeaders.AUTHORIZATION, auth)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"playlistId":"%s","startedAt":"%s"}
+                    """.formatted(playlistId, startedAt)))
+            .andExpect(status().isCreated())
+            .andReturn().getResponse().getContentAsString(), "$.id");
+
+        mockMvc.perform(patch("/api/sessions/{id}", sessionId)
+                .header(HttpHeaders.AUTHORIZATION, auth)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"status":"ABANDONED"}
+                    """))
+            .andExpect(status().isOk());
     }
 }

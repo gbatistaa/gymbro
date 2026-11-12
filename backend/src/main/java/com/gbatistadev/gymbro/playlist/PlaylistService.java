@@ -8,6 +8,7 @@ import com.gbatistadev.gymbro.exercise.ExerciseRepository;
 import com.gbatistadev.gymbro.playlist.dto.*;
 import com.gbatistadev.gymbro.playlist_exercises.PlaylistExercise;
 import com.gbatistadev.gymbro.playlist_exercises.PlaylistExerciseRepository;
+import com.gbatistadev.gymbro.workout_session.SessionStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,13 +27,9 @@ public class PlaylistService {
     private final CurrentUser currentUser;
 
     @Transactional(readOnly = true)
-    public List<PlaylistDto> list(boolean includeArchived) {
-        UUID userId = currentUser.id();
-        List<Playlist> found = includeArchived
-            ? playlists.findByUserIdOrderByName(userId)
-            : playlists.findByUserIdAndArchivedAtIsNullOrderByName(userId);
-
-        return found.stream().map(mapper::toDto).toList();
+    public List<PlaylistSummaryDto> list(boolean includeArchived) {
+        return playlists.findSummariesByUserId(
+            currentUser.id(), includeArchived, SessionStatus.FINISHED);
     }
 
     @Transactional
@@ -59,8 +56,10 @@ public class PlaylistService {
     public PlaylistDto clone(UUID id) {
         Playlist source = loadActive(id);
         Playlist copy = mapper.toCopy(source);
+
         copy.setName(source.getName() + " (cópia)");
         copy.setUserId(currentUser.id());
+
         playlists.save(copy);
 
         for (PlaylistExercise sourceItem : items.findByPlaylistIdOrderByOrderIndexAsc(id)) {

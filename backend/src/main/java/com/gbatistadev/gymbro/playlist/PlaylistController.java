@@ -21,7 +21,7 @@ public class PlaylistController {
     private final ProgressionService progressionService;
 
     @GetMapping
-    public ResponseEntity<List<PlaylistDto>> list(
+    public ResponseEntity<List<PlaylistSummaryDto>> list(
         @RequestParam(defaultValue = "false") boolean includeArchived
     ) {
         return ResponseEntity.ok(service.list(includeArchived));

@@ -374,7 +374,7 @@
                 "schema" : {
                   "type" : "array",
                   "items" : {
-                    "$ref" : "#/components/schemas/PlaylistDto"
+                    "$ref" : "#/components/schemas/PlaylistSummaryDto"
                   }
                 }
               }
@@ -2332,6 +2332,33 @@
             "items" : {
               "$ref" : "#/components/schemas/ExerciseLogsDto"
             }
+          }
+        }
+      },
+      "PlaylistSummaryDto" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "archivedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "exerciseCount" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "lastPerformedAt" : {
+            "type" : "string",
+            "format" : "date-time"
           }
         }
       },
