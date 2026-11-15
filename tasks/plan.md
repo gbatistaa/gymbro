@@ -95,7 +95,7 @@ substitui** e não toca nos arquivos daquela pasta.
 ### Fase 4 — Treinar
 
 - [x] Task 17: Lista de rotinas
-- [ ] Task 18: Editor de rotina
+- [x] Task 18: Editor de rotina
 
 **Checkpoint Fase 4**
 
@@ -672,18 +672,18 @@ progressão visível junto do item.
 
 **Acceptance criteria:**
 
-- [ ] `GET /api/playlists/{id}` + `GET /{id}/next-targets` renderizam itens com
+- [x] `GET /api/playlists/{id}` + `GET /{id}/next-targets` renderizam itens com
       `3 × 8–12`, `90 s` e sugestão
-- [ ] Reordenar persiste via `PUT /{id}/order` e sobrevive a recarregar
-- [ ] Adicionar exercício busca em `GET /api/exercises?q=` e envia `POST /{id}/exercises`
-- [ ] Editar alvos via `PATCH`, remover item via `DELETE` com confirmação
-- [ ] Validação espelhada: `targetSets` 1–20, `restSeconds` 0–600, nome ≤ 120
-- [ ] Exercício arquivado aparece marcado, não quebra a tela
-- [ ] Estados: rotina vazia com CTA, erro de conflito, loading
+- [x] Reordenar persiste via `PUT /{id}/order` e sobrevive a recarregar
+- [x] Adicionar exercício busca em `GET /api/exercises?q=` e envia `POST /{id}/exercises`
+- [x] Editar alvos via `PATCH`, remover item via `DELETE` com confirmação
+- [x] Validação espelhada: `targetSets` 1–20, `restSeconds` 0–600, nome ≤ 120
+- [x] Exercício arquivado aparece marcado, não quebra a tela
+- [x] Estados: rotina vazia com CTA, erro de conflito, loading
 
 **Verification:**
 
-- [ ] Build succeeds: `pnpm lint && pnpm typecheck && pnpm build`
+- [x] Build succeeds: `pnpm lint && pnpm typecheck && pnpm build`
 - [ ] Manual: adicionar 3 exercícios, reordenar, recarregar e conferir a ordem
 
 **Dependencies:** Tasks 17

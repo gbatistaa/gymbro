@@ -141,3 +141,252 @@
     justify-content: flex-end;
   }
 }
+
+/* ---------- Editor da rotina ---------- */
+
+.editorScreen {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.backLink {
+  align-self: flex-start;
+  color: var(--color-info);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.backLink:hover {
+  color: color-mix(in srgb, var(--color-info) 78%, white);
+}
+
+.backLink:focus-visible {
+  border-radius: 2px;
+  outline: 2px solid var(--color-info);
+  outline-offset: 2px;
+}
+
+.headerBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.headerTop {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.headerName {
+  margin: 0;
+  min-width: 0;
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.14;
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+
+.headerDescription {
+  margin: 0;
+  max-width: 62ch;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.headerMeta {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.33;
+  color: var(--color-text-muted);
+}
+
+.itemsHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.itemsTitle {
+  flex: 1 1 160px;
+  min-width: 0;
+}
+
+.muted {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-text-muted);
+}
+
+.itemList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--color-rule);
+}
+
+.itemTop {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.itemInfo {
+  display: flex;
+  flex: 1 1 200px;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.itemName {
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.37;
+  overflow-wrap: anywhere;
+}
+
+.archivedTag {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 6px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-chip);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  vertical-align: middle;
+}
+
+.itemTargets {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--color-text-secondary);
+}
+
+.itemSuggestion {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.33;
+  color: var(--color-text-muted);
+}
+
+.itemActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ---------- Formulário de alvos ---------- */
+
+.itemForm {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-panel);
+  background: var(--color-surface);
+}
+
+.itemFormGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.itemFormWide {
+  grid-column: 1 / -1;
+}
+
+/* ---------- Seletor de exercícios ---------- */
+
+.picker {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-panel);
+  background: var(--color-surface);
+}
+
+.pickerForm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.pickerField {
+  flex: 1 1 200px;
+  min-width: 0;
+}
+
+.pickerList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pickerRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-rule);
+}
+
+.pickerInfo {
+  display: flex;
+  flex: 1 1 160px;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.pickerName {
+  font-size: 16px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.pickerMeta {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.33;
+  color: var(--color-text-muted);
+}
+
+@media (min-width: 600px) {
+  .itemActions {
+    flex: none;
+    justify-content: flex-end;
+  }
+}
