@@ -1,4 +1,5 @@
-import type { ComponentPropsWithRef } from "react";
+import Link from "next/link";
+import type { ComponentProps, ComponentPropsWithRef } from "react";
 import styles from "./ui.module.css";
 
 type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
@@ -9,6 +10,11 @@ type ButtonProps = ComponentPropsWithRef<"button"> & {
   isLoading?: boolean;
   /** Rótulo lido por leitor de tela enquanto `isLoading`. */
   loadingLabel?: string;
+};
+
+type ButtonLinkProps = ComponentProps<typeof Link> & {
+  variant?: ButtonVariant;
+  fullWidth?: boolean;
 };
 
 const VARIANT_CLASS: Record<ButtonVariant, string> = {
@@ -50,5 +56,28 @@ export function Button({
       {children}
       {isLoading ? <span className={styles.srOnly}>{loadingLabel}</span> : null}
     </button>
+  );
+}
+
+export function ButtonLink({
+  variant = "primary",
+  fullWidth = false,
+  className,
+  children,
+  ...rest
+}: ButtonLinkProps) {
+  const classes = [
+    styles.button,
+    VARIANT_CLASS[variant],
+    fullWidth ? styles.buttonFullWidth : null,
+    className,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  return (
+    <Link {...rest} className={classes}>
+      {children}
+    </Link>
   );
 }

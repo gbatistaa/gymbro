@@ -79,13 +79,13 @@ substitui** e não toca nos arquivos daquela pasta.
 
 **Checkpoint Fase 2**
 
-- [ ] `cd web && pnpm lint && pnpm typecheck && pnpm build`
+- [x] `cd web && pnpm lint && pnpm typecheck && pnpm build`
 - [ ] `/signup` cria conta com username; `/signin` entra com e-mail e com username
 - [ ] Rota privada sem sessão redireciona para `/signin?next=`; com sessão não mostra flash de conteúdo privado
 
 ### Fase 3 — Início
 
-- [ ] Task 16: Tela Início com dados do dashboard
+- [x] Task 16: Tela Início com dados do dashboard
 
 **Checkpoint Fase 3**
 
@@ -469,8 +469,8 @@ padronizar `loading | error | data | reload` sem repetir 20 linhas por tela.
 **Verification:**
 
 - [x] Build succeeds: `cd web && pnpm lint && pnpm typecheck && pnpm build`
-- [ ] Manual: `GET /api/sessions/active` sem sessão ativa devolve `null` — só verificável quando a
-      tela existir (Task 16)
+- [x] Manual: `GET /api/sessions/active` sem sessão ativa devolve `204` e `requestMaybe` entrega
+      `null` (confirmado contra a API local)
 
 **Dependencies:** Task 10
 **Files likely touched:**
@@ -613,18 +613,18 @@ andamento, próximo treino, números da semana, volume semanal e PRs recentes.
 
 **Acceptance criteria:**
 
-- [ ] `GET /api/sessions/active` e `GET /api/dashboard` consumidos via `useResource`
-- [ ] Bloco de sessão ativa (quando existe) com rotina, tempo decorrido, volume e *Continuar*
-- [ ] Próximo treino com nome da rotina e alvo do primeiro exercício (`next-targets`), CTA *Iniciar*
-- [ ] Faixa de números (sessões, volume, streak, delta de peso) em `DataRow`, não em cards
-- [ ] Mini-barras das últimas 12 semanas sem eixo decorativo
-- [ ] PRs recentes em lista mono com `formatRelative`
-- [ ] Estados: sem rotina (CTA criar), sem dados, erro com retry
-- [ ] Um único CTA primário verde na tela
+- [x] `GET /api/sessions/active` e `GET /api/dashboard` consumidos via `useResource`
+- [x] Bloco de sessão ativa (quando existe) com rotina, tempo decorrido, volume e *Continuar*
+- [x] Próximo treino com nome da rotina e alvo do primeiro exercício (`next-targets`), CTA *Iniciar*
+- [x] Faixa de números (sessões, volume, streak, delta de peso) em `DataRow`, não em cards
+- [x] Mini-barras das últimas 12 semanas sem eixo decorativo
+- [x] PRs recentes em lista mono com `formatRelative`
+- [x] Estados: sem rotina (CTA criar), sem dados, erro com retry
+- [x] Um único CTA primário verde na tela
 
 **Verification:**
 
-- [ ] Build succeeds: `pnpm lint && pnpm typecheck && pnpm build`
+- [x] Build succeeds: `pnpm lint && pnpm typecheck && pnpm build`
 - [ ] Manual: conta nova mostra vazio com ação; conta com histórico mostra os cinco blocos
 
 **Dependencies:** Task 14

@@ -44,13 +44,13 @@ antes de começar a task, não depois.
 
 ## Checkpoint Fase 2
 
-- [ ] `cd web && pnpm lint && pnpm typecheck && pnpm build` (verde após a Task 10)
+- [x] `cd web && pnpm lint && pnpm typecheck && pnpm build` (verde após a Task 10)
 - [ ] Rota privada sem sessão → `/signin?next=`
 - [ ] Sem flash de conteúdo privado durante a validação
 
 ## Fase 3 — Início
 
-- [ ] Task 16: Início com sessão ativa, próximo treino, números da semana, volume e PRs
+- [x] Task 16: Início com sessão ativa, próximo treino, números da semana, volume e PRs
 
 ### Checkpoint Fase 3
 
