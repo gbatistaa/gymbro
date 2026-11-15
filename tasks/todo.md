@@ -58,7 +58,7 @@ antes de começar a task, não depois.
 
 ## Fase 4 — Treinar
 
-- [ ] Task 17: Lista de rotinas com resumo, duplicar, arquivar e iniciar
+- [x] Task 17: Lista de rotinas com resumo, duplicar, arquivar e iniciar
 - [ ] Task 18: Editor de rotina com reordenação, alvos e sugestão de progressão
 
 ### Checkpoint Fase 4

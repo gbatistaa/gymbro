@@ -1,0 +1,143 @@
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.14;
+  letter-spacing: -0.02em;
+}
+
+/* ---------- Nova rotina ---------- */
+
+.newForm {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-panel);
+  background: var(--color-surface);
+}
+
+.formActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* ---------- Barra de ações ---------- */
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.libraryLink,
+.inlineLink {
+  color: var(--color-info);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.libraryLink:hover,
+.inlineLink:hover {
+  color: color-mix(in srgb, var(--color-info) 78%, white);
+}
+
+.libraryLink:focus-visible,
+.inlineLink:focus-visible {
+  border-radius: 2px;
+  outline: 2px solid var(--color-info);
+  outline-offset: 2px;
+}
+
+/* ---------- Lista de rotinas ---------- */
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--color-rule);
+}
+
+.rowMain {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.rowName {
+  color: var(--color-text-primary);
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.37;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.rowName:hover {
+  color: var(--color-accent);
+}
+
+.rowName:focus-visible {
+  border-radius: 2px;
+  outline: 2px solid var(--color-border-strong);
+  outline-offset: 2px;
+}
+
+.rowArchived .rowName {
+  color: var(--color-text-secondary);
+}
+
+.rowMeta {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.33;
+  color: var(--color-text-muted);
+}
+
+.rowActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+@media (min-width: 600px) {
+  .row {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .rowActions {
+    flex: none;
+    justify-content: flex-end;
+  }
+}

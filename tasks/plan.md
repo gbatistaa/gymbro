@@ -94,7 +94,7 @@ substitui** e não toca nos arquivos daquela pasta.
 
 ### Fase 4 — Treinar
 
-- [ ] Task 17: Lista de rotinas
+- [x] Task 17: Lista de rotinas
 - [ ] Task 18: Editor de rotina
 
 **Checkpoint Fase 4**
@@ -643,16 +643,16 @@ andamento, próximo treino, números da semana, volume semanal e PRs recentes.
 
 **Acceptance criteria:**
 
-- [ ] `GET /api/playlists?includeArchived=` com contagem e última execução (Task 6)
-- [ ] Ações: iniciar, duplicar, arquivar (com confirmação), toggle de arquivadas
-- [ ] *Nova rotina* cria via `POST` e abre o editor
-- [ ] `409 SESSION_ALREADY_ACTIVE` ao iniciar é tratado: oferece *Continuar sessão ativa*
-- [ ] Estados: lista vazia, erro, loading
-- [ ] Atalho para biblioteca de exercícios com rótulo visível
+- [x] `GET /api/playlists?includeArchived=` com contagem e última execução (Task 6)
+- [x] Ações: iniciar, duplicar, arquivar (com confirmação), toggle de arquivadas
+- [x] *Nova rotina* cria via `POST` e abre o editor
+- [x] `409 SESSION_ALREADY_ACTIVE` ao iniciar é tratado: oferece *Continuar sessão ativa*
+- [x] Estados: lista vazia, erro, loading
+- [x] Atalho para biblioteca de exercícios com rótulo visível
 
 **Verification:**
 
-- [ ] Build succeeds: `pnpm lint && pnpm typecheck && pnpm build`
+- [x] Build succeeds: `pnpm lint && pnpm typecheck && pnpm build`
 - [ ] Manual: criar rotina vazia, duplicar, arquivar e reexibir
 
 **Dependencies:** Task 14
