@@ -39,7 +39,7 @@ antes de começar a task, não depois.
 - [x] Task 11: `requestMaybe` em `lib/http.ts` + `useResource`
 - [x] Task 12: `lib/format.ts` (kg, %, data no fuso, duração, relativo)
 - [x] Task 13: Primitivos em `components/ui/` (SectionLabel, DataRow, Button, Field, EmptyState, ErrorState, Skeleton, Notice, ConfirmDialog)
-- [ ] Task 14: Casca `(app)`, barra inferior, guard de sessão; remover `app/page.tsx`
+- [x] Task 14: Casca `(app)`, barra inferior, guard de sessão; remover `app/page.tsx`
 - [ ] Task 15: Signin por identificador e signup com username
 
 ## Checkpoint Fase 2

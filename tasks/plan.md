@@ -74,7 +74,7 @@ substitui** e não toca nos arquivos daquela pasta.
 - [x] Task 11: `requestMaybe` + `useResource`
 - [x] Task 12: `lib/format.ts` (PT-BR, kg, duração, datas relativas)
 - [x] Task 13: Primitivos em `components/ui/`
-- [ ] Task 14: Casca autenticada, barra inferior e guard de sessão
+- [x] Task 14: Casca autenticada, barra inferior e guard de sessão
 - [ ] Task 15: Atualizar signin/signup para username e identificador
 
 **Checkpoint Fase 2**
@@ -548,21 +548,21 @@ entre as quatro abas e reserva espaço para a barra inferior.
 
 **Acceptance criteria:**
 
-- [ ] `web/src/app/(app)/layout.tsx` com shell; `web/src/app/page.tsx` placeholder **removido**
-- [ ] Guard chama `GET /api/users/me` ao montar; enquanto pendente mostra carregamento neutro, sem
+- [x] `web/src/app/(app)/layout.tsx` com shell; `web/src/app/page.tsx` placeholder **removido**
+- [x] Guard chama `GET /api/users/me` ao montar; enquanto pendente mostra carregamento neutro, sem
       conteúdo privado
-- [ ] Falha na validação → `/signin?next=<rota atual>` e `sessionAtom` limpo
-- [ ] `sessionAtom` reidratado com o usuário validado; formato antigo `{ tokens, user }` é descartado
-- [ ] Barra inferior: Início, Treinar, Progresso, Perfil; ícone + rótulo; `aria-current="page"`;
+- [x] Falha na validação → `/signin?next=<rota atual>` e `sessionAtom` limpo
+- [x] `sessionAtom` reidratado com o usuário validado; formato antigo `{ tokens, user }` é descartado
+- [x] Barra inferior: Início, Treinar, Progresso, Perfil; ícone + rótulo; `aria-current="page"`;
       alvo ≥48×48; `padding-bottom: env(safe-area-inset-bottom)`
-- [ ] Conteúdo tem `padding-bottom` suficiente para a barra; `position: fixed` no topo usa
+- [x] Conteúdo tem `padding-bottom` suficiente para a barra; `position: fixed` no topo usa
       `top: var(--safe-area-top)`
-- [ ] Em ≥768px a navegação vira barra lateral sem perder destinos nem rótulos
-- [ ] Deep link e recarregamento preservam a rota
+- [x] Em ≥768px a navegação vira barra lateral sem perder destinos nem rótulos
+- [x] Deep link e recarregamento preservam a rota
 
 **Verification:**
 
-- [ ] Build succeeds: `pnpm lint && pnpm typecheck && pnpm build`
+- [x] Build succeeds: `pnpm lint && pnpm typecheck && pnpm build`
 - [ ] Manual: abrir `/train` sem sessão → `/signin?next=/train`; após login volta a `/train`
 - [ ] Manual: 320px sem rolagem horizontal; barra não encobre conteúdo
 
