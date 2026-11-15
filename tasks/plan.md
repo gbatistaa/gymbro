@@ -75,7 +75,7 @@ substitui** e não toca nos arquivos daquela pasta.
 - [x] Task 12: `lib/format.ts` (PT-BR, kg, duração, datas relativas)
 - [x] Task 13: Primitivos em `components/ui/`
 - [x] Task 14: Casca autenticada, barra inferior e guard de sessão
-- [ ] Task 15: Atualizar signin/signup para username e identificador
+- [x] Task 15: Atualizar signin/signup para username e identificador
 
 **Checkpoint Fase 2**
 
@@ -585,15 +585,15 @@ username.
 
 **Acceptance criteria:**
 
-- [ ] Signin: label "E-mail ou usuário", `type="text"`, `autoComplete="username"`
-- [ ] Signup: campo username com dica de formato e mensagem PT-BR
-- [ ] Erro de username duplicado aparece no campo, não só como aviso geral
-- [ ] `?next=` continua preservado ao alternar entre as telas
-- [ ] Nenhum token no `localStorage`; `sessionAtom` segue só com `{ user }`
+- [x] Signin: label "E-mail ou usuário", `type="text"`, `autoComplete="username"`
+- [x] Signup: campo username com dica de formato e mensagem PT-BR
+- [x] Erro de username duplicado aparece no campo, não só como aviso geral
+- [x] `?next=` continua preservado ao alternar entre as telas
+- [x] Nenhum token no `localStorage`; `sessionAtom` segue só com `{ user }`
 
 **Verification:**
 
-- [ ] Build succeeds: `pnpm lint && pnpm typecheck && pnpm build`
+- [x] Build succeeds: `pnpm lint && pnpm typecheck && pnpm build`
 - [ ] Manual: login por e-mail e por username; cadastro com username repetido mostra erro no campo
 
 **Dependencies:** Tasks 10, 14

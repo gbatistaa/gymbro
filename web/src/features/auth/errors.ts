@@ -34,6 +34,12 @@ const CODE_MESSAGES: Record<string, string> = {
   BAD_REQUEST: "Dados inválidos. Verifique os campos.",
 };
 
+/** No conflito, o campo precisa dizer o que já está em uso — não só "verifique". */
+const CONFLICT_FIELD_MESSAGES: Partial<Record<AuthField, string>> = {
+  username: "Este usuário já está em uso.",
+  email: "Este e-mail já está cadastrado.",
+};
+
 export function toFieldErrors(error: ZodError): FieldErrors {
   const fields: FieldErrors = {};
 
@@ -68,9 +74,13 @@ export function describeAuthError(error: unknown): {
   }
 
   const fields: FieldErrors = {};
+  const isConflict = parsed.data.code === "RESOURCE_ALREADY_EXISTS";
+
   for (const item of parsed.data.errors) {
     if (isAuthField(item.field)) {
-      fields[item.field] = FIELD_MESSAGES[item.field];
+      fields[item.field] = isConflict
+        ? (CONFLICT_FIELD_MESSAGES[item.field] ?? FIELD_MESSAGES[item.field])
+        : FIELD_MESSAGES[item.field];
     }
   }
 

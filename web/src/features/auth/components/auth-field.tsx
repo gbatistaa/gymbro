@@ -31,6 +31,11 @@ export function AuthField({
   const isPassword = type === "password";
   const inputType = isPassword && isVisible ? "text" : type;
   const errorId = `${id}-error`;
+  const hintId = hint ? `${id}-hint` : undefined;
+  const describedBy = [hintId, error ? errorId : undefined]
+    .filter(Boolean)
+    .join(" ");
+  const isHandle = name === "username" || name === "identifier";
 
   return (
     <div className={styles.field}>
@@ -38,7 +43,11 @@ export function AuthField({
         <label className={styles.label} htmlFor={id}>
           {label}
         </label>
-        {hint ? <span className={styles.hint}>{hint}</span> : null}
+        {hint ? (
+          <span id={hintId} className={styles.hint}>
+            {hint}
+          </span>
+        ) : null}
       </div>
 
       <div className={styles.inputShell}>
@@ -51,8 +60,10 @@ export function AuthField({
           required
           value={value}
           onChange={(event) => onChange(event.target.value)}
+          spellCheck={type !== "email" && !isHandle}
+          autoCapitalize={isHandle ? "none" : undefined}
           aria-invalid={error ? true : undefined}
-          aria-describedby={error ? errorId : undefined}
+          aria-describedby={describedBy || undefined}
         />
 
         {isPassword ? (
