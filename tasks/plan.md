@@ -73,7 +73,7 @@ substitui** e não toca nos arquivos daquela pasta.
 - [x] Task 10: Contratos Zod dos domínios
 - [x] Task 11: `requestMaybe` + `useResource`
 - [x] Task 12: `lib/format.ts` (PT-BR, kg, duração, datas relativas)
-- [ ] Task 13: Primitivos em `components/ui/`
+- [x] Task 13: Primitivos em `components/ui/`
 - [ ] Task 14: Casca autenticada, barra inferior e guard de sessão
 - [ ] Task 15: Atualizar signin/signup para username e identificador
 
@@ -517,19 +517,19 @@ dado e botão com estilos divergentes.
 
 **Acceptance criteria:**
 
-- [ ] `SectionLabel` (mono, caixa alta, régua até a borda do conteúdo)
-- [ ] `DataRow` (linha com valor mono alinhado à direita, régua, gutter de anotação)
-- [ ] `Button` com variantes `primary` (verde/`onAccent`), `secondary` (`raised`), `ghost`,
+- [x] `SectionLabel` (mono, caixa alta, régua até a borda do conteúdo)
+- [x] `DataRow` (linha com valor mono alinhado à direita, régua, gutter de anotação)
+- [x] `Button` com variantes `primary` (verde/`onAccent`), `secondary` (`raised`), `ghost`,
       `danger`; altura mínima 48px, foco visível, `aria-busy` quando carregando
-- [ ] `Field` com label persistente, erro associado por `aria-describedby`, `aria-invalid`
-- [ ] `EmptyState`, `ErrorState` (com `retry`), `Skeleton`, `Notice` (info/erro/sucesso)
-- [ ] `ConfirmDialog` para ações destrutivas, com foco inicial no cancelar e `Esc` fechando
-- [ ] Nenhuma cor literal: só tokens de `globals.css`
-- [ ] Estados de hover/pressed/focus/disabled/loading implementados nos componentes interativos
+- [x] `Field` com label persistente, erro associado por `aria-describedby`, `aria-invalid`
+- [x] `EmptyState`, `ErrorState` (com `retry`), `Skeleton`, `Notice` (info/erro/sucesso)
+- [x] `ConfirmDialog` para ações destrutivas, com foco inicial no cancelar e `Esc` fechando
+- [x] Nenhuma cor literal: só tokens de `globals.css`
+- [x] Estados de hover/pressed/focus/disabled/loading implementados nos componentes interativos
 
 **Verification:**
 
-- [ ] Build succeeds: `pnpm lint && pnpm typecheck && pnpm build`
+- [x] Build succeeds: `pnpm lint && pnpm typecheck && pnpm build`
 - [ ] Manual: Tab percorre todos os controles; foco visível; contraste conferido nos pares reais
 
 **Dependencies:** Task 12

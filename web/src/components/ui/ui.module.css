@@ -1,0 +1,427 @@
+/* ---------- SectionLabel ---------- */
+
+.sectionLabel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+}
+
+.sectionLabel::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--color-rule);
+}
+
+.sectionLabelText {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.33;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+/* ---------- DataRow ---------- */
+
+.dataRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(5.5rem, auto);
+  align-items: baseline;
+  gap: 12px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--color-rule);
+}
+
+.dataRowWithAnnotation {
+  grid-template-columns: minmax(0, 1fr) auto minmax(5.5rem, auto);
+}
+
+.dataRowLabel {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dataRowAnnotation {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.33;
+  color: var(--color-text-muted);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.dataRowValue {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.5;
+  letter-spacing: -0.02em;
+  color: var(--color-text-primary);
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* ---------- Button ---------- */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: var(--tap-target-min);
+  padding: 12px 20px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.5;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color 120ms ease-out,
+    border-color 120ms ease-out,
+    color 120ms ease-out,
+    transform 120ms ease-out;
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--color-border-strong);
+  outline-offset: 2px;
+}
+
+.button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.button:disabled {
+  border-color: var(--color-border);
+  background: var(--color-raised);
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
+.buttonFullWidth {
+  width: 100%;
+}
+
+.buttonPrimary {
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+.buttonPrimary:hover:not(:disabled) {
+  background: var(--color-accent-pressed);
+}
+
+.buttonSecondary {
+  border-color: var(--color-border);
+  background: var(--color-raised);
+  color: var(--color-text-primary);
+}
+
+.buttonSecondary:hover:not(:disabled) {
+  border-color: var(--color-border-strong);
+}
+
+.buttonGhost {
+  background: transparent;
+  color: var(--color-text-secondary);
+}
+
+.buttonGhost:hover:not(:disabled) {
+  background: var(--color-raised);
+  color: var(--color-text-primary);
+}
+
+.buttonDanger {
+  background: var(--color-danger);
+  color: var(--color-on-accent);
+}
+
+.buttonDanger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-danger) 84%, var(--color-canvas));
+}
+
+.buttonSpinner {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 999px;
+  animation: spin 700ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------- Field ---------- */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.labelRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.label {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.43;
+  color: var(--color-text-primary);
+}
+
+.hint {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--color-text-muted);
+}
+
+.input {
+  width: 100%;
+  min-height: var(--tap-target-min);
+  padding: 12px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-raised);
+  color: var(--color-text-primary);
+  font-size: 16px;
+  line-height: 1.5;
+  outline: none;
+  touch-action: manipulation;
+  transition:
+    border-color 120ms ease-out,
+    box-shadow 120ms ease-out;
+}
+
+.input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.input:hover {
+  border-color: var(--color-border-strong);
+}
+
+.input:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 22%, transparent);
+}
+
+.input[aria-invalid="true"] {
+  border-color: var(--color-danger);
+}
+
+.input[aria-invalid="true"]:focus {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-danger) 22%, transparent);
+}
+
+.input:disabled {
+  border-color: var(--color-border);
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
+.error {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--color-danger);
+}
+
+/* ---------- EmptyState / ErrorState ---------- */
+
+.state {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 32px 0;
+}
+
+.stateIcon {
+  color: var(--color-text-muted);
+}
+
+.stateTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--color-text-primary);
+}
+
+.stateText {
+  margin: 0;
+  max-width: 46ch;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+}
+
+.stateAction {
+  margin-top: 8px;
+}
+
+.stateError .stateTitle {
+  color: var(--color-danger);
+}
+
+/* ---------- Skeleton ---------- */
+
+.skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.skeletonLine {
+  height: 16px;
+  border-radius: var(--radius-chip);
+  background: var(--color-raised);
+  animation: pulse 1200ms ease-in-out infinite;
+}
+
+.skeletonLine:nth-child(even) {
+  width: 72%;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+/* ---------- Notice ---------- */
+
+.notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid;
+  border-radius: var(--radius-control);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.notice svg {
+  flex: none;
+  margin-top: 1px;
+}
+
+.notice p {
+  margin: 0;
+}
+
+.noticeInfo {
+  border-color: color-mix(in srgb, var(--color-info) 32%, transparent);
+  background: var(--color-info-tint);
+  color: var(--color-text-secondary);
+}
+
+.noticeInfo svg {
+  color: var(--color-info);
+}
+
+.noticeError {
+  border-color: color-mix(in srgb, var(--color-danger) 32%, transparent);
+  background: color-mix(in srgb, var(--color-danger) 8%, transparent);
+  color: var(--color-danger);
+}
+
+.noticeSuccess {
+  border-color: color-mix(in srgb, var(--color-accent) 32%, transparent);
+  background: var(--color-accent-tint);
+  color: var(--color-text-secondary);
+}
+
+.noticeSuccess svg {
+  color: var(--color-accent);
+}
+
+/* ---------- ConfirmDialog ---------- */
+
+.dialog {
+  width: min(100% - 40px, 420px);
+  padding: 20px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-modal);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  overscroll-behavior: contain;
+}
+
+.dialog::backdrop {
+  background: color-mix(in srgb, var(--color-canvas) 78%, transparent);
+}
+
+.dialogTitle {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.37;
+}
+
+.dialogText {
+  margin: 8px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+}
+
+.dialogActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+@media (max-width: 359px) {
+  .dialogActions {
+    flex-direction: column-reverse;
+  }
+
+  .dialogActions button {
+    width: 100%;
+  }
+}
+
+/* ---------- Utilities ---------- */
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
