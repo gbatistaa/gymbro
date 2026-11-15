@@ -1,11 +1,9 @@
 import type { ReactNode } from "react";
-import { AppShell } from "@/features/shell/app-shell";
-import { SessionGuard } from "@/features/shell/session-guard";
+import { AppFrame } from "@/components/shell/app-frame";
+import { HOME_MOCK_DATA } from "@/lib/mock-data";
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   return (
-    <SessionGuard>
-      <AppShell>{children}</AppShell>
-    </SessionGuard>
+    <AppFrame userInitials={HOME_MOCK_DATA.userInitials}>{children}</AppFrame>
   );
 }

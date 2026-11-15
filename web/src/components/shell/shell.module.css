@@ -1,0 +1,190 @@
+.shell {
+  min-height: 100dvh;
+  background-color: var(--bg);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+}
+
+.skipLink {
+  position: fixed;
+  z-index: 40;
+  top: calc(var(--space-2) + env(safe-area-inset-top));
+  left: var(--page-gutter);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-btn);
+  background-color: var(--primary);
+  color: var(--bg);
+  font-weight: 600;
+  text-decoration: none;
+  transform: translateY(-200%);
+}
+
+.skipLink:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+  transform: none;
+}
+
+/* ---------- Header Fixo ---------- */
+
+.topBar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 30;
+  background-color: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding-top: env(safe-area-inset-top);
+}
+
+.topBarInner {
+  max-width: var(--content-max);
+  margin: 0 auto;
+  min-height: calc(var(--tap-min) + var(--space-3));
+  padding: var(--space-2) var(--page-gutter);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brandGroup {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  text-decoration: none;
+  color: var(--text);
+  min-height: var(--tap-min);
+}
+
+.brandMark {
+  width: var(--space-6);
+  height: var(--space-6);
+  border-radius: var(--radius-btn);
+  background-color: var(--surface-2);
+  border: 1px solid var(--border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+}
+
+.brandWordmark {
+  font-family: var(--font-sans);
+  font-size: var(--space-4);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.topActions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.iconButton {
+  min-width: var(--tap-min);
+  min-height: var(--tap-min);
+  border-radius: var(--radius-btn);
+  border: 1px solid transparent;
+  background-color: transparent;
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.iconButton:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.avatarBadge {
+  min-width: var(--tap-min);
+  min-height: var(--tap-min);
+  padding: var(--space-1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.avatarCircle {
+  width: var(--space-6);
+  height: var(--space-6);
+  border-radius: var(--radius-card);
+  background-color: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: var(--space-3);
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ---------- Área de Conteúdo ---------- */
+
+.main {
+  flex: 1;
+  width: 100%;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding-top: calc(var(--tap-min) + var(--space-5) + env(safe-area-inset-top));
+  padding-right: var(--page-gutter);
+  padding-bottom: calc(var(--tap-min) + var(--space-6) + var(--space-5) + env(safe-area-inset-bottom));
+  padding-left: var(--page-gutter);
+}
+
+/* ---------- Barra Inferior ---------- */
+
+.bottomNav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  background-color: var(--surface);
+  border-top: 1px solid var(--border);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.bottomNavList {
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: var(--space-1) var(--space-2);
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.bottomNavItem {
+  min-height: calc(var(--tap-min) + var(--space-3));
+  padding: var(--space-1) var(--space-1);
+  border-radius: var(--radius-btn);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  color: var(--muted);
+  text-decoration: none;
+  font-family: var(--font-sans);
+  font-size: var(--space-3);
+  font-weight: 400;
+  line-height: 1.33;
+}
+
+.bottomNavItem:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+}
+
+.bottomNavItemActive {
+  color: var(--primary);
+  font-weight: 500;
+}

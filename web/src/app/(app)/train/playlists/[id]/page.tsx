@@ -7,6 +7,8 @@ export const metadata: Metadata = {
   title: "Rotina",
 };
 
+export const instant = false;
+
 type PlaylistPageProps = {
   params: Promise<{ id: string }>;
 };

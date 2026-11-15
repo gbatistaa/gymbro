@@ -1,0 +1,531 @@
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* ---------- 1. Sessão em andamento ---------- */
+
+.activeCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.telemetryHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.telemetryStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--space-3);
+  font-weight: 500;
+  color: var(--primary);
+}
+
+.liveDot {
+  width: var(--space-2);
+  height: var(--space-2);
+  border-radius: var(--radius-card);
+  background-color: var(--primary);
+}
+
+.telemetryTimer {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-family: var(--font-mono);
+  font-size: var(--space-3);
+  font-weight: 500;
+  color: var(--text);
+}
+
+.telemetryTimerIcon {
+  color: var(--primary);
+  display: inline-flex;
+  align-items: center;
+}
+
+.routineMetaBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.routineHeaderRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.routineTitleGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.routineTitle {
+  margin: 0;
+  font-size: var(--space-4);
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.routineSubtitle {
+  margin: 0;
+  font-size: var(--space-3);
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.progressTrack {
+  width: 100%;
+  height: var(--space-2);
+  border-radius: var(--radius-btn);
+  background-color: var(--surface-2);
+  overflow: hidden;
+}
+
+.progressFill {
+  width: 50%;
+  height: 100%;
+  border-radius: var(--radius-btn);
+  background-color: var(--primary);
+}
+
+.cumulativeVolumeRow {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+}
+
+.volumeLabel {
+  font-size: var(--space-3);
+  color: var(--muted);
+}
+
+.volumeNumber {
+  font-size: var(--space-4);
+  font-weight: 600;
+  color: var(--text);
+}
+
+.volumeUnit {
+  font-size: var(--space-3);
+  color: var(--muted);
+}
+
+/* ---------- 2. Próximo treino ---------- */
+
+.nextWorkoutCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.targetPreviewBox {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background-color: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-btn);
+}
+
+.targetExerciseLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.targetIcon {
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+}
+
+.targetExerciseText {
+  margin: 0;
+  font-size: var(--space-3);
+  line-height: 1.5;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.targetExerciseName {
+  font-weight: 500;
+  color: var(--text);
+}
+
+.targetExerciseSep {
+  margin: 0 var(--space-1);
+  color: var(--muted);
+}
+
+.targetExerciseLoad {
+  font-family: var(--font-mono);
+  color: var(--muted);
+}
+
+/* ---------- 3. Números da semana ---------- */
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.statCard {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-4);
+}
+
+.statHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.statLabel {
+  font-size: var(--space-3);
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.statTrend {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-family: var(--font-mono);
+  font-size: var(--space-3);
+  font-weight: 500;
+  color: var(--primary);
+  white-space: nowrap;
+}
+
+.statValueRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.statNumberGroup {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-1);
+}
+
+.statValue {
+  font-family: var(--font-mono);
+  font-size: var(--space-5);
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--text);
+}
+
+.statUnit {
+  font-family: var(--font-mono);
+  font-size: var(--space-3);
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.sparkline {
+  width: calc(var(--space-6) + var(--space-5));
+  height: var(--space-5);
+  color: var(--primary);
+  display: inline-flex;
+  align-items: center;
+}
+
+.statFooter {
+  margin: 0;
+  font-size: var(--space-3);
+  line-height: 1.33;
+  color: var(--muted);
+}
+
+/* ---------- 4. Volume 12 semanas ---------- */
+
+.chartCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.chartTopRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.chartTitle {
+  margin: 0;
+  font-size: var(--space-3);
+  font-weight: 500;
+  color: var(--text);
+}
+
+.chartAverage {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--space-3);
+  color: var(--muted);
+}
+
+.chartAverageStrong {
+  font-weight: 500;
+  color: var(--text);
+}
+
+.chartCanvas {
+  position: relative;
+  height: calc(var(--space-6) * 5);
+  padding-top: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.benchmarkLine {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--space-6) + var(--space-5));
+  border-bottom: 1px dashed var(--border);
+  display: flex;
+  justify-content: flex-start;
+  z-index: 2;
+}
+
+.benchmarkTag {
+  transform: translateY(-100%);
+  padding: 0 var(--space-1);
+  background-color: var(--surface);
+  font-family: var(--font-mono);
+  font-size: var(--space-3);
+  color: var(--muted);
+}
+
+.barsRow {
+  height: calc(var(--space-6) * 4 + var(--space-2));
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  align-items: end;
+  gap: var(--space-1);
+}
+
+.barColumn {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-1);
+}
+
+.barTopTag {
+  font-family: var(--font-mono);
+  font-size: var(--space-3);
+  font-weight: 500;
+  color: var(--primary);
+}
+
+.barFill {
+  width: 100%;
+  border-radius: var(--space-1) var(--space-1) 0 0;
+  background-color: var(--surface-2);
+}
+
+.barFillDeload {
+  background-color: var(--bg);
+  border: 1px dashed var(--border);
+}
+
+.barFillCurrent {
+  background-color: var(--primary);
+}
+
+.barH38 {
+  height: 38%;
+}
+
+.barH42 {
+  height: 42%;
+}
+
+.barH52 {
+  height: 52%;
+}
+
+.barH54 {
+  height: 54%;
+}
+
+.barH58 {
+  height: 58%;
+}
+
+.barH64 {
+  height: 64%;
+}
+
+.barH68 {
+  height: 68%;
+}
+
+.barH72 {
+  height: 72%;
+}
+
+.barH76 {
+  height: 76%;
+}
+
+.barH77 {
+  height: 77%;
+}
+
+.barH79 {
+  height: 79%;
+}
+
+.barH82 {
+  height: 82%;
+}
+
+.chartLegend {
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--space-3);
+  color: var(--muted);
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.legendDot {
+  width: var(--space-2);
+  height: var(--space-2);
+  border-radius: var(--radius-card);
+  background-color: var(--border);
+}
+
+.legendCurrent {
+  color: var(--primary);
+  font-weight: 500;
+}
+
+/* ---------- 5. Recordes recentes (PRs) ---------- */
+
+.prsCard {
+  padding: 0;
+  overflow: hidden;
+}
+
+.prsList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.prItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+
+.prItem + .prItem {
+  border-top: 1px solid var(--border);
+}
+
+.prLeft {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.prTitleRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: nowrap;
+}
+
+.prExerciseName {
+  font-size: var(--space-3);
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.prMetaRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--space-3);
+  color: var(--muted);
+}
+
+.prMetaStrong {
+  color: var(--text);
+}
+
+.prRight {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-1);
+  font-family: var(--font-mono);
+  white-space: nowrap;
+}
+
+.prWeight {
+  font-size: var(--space-4);
+  font-weight: 600;
+  color: var(--text);
+}
+
+.prReps {
+  font-size: var(--space-3);
+  color: var(--muted);
+}

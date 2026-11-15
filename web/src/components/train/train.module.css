@@ -1,0 +1,372 @@
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* ---------- Topo da tela ---------- */
+
+.topRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.titleGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.screenTitle {
+  margin: 0;
+  font-size: var(--space-4);
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.screenSubtitle {
+  margin: 0;
+  font-size: var(--space-3);
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+/* ---------- Ferramentas rápidas ---------- */
+
+.quickToolsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.libraryPill {
+  min-height: var(--tap-min);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-card);
+  border: 1px solid var(--border);
+  background-color: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  text-decoration: none;
+  color: var(--text);
+}
+
+.libraryLeft {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.libraryIconBox {
+  width: var(--space-6);
+  height: var(--space-6);
+  border-radius: var(--radius-btn);
+  background-color: var(--surface-2);
+  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.libraryName {
+  font-size: var(--space-3);
+  font-weight: 500;
+  color: var(--text);
+}
+
+.libraryCount {
+  font-family: var(--font-mono);
+  font-size: var(--space-3);
+  color: var(--muted);
+}
+
+.segmentedControl {
+  min-height: var(--tap-min);
+  padding: var(--space-1);
+  border-radius: var(--radius-card);
+  border: 1px solid var(--border);
+  background-color: var(--surface);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-1);
+}
+
+.segmentButton {
+  min-height: calc(var(--tap-min) - var(--space-2));
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-btn);
+  border: 1px solid transparent;
+  background-color: transparent;
+  color: var(--muted);
+  font-size: var(--space-3);
+  font-weight: 500;
+  text-align: center;
+  cursor: pointer;
+}
+
+.segmentButtonActive {
+  background-color: var(--surface-2);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+/* ---------- Banner de aderência ---------- */
+
+.adherenceBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+}
+
+.adherenceLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.adherenceIconBox {
+  width: var(--space-6);
+  height: var(--space-6);
+  border-radius: var(--radius-btn);
+  background-color: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.adherenceTextGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.adherenceTitle {
+  margin: 0;
+  font-size: var(--space-3);
+  font-weight: 600;
+  color: var(--text);
+}
+
+.adherenceSubtitle {
+  margin: 0;
+  font-size: var(--space-3);
+  color: var(--muted);
+}
+
+.adherenceRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-1);
+  white-space: nowrap;
+}
+
+.adherenceRatio {
+  font-family: var(--font-mono);
+  font-size: var(--space-3);
+  font-weight: 600;
+  color: var(--text);
+}
+
+.adherenceUnit {
+  font-size: var(--space-3);
+  color: var(--muted);
+}
+
+/* ---------- Lista de rotinas ---------- */
+
+.routineList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.routineCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.routineTopRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.routineHeaderLeft {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.routineBadgeRow {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+}
+
+.lastPerformed {
+  margin: 0;
+  font-size: var(--space-3);
+  color: var(--muted);
+}
+
+.routineTitle {
+  margin: 0;
+  font-size: var(--space-4);
+  font-weight: 600;
+  color: var(--text);
+}
+
+.optionsButton {
+  min-width: var(--tap-min);
+  min-height: var(--tap-min);
+  border-radius: var(--radius-btn);
+  border: 1px solid transparent;
+  background-color: transparent;
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.optionsButton:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.ledgerRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--space-3);
+  color: var(--muted);
+}
+
+.ledgerDot {
+  color: var(--border);
+}
+
+.exerciseRowsBox {
+  background-color: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-btn);
+  padding: 0 var(--space-3);
+  margin: 0;
+  list-style: none;
+}
+
+.exerciseRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-3) 0;
+  font-size: var(--space-3);
+}
+
+.exerciseRow + .exerciseRow {
+  border-top: 1px solid var(--border);
+}
+
+.exerciseName {
+  color: var(--text);
+  font-weight: 400;
+}
+
+.exercisePrescription {
+  font-family: var(--font-mono);
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.routineActionsRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.editRoutineButton {
+  min-width: var(--tap-min);
+  min-height: var(--tap-min);
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-btn);
+  border: 1px solid var(--border);
+  background-color: var(--surface-2);
+  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.editRoutineButton:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* ---------- Busca rápida ---------- */
+
+.searchBar {
+  min-height: var(--tap-min);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-card);
+  border: 1px solid var(--border);
+  background-color: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.searchLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 1;
+  min-width: 0;
+}
+
+.searchIcon {
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+}
+
+.searchInput {
+  width: 100%;
+  border: 0;
+  background-color: transparent;
+  color: var(--text);
+  font-size: var(--space-3);
+  outline: none;
+}
+
+.searchInput::placeholder {
+  color: var(--muted);
+}
+
+.shortcutTag {
+  font-family: var(--font-mono);
+  font-size: var(--space-3);
+  color: var(--muted);
+}
