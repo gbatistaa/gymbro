@@ -5,17 +5,16 @@ import { TopBar } from "./top-bar";
 
 type AppFrameProps = {
   children: ReactNode;
-  userInitials?: string;
 };
 
-export function AppFrame({ children, userInitials = "FL" }: AppFrameProps) {
+export function AppFrame({ children }: AppFrameProps) {
   return (
     <div className={`${styles.shell} bg-bg text-text`}>
       <a className={styles.skipLink} href="#conteudo">
         Pular para o conteúdo
       </a>
 
-      <TopBar userInitials={userInitials} />
+      <TopBar />
 
       <main id="conteudo" className={styles.main} tabIndex={-1}>
         {children}

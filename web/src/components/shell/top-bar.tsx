@@ -1,12 +1,27 @@
+"use client";
+
 import { Bell, Dumbbell } from "lucide-react";
+import { useAtomValue } from "jotai";
 import Link from "next/link";
+import { sessionAtom } from "@/stores/session";
 import styles from "./shell.module.css";
 
-type TopBarProps = {
-  userInitials?: string;
-};
+/** Iniciais do nome para o avatar, ex.: "Gabriel Batista" → "GB". */
+function initialsOf(name: string | undefined): string {
+  const initials = (name ?? "")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part.charAt(0).toUpperCase())
+    .join("");
 
-export function TopBar({ userInitials = "FL" }: TopBarProps) {
+  return initials || "?";
+}
+
+export function TopBar() {
+  const userInitials = initialsOf(useAtomValue(sessionAtom)?.user.name);
+
   return (
     <header className={`${styles.topBar} bg-surface border-token`}>
       <div className={styles.topBarInner}>
@@ -29,7 +44,7 @@ export function TopBar({ userInitials = "FL" }: TopBarProps) {
           <Link
             href="/profile"
             className={styles.avatarBadge}
-            aria-label={`Perfil de ${userInitials}`}
+            aria-label="Perfil"
           >
             <span className={`${styles.avatarCircle} bg-surface-2 border-token text-text`}>
               {userInitials}

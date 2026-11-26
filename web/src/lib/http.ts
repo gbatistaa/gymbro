@@ -100,7 +100,7 @@ export async function request<T>(
 
 /**
  * Igual a `request`, mas aceita ausência de corpo: `204` é resposta válida, não erro.
- * Ex.: `GET /api/sessions/active` devolve `204` quando não há sessão em andamento.
+ * Ex.: uma remoção que responde `204` sem corpo.
  */
 export async function requestMaybe<T>(
   config: AxiosRequestConfig,

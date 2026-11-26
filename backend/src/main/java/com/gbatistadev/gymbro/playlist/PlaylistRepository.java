@@ -1,7 +1,6 @@
 package com.gbatistadev.gymbro.playlist;
 
 import com.gbatistadev.gymbro.playlist.dto.PlaylistSummaryDto;
-import com.gbatistadev.gymbro.workout_session.SessionStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -20,11 +19,10 @@ public interface PlaylistRepository extends JpaRepository<Playlist, UUID>, JpaSp
     @Query("""
         SELECT new com.gbatistadev.gymbro.playlist.dto.PlaylistSummaryDto(
             p.id, p.name, p.description, p.archivedAt,
-            COUNT(DISTINCT item.id), MAX(session.startedAt))
+            COUNT(DISTINCT item.id), MAX(completion.completedAt))
         FROM Playlist p
         LEFT JOIN PlaylistExercise item ON item.playlist = p
-        LEFT JOIN WorkoutSession session
-            ON session.playlist = p AND session.status = :finishedStatus
+        LEFT JOIN WorkoutCompletion completion ON completion.playlist = p
         WHERE p.userId = :userId
           AND (:includeArchived = true OR p.archivedAt IS NULL)
         GROUP BY p.id, p.name, p.description, p.archivedAt
@@ -32,6 +30,5 @@ public interface PlaylistRepository extends JpaRepository<Playlist, UUID>, JpaSp
         """)
     List<PlaylistSummaryDto> findSummariesByUserId(
         @Param("userId") UUID userId,
-        @Param("includeArchived") boolean includeArchived,
-        @Param("finishedStatus") SessionStatus finishedStatus);
+        @Param("includeArchived") boolean includeArchived);
 }

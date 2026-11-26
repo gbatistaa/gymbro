@@ -1,6 +1,5 @@
 "use client";
 
-import axios from "axios";
 import { useAtomValue } from "jotai";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -13,14 +12,14 @@ import { Notice } from "@/components/ui/notice";
 import { SectionLabel } from "@/components/ui/section-label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { playlistSchema, playlistSummarySchema, type PlaylistSummary } from "@/contracts/playlist";
-import { sessionSchema } from "@/contracts/session";
 import { describeApiError } from "@/lib/api-error-text";
 import { formatCount, formatRelative } from "@/lib/format";
-import { request, requestMaybe } from "@/lib/http";
+import { request } from "@/lib/http";
 import { useResource } from "@/lib/use-resource";
 import { sessionAtom } from "@/stores/session";
 import { NewPlaylistForm } from "./new-playlist-form";
 import styles from "./train.module.css";
+import { useCompleteRoutine } from "./use-complete-routine";
 
 function exerciseCountLabel(count: number): string {
   return `${formatCount(count)} ${count === 1 ? "exercício" : "exercícios"}`;
@@ -36,7 +35,6 @@ export function PlaylistList() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [busyKey, setBusyKey] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
-  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [archiveTarget, setArchiveTarget] = useState<PlaylistSummary | null>(null);
   const [isArchiving, setIsArchiving] = useState(false);
 
@@ -52,45 +50,10 @@ export function PlaylistList() {
       ),
   );
 
+  const completion = useCompleteRoutine(reload);
+
   function clearNotices() {
     setActionError(null);
-    setActiveSessionId(null);
-  }
-
-  async function startRoutine(routine: PlaylistSummary) {
-    if (busyKey) return;
-
-    clearNotices();
-    setBusyKey(`start:${routine.id}`);
-
-    try {
-      const session = await request(
-        {
-          method: "POST",
-          url: "/api/sessions",
-          data: { playlistId: routine.id },
-        },
-        sessionSchema,
-      );
-      router.push(`/train/sessions/${session.id}`);
-    } catch (failure) {
-      if (axios.isAxiosError(failure) && failure.response?.status === 409) {
-        const active = await requestMaybe(
-          { url: "/api/sessions/active" },
-          sessionSchema,
-        ).catch(() => null);
-
-        if (active) {
-          setActiveSessionId(active.id);
-        } else {
-          setActionError("Você já tem uma sessão em andamento.");
-        }
-      } else {
-        setActionError(describeApiError(failure));
-      }
-    } finally {
-      setBusyKey(null);
-    }
   }
 
   async function duplicateRoutine(routine: PlaylistSummary) {
@@ -149,18 +112,8 @@ export function PlaylistList() {
         />
       ) : null}
 
-      {activeSessionId ? (
-        <Notice tone="info">
-          Você já tem uma sessão em andamento.{" "}
-          <Link
-            className={styles.inlineLink}
-            href={`/train/sessions/${activeSessionId}`}
-          >
-            Continuar sessão ativa
-          </Link>
-        </Notice>
-      ) : null}
-
+      {completion.success ? <Notice tone="success">{completion.success}</Notice> : null}
+      {completion.error ? <Notice tone="error">{completion.error}</Notice> : null}
       {actionError ? <Notice tone="error">{actionError}</Notice> : null}
 
       <div className={styles.toolbar}>
@@ -198,7 +151,6 @@ export function PlaylistList() {
         <ul className={styles.list}>
           {data.map((routine) => {
             const isArchived = routine.archivedAt != null;
-            const startKey = `start:${routine.id}`;
             const cloneKey = `clone:${routine.id}`;
 
             return (
@@ -218,8 +170,8 @@ export function PlaylistList() {
                   <p className={styles.rowMeta}>
                     {exerciseCountLabel(routine.exerciseCount)} ·{" "}
                     {routine.lastPerformedAt
-                      ? `última execução ${formatRelative(routine.lastPerformedAt, timezone)}`
-                      : "nunca executada"}
+                      ? `último treino ${formatRelative(routine.lastPerformedAt, timezone)}`
+                      : "nunca feito"}
                     {isArchived ? " · arquivada" : ""}
                   </p>
                 </div>
@@ -228,11 +180,11 @@ export function PlaylistList() {
                   {isArchived ? null : (
                     <Button
                       variant="secondary"
-                      isLoading={busyKey === startKey}
-                      disabled={busyKey !== null && busyKey !== startKey}
-                      onClick={() => startRoutine(routine)}
+                      isLoading={completion.pendingId === routine.id}
+                      disabled={completion.pendingId !== null && completion.pendingId !== routine.id}
+                      onClick={() => completion.complete(routine.id)}
                     >
-                      Iniciar
+                      Fiz o treino
                     </Button>
                   )}
                   <Button

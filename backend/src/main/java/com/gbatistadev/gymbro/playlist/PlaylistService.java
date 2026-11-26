@@ -8,7 +8,6 @@ import com.gbatistadev.gymbro.exercise.ExerciseRepository;
 import com.gbatistadev.gymbro.playlist.dto.*;
 import com.gbatistadev.gymbro.playlist_exercises.PlaylistExercise;
 import com.gbatistadev.gymbro.playlist_exercises.PlaylistExerciseRepository;
-import com.gbatistadev.gymbro.workout_session.SessionStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,8 +27,7 @@ public class PlaylistService {
 
     @Transactional(readOnly = true)
     public List<PlaylistSummaryDto> list(boolean includeArchived) {
-        return playlists.findSummariesByUserId(
-            currentUser.id(), includeArchived, SessionStatus.FINISHED);
+        return playlists.findSummariesByUserId(currentUser.id(), includeArchived);
     }
 
     @Transactional

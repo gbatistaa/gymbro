@@ -52,6 +52,10 @@ public class UserService {
         User user = repository.findById(id)
             .orElseThrow(() -> new NotFoundException("User not found: " + id));
 
+        if (dto.email() != null && repository.existsByEmailAndIdNot(dto.email(), id)) {
+            throw new ResourceAlreadyExistsException("A user with that email already exists", "email");
+        }
+
         mapper.updateEntity(dto, user);
 
         return mapper.toDto(user);

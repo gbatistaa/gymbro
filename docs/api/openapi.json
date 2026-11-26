@@ -409,6 +409,33 @@
         }
       }
     },
+    "/api/playlists/{playlistId}/completions" : {
+      "post" : {
+        "tags" : [ "completion-controller" ],
+        "operationId" : "complete",
+        "parameters" : [ {
+          "name" : "playlistId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CompletionDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/playlists/{id}/exercises" : {
       "post" : {
         "tags" : [ "playlist-controller" ],
@@ -1236,6 +1263,55 @@
         }
       }
     },
+    "/api/completions" : {
+      "get" : {
+        "tags" : [ "completion-controller" ],
+        "operationId" : "recent",
+        "parameters" : [ {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 10
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/CompletionDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/completions/summary" : {
+      "get" : {
+        "tags" : [ "completion-controller" ],
+        "operationId" : "summary",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CompletionSummaryDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/bioimpedance/{id}/history" : {
       "get" : {
         "tags" : [ "bioimpedance-controller" ],
@@ -1368,6 +1444,26 @@
         "responses" : {
           "200" : {
             "description" : "OK"
+          }
+        }
+      }
+    },
+    "/api/completions/{id}" : {
+      "delete" : {
+        "tags" : [ "completion-controller" ],
+        "operationId" : "delete_2",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
           }
         }
       }
@@ -1775,6 +1871,26 @@
           }
         },
         "required" : [ "name" ]
+      },
+      "CompletionDto" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "playlistId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "playlistName" : {
+            "type" : "string"
+          },
+          "completedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
       },
       "AddPlaylistExerciseRequest" : {
         "type" : "object",
@@ -2614,6 +2730,19 @@
             "format" : "double"
           },
           "sets" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "CompletionSummaryDto" : {
+        "type" : "object",
+        "properties" : {
+          "totalCount" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "thisWeekCount" : {
             "type" : "integer",
             "format" : "int64"
           }

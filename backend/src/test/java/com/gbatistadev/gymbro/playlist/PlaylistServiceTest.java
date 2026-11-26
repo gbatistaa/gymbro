@@ -7,7 +7,6 @@ import com.gbatistadev.gymbro.exercise.Exercise;
 import com.gbatistadev.gymbro.exercise.ExerciseRepository;
 import com.gbatistadev.gymbro.playlist.dto.*;
 import com.gbatistadev.gymbro.playlist_exercises.PlaylistExercise;
-import com.gbatistadev.gymbro.workout_session.SessionStatus;
 import com.gbatistadev.gymbro.playlist_exercises.PlaylistExerciseRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -73,7 +72,7 @@ class PlaylistServiceTest {
         PlaylistSummaryDto expected = playlistSummary(playlistId, 2, null);
 
         when(currentUser.id()).thenReturn(userId);
-        when(playlists.findSummariesByUserId(userId, false, SessionStatus.FINISHED))
+        when(playlists.findSummariesByUserId(userId, false))
             .thenReturn(List.of(expected));
 
         assertEquals(List.of(expected), service.list(false));
@@ -85,7 +84,7 @@ class PlaylistServiceTest {
         PlaylistSummaryDto expected = playlistSummary(playlistId, 0, null);
 
         when(currentUser.id()).thenReturn(userId);
-        when(playlists.findSummariesByUserId(userId, true, SessionStatus.FINISHED))
+        when(playlists.findSummariesByUserId(userId, true))
             .thenReturn(List.of(expected));
 
         assertEquals(List.of(expected), service.list(true));

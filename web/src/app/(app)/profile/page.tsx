@@ -1,10 +1,10 @@
-import shell from "@/features/shell/shell.module.css";
+import type { Metadata } from "next";
+import { ProfileScreen } from "@/features/profile/profile-screen";
+
+export const metadata: Metadata = {
+  title: "Perfil",
+};
 
 export default function ProfilePage() {
-  return (
-    <section>
-      <h1 className={shell.pageTitle}>Perfil</h1>
-      <p className={shell.pageText}>Seus dados e preferências.</p>
-    </section>
-  );
+  return <ProfileScreen />;
 }

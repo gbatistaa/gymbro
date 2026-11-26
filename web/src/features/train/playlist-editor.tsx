@@ -27,6 +27,7 @@ import { ExercisePicker } from "./exercise-picker";
 import { PlaylistHeader } from "./playlist-header";
 import { PlaylistItemForm } from "./playlist-item-form";
 import styles from "./train.module.css";
+import { useCompleteRoutine } from "./use-complete-routine";
 
 type EditorData = {
   playlist: PlaylistDetail;
@@ -111,6 +112,7 @@ export function PlaylistEditor({ playlistId }: { playlistId: string }) {
   const [pendingItems, setPendingItems] = useState<PlaylistExercise[] | null>(null);
   const [isReordering, setIsReordering] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  const completion = useCompleteRoutine();
 
   async function moveItem(index: number, direction: -1 | 1) {
     if (!data || isReordering) return;
@@ -214,6 +216,19 @@ export function PlaylistEditor({ playlistId }: { playlistId: string }) {
       </Link>
 
       <PlaylistHeader playlist={playlist} onSaved={reload} />
+
+      {isArchived ? null : (
+        <Button
+          fullWidth
+          isLoading={completion.pendingId === playlistId}
+          disabled={completion.pendingId !== null}
+          onClick={() => completion.complete(playlistId)}
+        >
+          Fiz o treino
+        </Button>
+      )}
+      {completion.success ? <Notice tone="success">{completion.success}</Notice> : null}
+      {completion.error ? <Notice tone="error">{completion.error}</Notice> : null}
 
       {isArchived ? (
         <Notice tone="info">
