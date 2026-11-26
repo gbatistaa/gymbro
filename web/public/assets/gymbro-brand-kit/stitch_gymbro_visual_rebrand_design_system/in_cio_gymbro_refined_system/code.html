@@ -1,0 +1,479 @@
+<!DOCTYPE html><html class="dark" lang="pt-BR"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport">
+<meta content="mobile_tab" name="shell-type">
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "canvas": "#0B0D0C",
+            "surface": "#141816",
+            "surface-2": "#1C221F",
+            "border": "#262E2A",
+            "text-primary": "#F2F5F3",
+            "text-muted": "#8A958F",
+            "primary": "#3DDC6E",
+            "accent": "#3DDC6E",
+            "danger": "#E5604F",
+            "warning": "#E8B04A",
+            "rule": "#262E2A"
+          },
+          fontFamily: {
+            "sans": ["IBM Plex Sans", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
+            "mono": ["IBM Plex Mono", "monospace"]
+          },
+          borderRadius: {
+            "xl": "16px",
+            "lg": "12px",
+            "md": "8px"
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    @layer base {
+      html, body {
+        width: 100vw;
+        margin: 0;
+        padding: 0;
+        background-color: #0B0D0C;
+        color: #F2F5F3;
+        font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      body {
+        overscroll-behavior-y: none;
+        min-height: max(884px, 100dvh);
+      }
+      .pb-safe {
+        padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 0.5rem);
+      }
+      .pt-safe {
+        padding-top: env(safe-area-inset-top, 0px);
+      }
+    }
+    ::-webkit-scrollbar {
+      display: none;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+    }
+    .material-symbols-outlined.fill {
+      font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+  </style>
+</head>
+<body class="bg-canvas text-text-primary flex flex-col min-h-screen selection:bg-primary selection:text-canvas">
+<!-- Header -->
+<header class="fixed top-0 w-full z-50 bg-[#141816]/90 backdrop-blur-xl border-b border-border pt-safe">
+<div class="h-14 px-5 flex items-center justify-between max-w-xl mx-auto">
+<!-- Wordmark & Geometric Weight Plate Icon -->
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 rounded-md bg-surface-2 border border-border flex items-center justify-center relative">
+<!-- Stylized barbell/plate geometric symbol in neon green -->
+<svg fill="none" height="18" viewBox="0 0 20 20" width="18" xmlns="http://www.w3.org/2000/svg">
+<rect fill="#3DDC6E" height="3" rx="1.5" width="16" x="2" y="8.5"></rect>
+<rect fill="#3DDC6E" height="11" rx="1.25" width="2.5" x="5" y="4.5"></rect>
+<rect fill="#3DDC6E" height="11" rx="1.25" width="2.5" x="12.5" y="4.5"></rect>
+<circle cx="10" cy="10" fill="#141816" r="1.5"></circle>
+</svg>
+</div>
+<span class="font-bold text-[17px] tracking-tight text-text-primary">GYMBRO</span>
+</div>
+<!-- Actions: Notification Bell + Subtle Avatar -->
+<div class="flex items-center gap-3">
+<button aria-label="Notificações" class="w-9 h-9 rounded-full flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-surface-2 transition-colors" type="button">
+<svg fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewBox="0 0 24 24" width="20">
+<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+<path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+</svg>
+</button>
+<div class="w-8 h-8 rounded-full bg-surface-2 border border-border flex items-center justify-center font-mono font-medium text-[12px] text-text-primary select-none">
+          FL
+        </div>
+</div>
+</div>
+</header>
+<!-- Main Feed Content -->
+<main class="flex flex-col relative w-full max-w-xl mx-auto pt-16 pb-24 bg-canvas min-h-screen px-4">
+<div class="flex flex-col gap-5 pt-3 pb-6">
+<!-- 1. SESSÃO EM ANDAMENTO (Active Live Telemetry Container) -->
+<section class="bg-surface rounded-xl p-4 sm:p-5 flex flex-col gap-4 border border-border shadow-lg relative overflow-hidden">
+<!-- Telemetry top header -->
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+</span>
+<span class="text-[12px] font-mono text-primary font-medium tracking-wide">Sessão em andamento</span>
+</div>
+<div class="flex items-center gap-1.5 font-mono text-[13px] text-text-muted">
+<svg fill="none" height="14" stroke="#3DDC6E" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" width="14">
+<circle cx="12" cy="12" r="10"></circle>
+<polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+<span class="tabular-nums text-text-primary font-medium" id="live-timer">62:47</span>
+</div>
+</div>
+<!-- Routine Title & Sets Meta -->
+<div class="flex flex-col gap-2.5">
+<div class="flex items-start justify-between gap-3">
+<div>
+<h2 class="text-[19px] font-semibold text-text-primary tracking-tight leading-snug">Upper A · Força e volume</h2>
+<p class="text-[13px] text-text-muted mt-0.5">8 de 16 séries concluídas</p>
+</div>
+<div class="bg-surface-2 border border-border px-2.5 py-1 rounded-md text-[11px] font-mono font-medium text-text-muted shrink-0">
+              Série 8/16
+            </div>
+</div>
+<!-- Progress Bar (50%) -->
+<div class="w-full h-1.5 bg-surface-2 rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full transition-all duration-300" style="width: 50%;"></div>
+</div>
+<!-- Cumulative Volume -->
+<div class="flex items-baseline gap-1.5 pt-1">
+<span class="text-[12px] font-mono text-text-muted">Volume acumulado:</span>
+<span class="text-[18px] font-mono font-medium text-text-primary tabular-nums">3.420</span>
+<span class="text-[13px] font-mono text-text-muted">kg</span>
+</div>
+</div>
+<!-- Primary Action CTA -->
+<button class="w-full h-12 bg-primary hover:bg-[#34c760] active:scale-[0.99] text-[#0B0D0C] font-semibold text-[15px] rounded-lg flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm select-none" type="button">
+<svg fill="currentColor" height="18" viewBox="0 0 24 24" width="18">
+<polygon points="5 3 19 12 5 21 5 3"></polygon>
+</svg>
+<span>Continuar treino</span>
+</button>
+</section>
+<!-- 2. PRÓXIMO TREINO SUGERIDO -->
+<section class="flex flex-col gap-2.5">
+<div class="flex items-center gap-2">
+<span class="text-[12px] font-mono text-text-muted uppercase tracking-wider">Próximo treino</span>
+<div class="h-[1px] flex-1 bg-border"></div>
+</div>
+<div class="bg-surface rounded-xl p-4 border border-border flex flex-col gap-3.5">
+<div class="flex items-start justify-between">
+<div class="flex flex-col">
+<span class="text-[16px] font-semibold text-text-primary">Lower B · Hipertrofia</span>
+<span class="text-[13px] text-text-muted mt-0.5">Amanhã · 6 exercícios</span>
+</div>
+<span class="px-2 py-0.5 rounded-md bg-surface-2 border border-border text-text-muted text-[11px] font-mono font-medium">Programado</span>
+</div>
+<!-- Target Exercise Preview -->
+<div class="bg-surface-2 p-3 rounded-lg border border-border flex items-center justify-between gap-2">
+<div class="flex items-center gap-2.5 min-w-0">
+<svg class="shrink-0" fill="none" height="16" stroke="#8A958F" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewBox="0 0 24 24" width="16">
+<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
+<line x1="4" x2="4" y1="22" y2="15"></line>
+</svg>
+<div class="truncate text-[13px]">
+<span class="text-text-primary font-medium">Agachamento livre</span>
+<span class="text-text-muted mx-1">·</span>
+<span class="font-mono text-text-muted tabular-nums">100 kg × 8</span>
+</div>
+</div>
+<!-- Neutral/Green progression indicator (no blue) -->
+<span class="px-2 py-0.5 rounded bg-surface border border-border text-[11px] font-mono font-medium text-primary shrink-0">+2,5 kg</span>
+</div>
+<button class="w-full min-h-[44px] h-11 hover:bg-[#232a26] active:scale-[0.99] border border-border font-medium text-[13.5px] rounded-lg flex items-center justify-center gap-2 transition-all cursor-pointer select-none bg-primary text-[#0B0D0C]" type="button"><svg fill="currentColor" height="16" viewBox="0 0 24 24" width="16"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg><span>Iniciar treino antecipado</span></button>
+</div>
+</section>
+<!-- 3. NÚMEROS DA SEMANA (Grid 2x2 de Mini Cards) -->
+<section class="flex flex-col gap-2.5">
+<div class="flex items-center gap-2">
+<span class="text-[12px] font-mono text-text-muted uppercase tracking-wider">Números da semana</span>
+<div class="h-[1px] flex-1 bg-border"></div>
+</div>
+<div class="grid grid-cols-2 gap-2.5">
+<!-- Card 1: Sessões realizadas -->
+<div class="bg-surface rounded-xl p-3.5 border border-border flex flex-col justify-between min-h-[104px]">
+<div class="flex items-center justify-between">
+<span class="text-[12px] text-text-muted font-normal">Sessões</span>
+<span class="text-[10.5px] font-mono text-primary bg-surface-2 px-1.5 py-0.5 rounded border border-border">Meta 5</span>
+</div>
+<div class="mt-2 flex items-baseline gap-1">
+<span class="font-mono text-[26px] font-semibold text-text-primary tabular-nums leading-none">4</span>
+<span class="font-mono text-[14px] text-text-muted">/ 5</span>
+</div>
+<span class="text-[11px] text-text-muted mt-1">Falta 1 para a meta</span>
+</div>
+<!-- Card 2: Volume semanal -->
+<div class="bg-surface rounded-xl p-3.5 border border-border flex flex-col justify-between min-h-[104px]">
+<div class="flex items-center justify-between">
+<span class="text-[12px] text-text-muted font-normal">Volume semanal</span>
+<div class="flex items-center text-[10.5px] font-mono text-primary gap-0.5">
+<svg fill="none" height="10" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" viewBox="0 0 24 24" width="10">
+<polyline points="18 15 12 9 6 15"></polyline>
+</svg>
+<span>+8%</span>
+</div>
+</div>
+<div class="mt-2 flex items-baseline gap-1">
+<span class="font-mono text-[22px] font-semibold text-text-primary tabular-nums leading-none">18.450</span>
+<span class="font-mono text-[12px] text-text-muted">kg</span>
+</div>
+<span class="text-[11px] text-text-muted mt-1">+1.400 kg vs sem. ant.</span>
+</div>
+<!-- Card 3: Sequência (Streak) -->
+<div class="bg-surface rounded-xl p-3.5 border border-border flex flex-col justify-between min-h-[104px]">
+<div class="flex items-center justify-between">
+<span class="text-[12px] text-text-muted font-normal">Sequência ativa</span>
+<!-- Technical subtle flame/streak icon -->
+<svg fill="none" height="14" stroke="#3DDC6E" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewBox="0 0 24 24" width="14">
+<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path>
+</svg>
+</div>
+<div class="mt-2 flex items-baseline gap-1.5">
+<span class="font-mono text-[26px] font-semibold text-text-primary tabular-nums leading-none">6</span>
+<span class="text-[13px] text-text-muted">semanas</span>
+</div>
+<span class="text-[11px] text-text-muted mt-1">Consistência 100%</span>
+</div>
+<!-- Card 4: Peso corporal com Sparkline -->
+<div class="bg-surface rounded-xl p-3.5 border border-border flex flex-col justify-between min-h-[104px]">
+<div class="flex items-center justify-between">
+<span class="text-[12px] text-text-muted font-normal">Peso corporal</span>
+<span class="text-[10.5px] font-mono text-primary font-medium">−0,8 kg</span>
+</div>
+<div class="mt-1 flex items-center justify-between gap-2">
+<div class="flex items-baseline gap-1">
+<span class="font-mono text-[22px] font-semibold text-text-primary tabular-nums leading-none">81,2</span>
+<span class="font-mono text-[12px] text-text-muted">kg</span>
+</div>
+<!-- Mini smooth SVG sparkline showing gentle weight drop -->
+<div class="w-14 h-6">
+<svg class="w-full h-full overflow-visible" viewBox="0 0 60 24">
+<path d="M 2,6 Q 16,5 28,11 T 58,18" fill="none" stroke="#3DDC6E" stroke-linecap="round" stroke-width="1.75"></path>
+<circle cx="58" cy="18" fill="#3DDC6E" r="2.5"></circle>
+</svg>
+</div>
+</div>
+<span class="text-[11px] text-text-muted mt-1">Pesado hoje, 07:15</span>
+</div>
+</div>
+</section>
+<!-- 4. VOLUME · 12 SEMANAS (Histogram with Average Benchmark Line) -->
+<section class="flex flex-col gap-2.5">
+<div class="flex items-center gap-2">
+<span class="text-[12px] font-mono text-text-muted uppercase tracking-wider">Volume · 12 semanas</span>
+<div class="h-[1px] flex-1 bg-border"></div>
+</div>
+<div class="bg-surface rounded-xl p-4 border border-border flex flex-col gap-4">
+<!-- Header stats -->
+<div class="flex items-baseline justify-between">
+<span class="text-[13px] font-medium text-text-primary">Evolução do volume total</span>
+<span class="text-[12px] font-mono text-text-muted">Média: <span class="text-text-primary font-medium">16.200</span> kg/sem</span>
+</div>
+<!-- Chart Area -->
+<div class="relative h-40 w-full pt-4 pb-1">
+<!-- Benchmark Average Dashed Line at ~65% height -->
+<div class="absolute inset-x-0 bottom-[64%] border-b border-dashed border-[#8A958F]/40 z-0 pointer-events-none flex justify-end">
+<span class="text-[9px] font-mono text-text-muted -mt-3.5 bg-surface px-1">16.2k</span>
+</div>
+<!-- 12 Bars Container -->
+<div class="relative z-10 flex items-end justify-between h-full gap-1.5 px-0.5">
+<!-- S1 (14.1k) -->
+<div class="flex-1 h-full flex flex-col justify-end items-center group">
+<div class="w-full bg-[#1C221F] rounded-t-[2px] transition-all" style="height: 52%;"></div>
+</div>
+<!-- S2 (15.3k) -->
+<div class="flex-1 h-full flex flex-col justify-end items-center group">
+<div class="w-full bg-[#1C221F] rounded-t-[2px] transition-all" style="height: 58%;"></div>
+</div>
+<!-- S3 (14.8k) -->
+<div class="flex-1 h-full flex flex-col justify-end items-center group">
+<div class="w-full bg-[#1C221F] rounded-t-[2px] transition-all" style="height: 54%;"></div>
+</div>
+<!-- S4 Deload (11.2k) - Muted pattern style -->
+<div class="flex-1 h-full flex flex-col justify-end items-center group" title="S4 Deload: 11.200 kg">
+<div class="w-full bg-[#1A201D] border border-dashed border-border rounded-t-[2px] transition-all opacity-80" style="height: 38%;"></div>
+</div>
+<!-- S5 (16.2k) -->
+<div class="flex-1 h-full flex flex-col justify-end items-center group">
+<div class="w-full bg-[#1C221F] rounded-t-[2px] transition-all" style="height: 64%;"></div>
+</div>
+<!-- S6 (16.9k) -->
+<div class="flex-1 h-full flex flex-col justify-end items-center group">
+<div class="w-full bg-[#1C221F] rounded-t-[2px] transition-all" style="height: 68%;"></div>
+</div>
+<!-- S7 (17.4k) -->
+<div class="flex-1 h-full flex flex-col justify-end items-center group">
+<div class="w-full bg-[#1C221F] rounded-t-[2px] transition-all" style="height: 72%;"></div>
+</div>
+<!-- S8 Deload (12.0k) - Muted pattern style -->
+<div class="flex-1 h-full flex flex-col justify-end items-center group" title="S8 Deload: 12.000 kg">
+<div class="w-full bg-[#1A201D] border border-dashed border-border rounded-t-[2px] transition-all opacity-80" style="height: 42%;"></div>
+</div>
+<!-- S9 (17.8k) -->
+<div class="flex-1 h-full flex flex-col justify-end items-center group">
+<div class="w-full bg-[#1C221F] rounded-t-[2px] transition-all" style="height: 76%;"></div>
+</div>
+<!-- S10 (18.1k) -->
+<div class="flex-1 h-full flex flex-col justify-end items-center group">
+<div class="w-full bg-[#1C221F] rounded-t-[2px] transition-all" style="height: 79%;"></div>
+</div>
+<!-- S11 (17.9k) -->
+<div class="flex-1 h-full flex flex-col justify-end items-center group">
+<div class="w-full bg-[#1C221F] rounded-t-[2px] transition-all" style="height: 77%;"></div>
+</div>
+<!-- S12 (Current: 18.45k) - Neon Accent -->
+<div class="flex-1 h-full flex flex-col justify-end items-center group relative">
+<span class="text-[9px] font-mono text-primary font-medium mb-1">18.5k</span>
+<div class="w-full bg-primary rounded-t-[2px] shadow-[0_0_10px_rgba(61,220,110,0.35)] transition-all" style="height: 82%;"></div>
+</div>
+</div>
+</div>
+<!-- Bottom Axis Labels & Legend -->
+<div class="pt-2 border-t border-border flex items-center justify-between text-[11px] font-mono text-text-muted">
+<span>S1</span>
+<span class="flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-border"></span>
+<span>S4 (Deload)</span>
+</span>
+<span class="flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-border"></span>
+<span>S8 (Deload)</span>
+</span>
+<span class="text-primary font-medium">S12 (Atual)</span>
+</div>
+</div>
+</section>
+<!-- 5. RECORDES RECENTES (PRs) -->
+<section class="flex flex-col gap-2.5">
+<div class="flex items-center gap-2">
+<div class="flex items-center gap-1.5">
+<svg fill="none" height="15" stroke="#3DDC6E" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewBox="0 0 24 24" width="15">
+<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+<path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+<path d="M4 22h16"></path>
+<path d="M10 14.66V17c0 .55-.45 1-1 1H7v4h10v-4h-2c-.55 0-1-.45-1-1v-2.34"></path>
+<path d="M18 4H6v7a6 6 0 0 0 12 0V4z"></path>
+</svg>
+<span class="text-[12px] font-mono text-text-muted uppercase tracking-wider">Recordes recentes (PRs)</span>
+</div>
+<div class="h-[1px] flex-1 bg-border"></div>
+</div>
+<div class="bg-surface rounded-xl border border-border divide-y divide-border overflow-hidden">
+<!-- Item 1: Supino reto -->
+<div class="p-3.5 flex items-center justify-between hover:bg-surface-2/40 transition-colors">
+<div class="flex flex-col gap-1 min-w-0 pr-3">
+<div class="flex items-center gap-2">
+<span class="text-[14px] font-medium text-text-primary">Supino reto</span>
+<span class="px-1.5 py-0.5 rounded bg-surface-2 border border-border text-[9.5px] font-mono font-medium text-primary uppercase">PR</span>
+</div>
+<div class="flex items-center gap-2 text-[12px] font-mono text-text-muted">
+<span>e-1RM: <strong class="text-text-primary font-normal">108 kg</strong></span>
+<span>·</span>
+<span>há 2 dias</span>
+</div>
+</div>
+<div class="flex items-baseline gap-1 shrink-0 text-right">
+<span class="font-mono text-[17px] font-semibold text-text-primary tabular-nums">90</span>
+<span class="font-mono text-[12px] text-text-muted">kg × 6</span>
+</div>
+</div>
+<!-- Item 2: Levantamento terra -->
+<div class="p-3.5 flex items-center justify-between hover:bg-surface-2/40 transition-colors">
+<div class="flex flex-col gap-1 min-w-0 pr-3">
+<div class="flex items-center gap-2">
+<span class="text-[14px] font-medium text-text-primary">Levantamento terra</span>
+<span class="px-1.5 py-0.5 rounded bg-surface-2 border border-border text-[9.5px] font-mono font-medium text-primary uppercase">PR</span>
+</div>
+<div class="flex items-center gap-2 text-[12px] font-mono text-text-muted">
+<span>e-1RM: <strong class="text-text-primary font-normal">187 kg</strong></span>
+<span>·</span>
+<span>há 5 dias</span>
+</div>
+</div>
+<div class="flex items-baseline gap-1 shrink-0 text-right">
+<span class="font-mono text-[17px] font-semibold text-text-primary tabular-nums">160</span>
+<span class="font-mono text-[12px] text-text-muted">kg × 5</span>
+</div>
+</div>
+<!-- Item 3: Desenvolvimento militar -->
+<div class="p-3.5 flex items-center justify-between hover:bg-surface-2/40 transition-colors">
+<div class="flex flex-col gap-1 min-w-0 pr-3">
+<div class="flex items-center gap-2">
+<span class="text-[14px] font-medium text-text-primary">Desenvolvimento militar</span>
+<span class="px-1.5 py-0.5 rounded bg-surface-2 border border-border text-[9.5px] font-mono font-medium text-primary uppercase">PR</span>
+</div>
+<div class="flex items-center gap-2 text-[12px] font-mono text-text-muted">
+<span>e-1RM: <strong class="text-text-primary font-normal">72 kg</strong></span>
+<span>·</span>
+<span>há 10 dias</span>
+</div>
+</div>
+<div class="flex items-baseline gap-1 shrink-0 text-right">
+<span class="font-mono text-[17px] font-semibold text-text-primary tabular-nums">62,5</span>
+<span class="font-mono text-[12px] text-text-muted">kg × 5</span>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Bottom Navigation Bar (Shell) -->
+<nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/95 backdrop-blur-xl border-t border-border" data-active-classes="text-primary font-medium">
+<div class="flex items-center justify-around h-16 max-w-xl mx-auto px-2">
+<!-- Aba: Início (Ativa) -->
+<a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] w-full text-primary transition-colors py-1" data-path="inicio" href="#">
+<svg fill="none" height="22" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewBox="0 0 24 24" width="22">
+<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+<polyline points="9 22 9 12 15 12 15 22"></polyline>
+</svg>
+<span class="text-[11px] font-medium mt-1 tracking-tight">Início</span>
+</a>
+<!-- Aba: Treinar (Ícone Halter / Dumbbell Nítido) -->
+<a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] w-full text-text-muted hover:text-text-primary transition-colors py-1" data-path="treinar" href="#">
+<svg fill="none" height="22" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewBox="0 0 24 24" width="22">
+<path d="m6.5 6.5 11 11"></path>
+<path d="m21 21-1-1a2 2 0 0 0-2.83 0l-1.34 1.34a2 2 0 0 1-2.83 0l-6.36-6.36a2 2 0 0 1 0-2.83L8 10.81a2 2 0 0 0 0-2.83L7 7"></path>
+<path d="m3 3 1 1a2 2 0 0 0 2.83 0L8.17 2.66a2 2 0 0 1 2.83 0l6.36 6.36a2 2 0 0 1 0 2.83L16 13.19a2 2 0 0 0 0 2.83l1 1"></path>
+</svg>
+<span class="text-[11px] mt-1 tracking-tight">Treinar</span>
+</a>
+<!-- Aba: Progresso -->
+<a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] w-full text-text-muted hover:text-text-primary transition-colors py-1" data-path="progresso" href="#">
+<svg fill="none" height="22" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewBox="0 0 24 24" width="22">
+<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+<polyline points="16 7 22 7 22 13"></polyline>
+</svg>
+<span class="text-[11px] mt-1 tracking-tight">Progresso</span>
+</a>
+<!-- Aba: Perfil -->
+<a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] w-full text-text-muted hover:text-text-primary transition-colors py-1" data-path="perfil" href="#">
+<svg fill="none" height="22" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewBox="0 0 24 24" width="22">
+<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+<circle cx="12" cy="7" r="4"></circle>
+</svg>
+<span class="text-[11px] mt-1 tracking-tight">Perfil</span>
+</a>
+</div>
+</nav>
+<!-- Interactive Timer Script -->
+<script>
+    (function() {
+      let totalSeconds = 38 * 60 + 17;
+      const timerEl = document.getElementById('live-timer');
+      if (timerEl) {
+        setInterval(() => {
+          totalSeconds++;
+          const minutes = Math.floor(totalSeconds / 60);
+          const seconds = totalSeconds % 60;
+          timerEl.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        }, 1000);
+      }
+    })();
+  </script>
+
+
+</body></html>

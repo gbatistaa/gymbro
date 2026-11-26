@@ -13,7 +13,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpHeaders;
@@ -106,7 +105,7 @@ public class GlobalExceptionHandler {
 		String message = ex.getBindingResult()
 			.getFieldErrors()
 			.stream()
-			.map(DefaultMessageSourceResolvable::getDefaultMessage)
+			.map(fieldError -> fieldError.getDefaultMessage())
 			.collect(Collectors.joining("; "));
 
 		return respond(HttpStatus.BAD_REQUEST, "VALIDATION_FAILED", message, errors, request);

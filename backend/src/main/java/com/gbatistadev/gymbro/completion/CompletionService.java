@@ -137,7 +137,8 @@ public class CompletionService {
                 .orElseThrow(() -> new NotFoundException("Exercise not found: " + entry.exerciseId()));
 
             for (int set = 0; set < entry.sets(); set++) {
-                int setNumber = nextSetNumber.merge(exercise.getId(), 1, Integer::sum);
+                int setNumber = nextSetNumber.getOrDefault(exercise.getId(), 0) + 1;
+                nextSetNumber.put(exercise.getId(), setNumber);
                 double previousBest = bestE1rm.computeIfAbsent(exercise.getId(),
                     id -> logs.maxE1rmExcludingSession(userId, id, session.getId()));
                 double candidate = estimateOneRepMax(entry.weightKg(), entry.reps());

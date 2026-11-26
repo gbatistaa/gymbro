@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="pt-BR"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "on-secondary-fixed": "#001e2c", "secondary-fixed-dim": "#7bd0ff", "on-error": "#690005", "secondary-container": "#00a6e0", "on-tertiary-container": "#ad393d", "outline-variant": "#3b4b3b", "inverse-surface": "#e2e3e0", "on-tertiary-fixed": "#410006", "border-strong": "#3D5246", "on-error-container": "#ffdad6", "surface-container-lowest": "#0c0f0d", "primary-fixed-dim": "#00e560", "background": "#111413", "primary": "#f3ffef", "on-primary-container": "#00722c", "tertiary-fixed-dim": "#ffb3b0", "outline": "#859582", "inverse-primary": "#006e2a", "border": "#1F2B23", "tertiary": "#fffaf9", "surface-tint": "#00e560", "on-accent": "#040D07", "neon-tint": "#0A2312", "error-container": "#93000a", "on-surface-variant": "#bacbb7", "on-primary": "#003912", "text-muted": "#8FA397", "surface-dim": "#111413", "on-primary-fixed-variant": "#00531e", "rule": "#2A3830", "inverse-on-surface": "#2f312f", "secondary-fixed": "#c4e7ff", "info-tint": "#081B2B", "primary-fixed": "#6aff87", "secondary": "#7bd0ff", "on-tertiary": "#670211", "text-primary": "#F1F7F3", "tertiary-container": "#ffd5d3", "surface-variant": "#333534", "on-secondary-container": "#00374d", "on-secondary": "#00354a", "surface-bright": "#373a38", "on-background": "#e2e3e0", "neon-pressed": "#22C55E", "on-tertiary-fixed-variant": "#881d24", "surface-container-high": "#282a29", "canvas": "#060807", "surface-container-low": "#1a1c1b", "primary-container": "#39ff74", "on-secondary-fixed-variant": "#004c69", "surface": "#0D120F", "on-primary-fixed": "#002108", "raised": "#141C17", "text-secondary": "#C6D2CC", "surface-container-highest": "#333534", "tertiary-fixed": "#ffdad8", "error": "#ffb4ab", "surface-container": "#1e201f", "on-surface": "#e2e3e0" }, borderRadius: { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" }, spacing: { "margin": "1.25rem", "gutter-desktop": "2rem", "space-lg": "1.25rem", "space-xl": "1.5rem", "margin-desktop": "2rem", "space-sm": "0.5rem", "space-xs": "0.25rem", "gutter": "1.25rem", "space-md": "1rem" }, fontFamily: { "headline-sm": ["IBM Plex Sans"], "label-mono": ["IBM Plex Mono"], "numeral-lg": ["IBM Plex Mono"], "body-lg": ["IBM Plex Sans"], "label-sm": ["IBM Plex Sans"], "numeral-md": ["IBM Plex Mono"], "headline-md": ["IBM Plex Sans"], "numeral-xl": ["IBM Plex Mono"], "body-sm": ["IBM Plex Sans"], "headline-lg": ["IBM Plex Sans"], "body-md": ["IBM Plex Sans"] }, fontSize: { "headline-sm": ["19px", { "lineHeight": "26px", "fontWeight": "600" }], "label-mono": ["12px", { "lineHeight": "16px", "letterSpacing": "0.08em", "fontWeight": "500" }], "numeral-lg": ["56px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "500" }], "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "600" }], "label-sm": ["11px", { "lineHeight": "14px", "fontWeight": "500" }], "numeral-md": ["34px", { "lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "500" }], "headline-md": ["23px", { "lineHeight": "30px", "fontWeight": "600" }], "numeral-xl": ["88px", { "lineHeight": "84px", "letterSpacing": "-0.02em", "fontWeight": "500" }], "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }], "headline-lg": ["28px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "600" }], "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }] } } } };</script><style>@layer base{html,body{width:100vw;min-height:100vh;margin:0;padding:0;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-canvas text-on-surface font-body-md text-body-md antialiased flex flex-col selection:bg-primary-container selection:text-on-accent"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.5)]"><div class="h-16 px-margin flex items-center justify-between max-w-xl mx-auto"><div class="flex items-center gap-space-sm"><span class="text-primary-container font-headline-md text-headline-md tracking-wider">GYMBRO</span><span class="font-label-mono text-label-mono text-text-muted mt-0.5">// v2.4</span></div><div class="flex items-center gap-space-md"><span class="font-headline-sm text-headline-sm text-text-primary tracking-tight hidden xs:inline">Treinar</span><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex flex-col relative w-full max-w-xl mx-auto px-margin pt-16 pb-28 min-h-screen bg-canvas"><div class="flex flex-col w-full relative">
+<!-- Interactive View Switcher / Prototype State Selector -->
+<div class="w-full flex items-center justify-between pb-3 pt-1">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-primary-container animate-pulse"></span>
+<span class="font-label-mono text-label-mono text-text-muted uppercase tracking-wider">Estado do Protótipo:</span>
+</div>
+<div class="flex items-center bg-raised rounded-lg p-0.5 shadow-sm">
+<button class="px-2.5 py-1 text-label-sm font-label-sm rounded transition-all bg-primary-container text-on-accent font-semibold" id="state-btn-valid" onclick="setFormState('valid')">Preenchido</button>
+<button class="px-2.5 py-1 text-label-sm font-label-sm rounded transition-all text-text-muted hover:text-text-primary" id="state-btn-error" onclick="setFormState('error')">Erro</button>
+<button class="px-2.5 py-1 text-label-sm font-label-sm rounded transition-all text-text-muted hover:text-text-primary" id="state-btn-loading" onclick="setFormState('loading')">Salvando</button>
+</div>
+</div>
+<!-- Background Parent: Exercise Library Context (Under Backdrop) -->
+<div class="relative w-full rounded-xl overflow-hidden opacity-35 pointer-events-none select-none filter blur-[1px]">
+<!-- Library Header Simulation -->
+<div class="bg-surface px-4 py-3 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-text-muted text-[20px]">fitness_center</span>
+<span class="font-headline-sm text-headline-sm text-text-primary tracking-tight">Biblioteca de Exercícios</span>
+</div>
+<div class="w-8 h-8 rounded-lg bg-raised flex items-center justify-center text-text-muted">
+<span class="material-symbols-outlined text-[18px]">search</span>
+</div>
+</div>
+<!-- Simulated Exercise Rows -->
+<div class="flex flex-col bg-canvas divide-y divide-rule/40">
+<div class="px-4 py-3 flex items-center justify-between">
+<div class="flex flex-col">
+<span class="text-text-primary font-body-md">Agachamento Livre</span>
+<span class="text-label-mono font-label-mono text-text-muted">Pernas • Barra • 5,0 kg inc</span>
+</div>
+<span class="font-numeral-md text-body-lg text-text-primary">140 <span class="font-body-sm text-text-secondary">kg</span></span>
+</div>
+<div class="px-4 py-3 flex items-center justify-between">
+<div class="flex flex-col">
+<span class="text-text-primary font-body-md">Desenvolvimento Militar</span>
+<span class="text-label-mono font-label-mono text-text-muted">Ombros • Barra • 2,0 kg inc</span>
+</div>
+<span class="font-numeral-md text-body-lg text-text-primary">62,5 <span class="font-body-sm text-text-secondary">kg</span></span>
+</div>
+<div class="px-4 py-3 flex items-center justify-between">
+<div class="flex flex-col">
+<span class="text-text-primary font-body-md">Puxada Frontal</span>
+<span class="text-label-mono font-label-mono text-text-muted">Costas • Cabo • 5,0 kg inc</span>
+</div>
+<span class="font-numeral-md text-body-lg text-text-primary">75 <span class="font-body-sm text-text-secondary">kg</span></span>
+</div>
+</div>
+</div>
+<!-- Ambient Backdrop Scrim -->
+<div class="fixed inset-0 bg-canvas/80 backdrop-blur-[2px] z-30 transition-opacity"></div>
+<!-- Bottom Sheet / Modal Frame Container -->
+<div class="relative z-40 w-full mt-2 bg-surface rounded-t-[20px] shadow-[0_-12px_40px_rgba(0,0,0,0.85)] flex flex-col overflow-hidden pb-4">
+<!-- Drag Handle Indicator Pill -->
+<div class="w-full flex items-center justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing">
+<div class="w-9 h-1 rounded-full bg-rule"></div>
+</div>
+<!-- Modal Header -->
+<div class="px-5 py-2 flex items-center justify-between">
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<h2 class="font-headline-sm text-headline-sm text-text-primary tracking-tight font-semibold">Criar exercício</h2>
+<span class="px-1.5 py-0.5 rounded text-[10px] font-label-mono bg-neon-tint text-primary-container tracking-wider uppercase">Personalizado</span>
+</div>
+<span class="text-label-sm font-label-sm text-text-muted mt-0.5">Cadastre uma nova mecânica para o seu diário</span>
+</div>
+<button aria-label="Fechar" class="w-9 h-9 rounded-full bg-raised flex items-center justify-center text-text-muted hover:text-text-primary active:bg-surface-variant transition-colors" type="button">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<!-- Form Content Scroll Area -->
+<div class="flex flex-col px-5 pt-3 gap-5">
+<!-- Field 1: Nome do Exercício -->
+<div class="flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<label class="font-body-sm text-body-sm text-text-muted flex items-center gap-1" for="exercise-name">
+            Nome do exercício <span class="text-primary-container font-semibold">*</span>
+</label>
+<span class="font-label-mono text-label-mono text-text-muted" id="char-counter">32/120</span>
+</div>
+<div class="relative w-full">
+<input class="w-full h-12 bg-raised rounded-xl px-3.5 text-text-primary font-body-md text-[15px] focus:outline-none focus:ring-2 focus:ring-border-strong transition-all placeholder:text-text-muted/60" id="exercise-name" placeholder="Ex.: Supino inclinado com halteres" type="text" value="Supino inclinado com halteres"/>
+<div class="absolute right-3.5 top-3.5 text-primary-container flex items-center" id="valid-check-icon">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+<!-- Inline error message (hidden in valid state) -->
+<div class="hidden items-center gap-1.5 text-error mt-0.5" id="name-error-container">
+<span class="material-symbols-outlined text-[16px]">error</span>
+<span class="font-label-sm text-label-sm">O nome deve ter no mínimo 3 caracteres.</span>
+</div>
+<span class="font-label-sm text-label-sm text-text-muted" id="name-helper">Entre 3 e 120 caracteres legíveis.</span>
+</div>
+<!-- Field 2: Músculo Primário (Mandatory Segmented Grid) -->
+<div class="flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<label class="font-body-sm text-body-sm text-text-muted flex items-center gap-1">
+            Músculo primário <span class="text-primary-container font-semibold">*</span>
+</label>
+<span class="font-label-mono text-label-mono text-primary-container uppercase">Obrigatório</span>
+</div>
+<div aria-label="Músculo primário" class="grid grid-cols-3 gap-2" role="radiogroup">
+<!-- Peito (Selected) -->
+<button class="muscle-pill flex items-center justify-between h-11 px-3 rounded-xl bg-neon-tint text-primary-container font-body-sm text-body-sm font-semibold transition-all" type="button">
+<span>Peito</span>
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">check</span>
+</button>
+<!-- Costas -->
+<button class="muscle-pill flex items-center justify-between h-11 px-3 rounded-xl bg-raised text-text-secondary hover:text-text-primary font-body-sm text-body-sm transition-all" type="button">
+<span>Costas</span>
+</button>
+<!-- Pernas -->
+<button class="muscle-pill flex items-center justify-between h-11 px-3 rounded-xl bg-raised text-text-secondary hover:text-text-primary font-body-sm text-body-sm transition-all" type="button">
+<span>Pernas</span>
+</button>
+<!-- Ombros -->
+<button class="muscle-pill flex items-center justify-between h-11 px-3 rounded-xl bg-raised text-text-secondary hover:text-text-primary font-body-sm text-body-sm transition-all" type="button">
+<span>Ombros</span>
+</button>
+<!-- Braços -->
+<button class="muscle-pill flex items-center justify-between h-11 px-3 rounded-xl bg-raised text-text-secondary hover:text-text-primary font-body-sm text-body-sm transition-all" type="button">
+<span>Braços</span>
+</button>
+<!-- Core -->
+<button class="muscle-pill flex items-center justify-between h-11 px-3 rounded-xl bg-raised text-text-secondary hover:text-text-primary font-body-sm text-body-sm transition-all" type="button">
+<span>Core</span>
+</button>
+</div>
+</div>
+<!-- Field 3: Músculo Secundário (Optional Dropdown / Select Sheet) -->
+<div class="flex flex-col gap-1.5">
+<label class="font-body-sm text-body-sm text-text-muted">
+          Músculo secundário (opcional)
+        </label>
+<div class="relative w-full">
+<button class="w-full h-11 bg-raised rounded-xl px-3.5 flex items-center justify-between text-left hover:bg-surface-container transition-colors" type="button">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-text-muted"></span>
+<span class="text-text-primary font-body-md text-[15px]">Tríceps</span>
+</div>
+<div class="flex items-center gap-1 text-text-muted">
+<span class="font-label-mono text-label-mono">Mudar</span>
+<span class="material-symbols-outlined text-[18px]">expand_more</span>
+</div>
+</button>
+</div>
+</div>
+<!-- Field 4: Equipamento (Chips / Selector) -->
+<div class="flex flex-col gap-2">
+<label class="font-body-sm text-body-sm text-text-muted">
+          Equipamento
+        </label>
+<!-- Horizontal scrollable chip deck -->
+<div class="flex items-center gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+<!-- Haltere (Selected) -->
+<button class="equipment-chip shrink-0 h-10 px-3.5 rounded-xl bg-neon-tint text-primary-container flex items-center gap-1.5 font-body-sm font-semibold transition-all" type="button">
+<span class="material-symbols-outlined text-[18px]">fitness_center</span>
+<span>Haltere</span>
+</button>
+<!-- Barra -->
+<button class="equipment-chip shrink-0 h-10 px-3.5 rounded-xl bg-raised text-text-secondary hover:text-text-primary flex items-center gap-1.5 font-body-sm transition-all" type="button">
+<span class="material-symbols-outlined text-[18px]">horizontal_rule</span>
+<span>Barra</span>
+</button>
+<!-- Máquina -->
+<button class="equipment-chip shrink-0 h-10 px-3.5 rounded-xl bg-raised text-text-secondary hover:text-text-primary flex items-center gap-1.5 font-body-sm transition-all" type="button">
+<span class="material-symbols-outlined text-[18px]">precision_manufacturing</span>
+<span>Máquina</span>
+</button>
+<!-- Cabo / Polia -->
+<button class="equipment-chip shrink-0 h-10 px-3.5 rounded-xl bg-raised text-text-secondary hover:text-text-primary flex items-center gap-1.5 font-body-sm transition-all" type="button">
+<span class="material-symbols-outlined text-[18px]">cable</span>
+<span>Cabo / Polia</span>
+</button>
+<!-- Peso corporal -->
+<button class="equipment-chip shrink-0 h-10 px-3.5 rounded-xl bg-raised text-text-secondary hover:text-text-primary flex items-center gap-1.5 font-body-sm transition-all" type="button">
+<span class="material-symbols-outlined text-[18px]">accessibility_new</span>
+<span>Peso corporal</span>
+</button>
+</div>
+</div>
+<!-- Field 5: Incremento Padrão de Carga -->
+<div class="flex flex-col gap-2 pt-1">
+<div class="flex flex-col">
+<div class="flex items-center justify-between">
+<label class="font-body-sm text-body-sm text-text-muted">Incremento de carga</label>
+<span class="font-label-mono text-label-mono text-text-primary tracking-wide">Padrão: <span class="text-primary-container font-semibold">2,5 kg</span></span>
+</div>
+<span class="font-label-sm text-label-sm text-text-muted mt-0.5">Usado nas sugestões automáticas de progressão de carga.</span>
+</div>
+<div class="flex items-center gap-2 mt-1">
+<!-- Quick Preset Pills -->
+<div class="grid grid-cols-4 gap-1.5 flex-1">
+<button class="inc-pill h-11 rounded-lg bg-raised text-text-secondary hover:text-text-primary font-numeral-md text-[13px] flex items-center justify-center transition-colors" onclick="setIncrement('1,0')" type="button">1 kg</button>
+<button class="inc-pill h-11 rounded-lg bg-raised text-text-secondary hover:text-text-primary font-numeral-md text-[13px] flex items-center justify-center transition-colors" onclick="setIncrement('2,0')" type="button">2 kg</button>
+<button class="inc-pill h-11 rounded-lg bg-neon-tint text-primary-container font-numeral-md text-[13px] font-semibold flex items-center justify-center transition-colors" id="inc-active" onclick="setIncrement('2,5')" type="button">2,5 kg</button>
+<button class="inc-pill h-11 rounded-lg bg-raised text-text-secondary hover:text-text-primary font-numeral-md text-[13px] flex items-center justify-center transition-colors" onclick="setIncrement('5,0')" type="button">5 kg</button>
+</div>
+<!-- Fine Tuner Stepper -->
+<div class="flex items-center bg-raised rounded-lg p-1 h-11">
+<button aria-label="Diminuir 0,5 kg" class="w-8 h-9 rounded bg-surface text-text-secondary hover:text-text-primary flex items-center justify-center active:scale-95 transition-all" onclick="stepIncrement(-0.5)" type="button">
+<span class="material-symbols-outlined text-[16px]">remove</span>
+</button>
+<span class="font-numeral-md text-[14px] text-text-primary px-2 min-w-[50px] text-center tabular-nums" id="stepper-val">2,5</span>
+<button aria-label="Aumentar 0,5 kg" class="w-8 h-9 rounded bg-surface text-text-secondary hover:text-text-primary flex items-center justify-center active:scale-95 transition-all" onclick="stepIncrement(0.5)" type="button">
+<span class="material-symbols-outlined text-[16px]">add</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Modal Actions Footer (Pinned bottom bar) -->
+<div class="mt-6 pt-4 px-5 flex flex-col gap-2.5 bg-surface">
+<div class="flex items-center gap-3">
+<!-- Secondary Dismiss Button -->
+<button class="min-w-[104px] h-12 rounded-xl bg-raised text-text-primary hover:bg-surface-container font-body-md font-medium px-4 flex items-center justify-center transition-colors active:scale-[0.98]" type="button">
+          Cancelar
+        </button>
+<!-- Primary Submit Button -->
+<button class="flex-1 h-12 rounded-xl bg-primary-container text-on-accent font-body-md font-semibold px-4 flex items-center justify-center gap-2 active:bg-neon-pressed transition-all shadow-md active:scale-[0.98]" id="btn-submit" type="button">
+<span class="material-symbols-outlined text-[20px]" id="btn-submit-icon" style="font-variation-settings: 'FILL' 1;">add_task</span>
+<span id="btn-submit-text">Salvar exercício</span>
+</button>
+</div>
+<!-- Context Note Footer -->
+<div class="flex items-center justify-center gap-1.5 py-1">
+<span class="material-symbols-outlined text-[14px] text-text-muted">lock_outline</span>
+<span class="font-label-mono text-[11px] text-text-muted">Sincronização offline garantida // GYMBRO ENGINE</span>
+</div>
+</div>
+</div>
+</div>
+<script>
+  let currentVal = 2.5;
+
+  function stepIncrement(delta) {
+    currentVal = Math.max(0.5, Math.min(20, currentVal + delta));
+    const formatted = currentVal.toFixed(1).replace('.', ',');
+    const disp = document.getElementById('stepper-val');
+    if (disp) disp.innerText = formatted;
+    
+    // Clear active preset highlights if custom
+    document.querySelectorAll('.inc-pill').forEach(btn => {
+      btn.className = "inc-pill h-11 rounded-lg bg-raised text-text-secondary hover:text-text-primary font-numeral-md text-[13px] flex items-center justify-center transition-colors";
+    });
+  }
+
+  function setIncrement(valStr) {
+    currentVal = parseFloat(valStr.replace(',', '.'));
+    const disp = document.getElementById('stepper-val');
+    if (disp) disp.innerText = valStr;
+
+    document.querySelectorAll('.inc-pill').forEach(btn => {
+      if (btn.innerText.includes(valStr)) {
+        btn.className = "inc-pill h-11 rounded-lg bg-neon-tint text-primary-container font-numeral-md text-[13px] font-semibold flex items-center justify-center transition-colors";
+      } else {
+        btn.className = "inc-pill h-11 rounded-lg bg-raised text-text-secondary hover:text-text-primary font-numeral-md text-[13px] flex items-center justify-center transition-colors";
+      }
+    });
+  }
+
+  function setFormState(state) {
+    const input = document.getElementById('exercise-name');
+    const counter = document.getElementById('char-counter');
+    const checkIcon = document.getElementById('valid-check-icon');
+    const errorMsg = document.getElementById('name-error-container');
+    const submitBtn = document.getElementById('btn-submit');
+    const submitText = document.getElementById('btn-submit-text');
+    const submitIcon = document.getElementById('btn-submit-icon');
+
+    // Reset switcher buttons
+    const btnValid = document.getElementById('state-btn-valid');
+    const btnError = document.getElementById('state-btn-error');
+    const btnLoading = document.getElementById('state-btn-loading');
+
+    const activeClass = "px-2.5 py-1 text-label-sm font-label-sm rounded transition-all bg-primary-container text-on-accent font-semibold";
+    const inactiveClass = "px-2.5 py-1 text-label-sm font-label-sm rounded transition-all text-text-muted hover:text-text-primary";
+
+    btnValid.className = inactiveClass;
+    btnError.className = inactiveClass;
+    btnLoading.className = inactiveClass;
+
+    if (state === 'valid') {
+      btnValid.className = activeClass;
+      input.value = "Supino inclinado com halteres";
+      input.className = "w-full h-12 bg-raised rounded-xl px-3.5 text-text-primary font-body-md text-[15px] focus:outline-none focus:ring-2 focus:ring-border-strong transition-all placeholder:text-text-muted/60";
+      counter.innerText = "32/120";
+      counter.className = "font-label-mono text-label-mono text-text-muted";
+      checkIcon.classList.remove('hidden');
+      errorMsg.classList.add('hidden');
+      errorMsg.classList.remove('flex');
+      
+      submitBtn.disabled = false;
+      submitBtn.className = "flex-1 h-12 rounded-xl bg-primary-container text-on-accent font-body-md font-semibold px-4 flex items-center justify-center gap-2 active:bg-neon-pressed transition-all shadow-md active:scale-[0.98]";
+      submitIcon.className = "material-symbols-outlined text-[20px]";
+      submitIcon.style.cssText = "font-variation-settings: 'FILL' 1;";
+      submitIcon.innerText = "add_task";
+      submitText.innerText = "Salvar exercício";
+    } else if (state === 'error') {
+      btnError.className = activeClass;
+      input.value = "Su";
+      input.className = "w-full h-12 bg-raised rounded-xl px-3.5 text-error font-body-md text-[15px] focus:outline-none ring-2 ring-error transition-all";
+      counter.innerText = "2/120";
+      counter.className = "font-label-mono text-label-mono text-error font-semibold";
+      checkIcon.classList.add('hidden');
+      errorMsg.classList.remove('hidden');
+      errorMsg.classList.add('flex');
+
+      submitBtn.disabled = true;
+      submitBtn.className = "flex-1 h-12 rounded-xl bg-raised text-text-muted font-body-md font-semibold px-4 flex items-center justify-center gap-2 cursor-not-allowed opacity-60";
+      submitIcon.className = "material-symbols-outlined text-[20px]";
+      submitIcon.style.cssText = "";
+      submitIcon.innerText = "block";
+      submitText.innerText = "Salvar exercício";
+    } else if (state === 'loading') {
+      btnLoading.className = activeClass;
+      input.value = "Supino inclinado com halteres";
+      input.className = "w-full h-12 bg-raised rounded-xl px-3.5 text-text-primary font-body-md text-[15px] opacity-75";
+      counter.innerText = "32/120";
+      counter.className = "font-label-mono text-label-mono text-text-muted";
+      checkIcon.classList.remove('hidden');
+      errorMsg.classList.add('hidden');
+      errorMsg.classList.remove('flex');
+
+      submitBtn.disabled = true;
+      submitBtn.className = "flex-1 h-12 rounded-xl bg-neon-tint text-primary-container font-body-md font-semibold px-4 flex items-center justify-center gap-2 transition-all cursor-wait";
+      submitIcon.className = "material-symbols-outlined text-[20px] animate-spin";
+      submitIcon.style.cssText = "";
+      submitIcon.innerText = "progress_activity";
+      submitText.innerText = "Salvando exercício...";
+    }
+  }
+
+  // Interactive Muscle Pill Selector logic
+  document.querySelectorAll('.muscle-pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.muscle-pill').forEach(b => {
+        b.className = "muscle-pill flex items-center justify-between h-11 px-3 rounded-xl bg-raised text-text-secondary hover:text-text-primary font-body-sm text-body-sm transition-all";
+        const icon = b.querySelector('.material-symbols-outlined');
+        if (icon) icon.remove();
+      });
+      btn.className = "muscle-pill flex items-center justify-between h-11 px-3 rounded-xl bg-neon-tint text-primary-container font-body-sm text-body-sm font-semibold transition-all";
+      const check = document.createElement('span');
+      check.className = "material-symbols-outlined text-[16px]";
+      check.style.fontVariationSettings = "'FILL' 1";
+      check.innerText = "check";
+      btn.appendChild(check);
+    });
+  });
+
+  // Interactive Equipment Selector logic
+  document.querySelectorAll('.equipment-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.equipment-chip').forEach(c => {
+        c.className = "equipment-chip shrink-0 h-10 px-3.5 rounded-xl bg-raised text-text-secondary hover:text-text-primary flex items-center gap-1.5 font-body-sm transition-all";
+      });
+      chip.className = "equipment-chip shrink-0 h-10 px-3.5 rounded-xl bg-neon-tint text-primary-container flex items-center gap-1.5 font-body-sm font-semibold transition-all";
+    });
+  });
+
+  // Dynamic input character counting and real-time validation feedback
+  const nameInput = document.getElementById('exercise-name');
+  if (nameInput) {
+    nameInput.addEventListener('input', (e) => {
+      const val = e.target.value;
+      const counter = document.getElementById('char-counter');
+      if (counter) counter.innerText = `${val.length}/120`;
+
+      if (val.length < 3) {
+        setFormState('error');
+        nameInput.value = val;
+      } else {
+        setFormState('valid');
+        nameInput.value = val;
+      }
+    });
+  }
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/95 backdrop-blur-xl shadow-[0_-4px_24px_rgba(0,0,0,0.7)]" data-active-classes="text-primary-container font-body-lg"><div class="flex justify-around items-center h-20 px-space-xs max-w-xl mx-auto"><a class="flex flex-col items-center justify-center gap-1 min-w-[56px] min-h-[48px] text-text-muted hover:text-text-primary transition-colors" data-path="inicio" href="#"><span class="material-symbols-outlined text-[24px]">grid_view</span><span class="font-label-sm text-label-sm">Início</span></a><a class="flex flex-col items-center justify-center gap-1 min-w-[56px] min-h-[48px] text-text-muted hover:text-text-primary transition-colors" data-path="treinar" href="#"><span class="material-symbols-outlined text-[24px]">fitness_center</span><span class="font-label-sm text-label-sm">Treinar</span></a><a class="flex flex-col items-center justify-center gap-1 min-w-[56px] min-h-[48px] text-text-muted hover:text-text-primary transition-colors" data-path="progresso" href="#"><span class="material-symbols-outlined text-[24px]">monitoring</span><span class="font-label-sm text-label-sm">Progresso</span></a><a class="flex flex-col items-center justify-center gap-1 min-w-[56px] min-h-[48px] text-text-muted hover:text-text-primary transition-colors" data-path="perfil" href="#"><span class="material-symbols-outlined text-[24px]">manage_accounts</span><span class="font-label-sm text-label-sm">Perfil</span></a></div></nav></body></html>

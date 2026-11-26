@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Perfil — Gymbro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --canvas: #0B0D0C;
+      --surface: #141816;
+      --surface-2: #1C221F;
+      --border: #262E2A;
+      --text-primary: #F2F5F3;
+      --text-secondary: #8A958F;
+      --primary: #3DDC6E;
+      --on-primary: #07110A;
+      --danger: #E5604F;
+      --danger-tint: rgba(229, 96, 79, 0.08);
+      --amber: #E8B04A;
+      --font-sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'IBM Plex Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: #030504;
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 16px 0 40px;
+    }
+
+    /* Container de alternância de estados no topo */
+    .state-bar {
+      width: 100%;
+      max-width: 410px;
+      display: flex;
+      gap: 6px;
+      padding: 0 10px 12px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .state-bar::-webkit-scrollbar { display: none; }
+
+    .state-pill {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      font-size: 11px;
+      font-family: var(--font-mono);
+      padding: 6px 12px;
+      border-radius: 999px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+    }
+    .state-pill.active {
+      background: var(--surface);
+      color: var(--primary);
+      border-color: var(--primary);
+      font-weight: 600;
+    }
+
+    /* Moldura Mobile do dispositivo (390 x 844) */
+    .device-screen {
+      width: 390px;
+      height: 844px;
+      background-color: var(--canvas);
+      border: 1px solid var(--border);
+      border-radius: 40px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.9);
+    }
+
+    /* Status Bar Mobile simulada */
+    .status-bar {
+      height: 44px;
+      padding: 0 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: -0.2px;
+      color: var(--text-primary);
+      flex-shrink: 0;
+      z-index: 20;
+    }
+    .status-icons {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Área com rolagem interna */
+    .screen-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 20px 96px;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .screen-content::-webkit-scrollbar { display: none; }
+
+    /* Cabeçalho */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-top: 4px;
+    }
+    .page-title {
+      font-size: 28px;
+      font-weight: 600;
+      line-height: 1.15;
+      letter-spacing: -0.5px;
+      color: var(--text-primary);
+    }
+    .header-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: var(--surface-2);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--text-primary);
+      transition: background-color 0.15s ease;
+    }
+    .header-btn:active {
+      background-color: var(--border);
+    }
+
+    /* Card de Identidade */
+    .identity-card {
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .identity-top {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .avatar-circle {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background-color: var(--surface-2);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      flex-shrink: 0;
+      letter-spacing: -0.5px;
+    }
+    .identity-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .identity-name {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1.25;
+      margin-bottom: 2px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .identity-handle {
+      font-size: 14px;
+      color: var(--text-secondary);
+      font-family: var(--font-sans);
+      margin-bottom: 2px;
+    }
+    .identity-email {
+      font-size: 14px;
+      color: var(--text-secondary);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .btn-edit-profile {
+      width: 100%;
+      height: 48px;
+      background-color: var(--primary);
+      color: var(--on-primary);
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: filter 0.15s ease, transform 0.05s ease;
+    }
+    .btn-edit-profile:active {
+      filter: brightness(0.92);
+      transform: scale(0.99);
+    }
+
+    /* Linha de Resumo (Membro desde / Treinos) */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: 1fr 1px 1fr;
+      align-items: center;
+      background-color: transparent;
+      margin-bottom: 28px;
+      padding: 0 4px;
+    }
+    .summary-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .summary-item.left {
+      padding-right: 16px;
+    }
+    .summary-item.right {
+      padding-left: 20px;
+    }
+    .summary-label {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+    .summary-val {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--text-primary);
+      font-variant-numeric: tabular-nums;
+    }
+    .summary-divider {
+      width: 1px;
+      height: 38px;
+      background-color: var(--border);
+    }
+
+    /* Seções e Listas de Configuração */
+    .section-title {
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+      padding-left: 4px;
+    }
+    .list-card {
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+    .list-row {
+      height: 56px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background-color 0.12s ease;
+    }
+    .list-row:last-child {
+      border-bottom: none;
+    }
+    .list-row:active {
+      background-color: var(--surface-2);
+    }
+    .row-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--text-primary);
+      font-size: 16px;
+      font-weight: 400;
+    }
+    .row-icon {
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .row-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-secondary);
+      font-size: 14px;
+      text-align: right;
+      max-width: 60%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .chevron {
+      color: var(--text-secondary);
+      opacity: 0.7;
+      flex-shrink: 0;
+    }
+
+    /* Botão de Logout */
+    .btn-logout {
+      width: 100%;
+      min-height: 48px;
+      background: transparent;
+      border: 1px solid var(--danger);
+      border-radius: 12px;
+      color: var(--danger);
+      font-size: 16px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: background-color 0.15s ease;
+      margin-bottom: 24px;
+    }
+    .btn-logout:active {
+      background-color: var(--danger-tint);
+    }
+
+    /* Barra de Navegação Inferior Fixa (Shell) */
+    .bottom-nav {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 80px;
+      background-color: var(--surface);
+      border-top: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      padding-bottom: 12px;
+      z-index: 30;
+    }
+    .nav-tab {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      cursor: pointer;
+      user-select: none;
+    }
+    .nav-tab.active {
+      color: var(--primary);
+    }
+    .nav-tab svg {
+      width: 24px;
+      height: 24px;
+      stroke-width: 1.75;
+    }
+    .nav-tab.active svg {
+      stroke-width: 2.2;
+    }
+    .nav-label {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.1px;
+    }
+
+    /* ------------------------------------------
+       ESTADO 2: DIÁLOGO DE CONFIRMAÇÃO DE LOGOUT
+       ------------------------------------------ */
+    .modal-backdrop {
+      display: none;
+      position: absolute;
+      inset: 0;
+      background-color: rgba(0, 0, 0, 0.78);
+      backdrop-filter: blur(2px);
+      z-index: 50;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .dialog-card {
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      width: 100%;
+      max-width: 320px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      animation: popIn 0.18s ease-out;
+    }
+    @keyframes popIn {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .dialog-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .dialog-text {
+      font-size: 14px;
+      line-height: 1.45;
+      color: var(--text-secondary);
+    }
+    .dialog-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .dialog-btn-danger {
+      height: 46px;
+      background-color: var(--danger);
+      color: #07110A;
+      font-weight: 600;
+      font-size: 15px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .dialog-btn-cancel {
+      height: 46px;
+      background-color: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      font-weight: 500;
+      font-size: 15px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    /* ------------------------------------------
+       ESTADO 3: EDIÇÃO DE PERFIL
+       ------------------------------------------ */
+    .edit-mode-view {
+      display: none;
+      flex-direction: column;
+      height: 100%;
+    }
+    .edit-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 20px 100px;
+      scrollbar-width: none;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-label {
+      display: block;
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+    .form-input {
+      width: 100%;
+      height: 48px;
+      background-color: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0 16px;
+      color: var(--text-primary);
+      font-size: 16px;
+      font-family: var(--font-sans);
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+    .form-input:focus {
+      border-color: var(--text-primary);
+    }
+    .form-input.has-error {
+      border-color: var(--danger);
+    }
+    .form-error-msg {
+      font-size: 13px;
+      color: var(--danger);
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .edit-footer-bar {
+      position: absolute;
+      bottom: 80px;
+      left: 0;
+      right: 0;
+      background-color: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 12px 20px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      z-index: 35;
+    }
+    .btn-edit-cancel {
+      height: 48px;
+      background-color: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .btn-edit-save {
+      height: 48px;
+      background-color: var(--primary);
+      color: var(--on-primary);
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* ------------------------------------------
+       ESTADO 4: CARREGAMENTO (SKELETON)
+       ------------------------------------------ */
+    .loading-view {
+      display: none;
+      padding: 8px 20px 96px;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .sk-pulse {
+      background: linear-gradient(90deg, #141816 25%, #1C221F 50%, #141816 75%);
+      background-size: 200% 100%;
+      animation: skShimmer 1.5s infinite;
+      border-radius: 8px;
+    }
+    @keyframes skShimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    .sk-avatar {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+    }
+    .sk-line {
+      height: 16px;
+    }
+
+    /* ------------------------------------------
+       ESTADO 5: ERRO AO CARREGAR
+       ------------------------------------------ */
+    .error-view {
+      display: none;
+      flex: 1;
+      padding: 40px 24px;
+      align-items: center;
+      justify-content: center;
+    }
+    .error-card {
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px 24px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      width: 100%;
+    }
+    .error-icon-box {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background-color: var(--danger-tint);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--danger);
+      margin-bottom: 4px;
+    }
+    .error-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .error-desc {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.4;
+    }
+    .btn-retry {
+      margin-top: 8px;
+      height: 44px;
+      padding: 0 24px;
+      background-color: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text-primary);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Barra Superior de Alternância de Estados para Inspeção -->
+  <div class="state-bar">
+    <button class="state-pill active" onclick="switchState('default')">1. Padrão</button>
+    <button class="state-pill" onclick="switchState('logout')">2. Dialog Sair</button>
+    <button class="state-pill" onclick="switchState('edit')">3. Editar Perfil</button>
+    <button class="state-pill" onclick="switchState('loading')">4. Loading</button>
+    <button class="state-pill" onclick="switchState('error')">5. Erro</button>
+  </div>
+
+  <!-- Moldura Mobile Oficial (390 x 844) -->
+  <div class="device-screen">
+
+    <!-- Status Bar iOS/Android Padrão -->
+    <div class="status-bar">
+      <span>09:41</span>
+      <div class="status-icons">
+        <!-- Sinal de rede -->
+        <svg width="15" height="11" viewBox="0 0 15 11" fill="currentColor">
+          <path d="M1 9.5h1.5v-2H1v2zm3 0h1.5v-4H4v4zm3 0h1.5v-6H7v6zm3 0h1.5v-8H10v8zm3 0H14.5V.5H13v9z"/>
+        </svg>
+        <!-- Wifi -->
+        <svg width="15" height="11" viewBox="0 0 16 12" fill="currentColor">
+          <path d="M8 12a1.5 1.5 0 100-3 1.5 1.5 0 000 3zm-4.24-4.24a6 6 0 018.48 0l1.06-1.06a7.5 7.5 0 00-10.6 0l1.06 1.06zm-2.12-2.12a9 9 0 0112.72 0l1.06-1.06a10.5 10.5 0 00-14.84 0l1.06 1.06z"/>
+        </svg>
+        <!-- Bateria -->
+        <svg width="22" height="11" viewBox="0 0 25 12" fill="currentColor">
+          <rect x="0.5" y="0.5" width="20" height="11" rx="3" stroke="currentColor" fill="none"/>
+          <rect x="2" y="2" width="14" height="8" rx="1.5"/>
+          <path d="M22 4v4a1.5 1.5 0 001.5-1.5v-1A1.5 1.5 0 0022 4z"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- ESTADO 1: TELA PRINCIPAL DE PERFIL -->
+    <div class="screen-content" id="view-default">
+      
+      <!-- Cabeçalho da Aba -->
+      <div class="header">
+        <h1 class="page-title">Perfil</h1>
+        <button class="header-btn" title="Configurações gerais" onclick="alert('Configurações do sistema')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Bloco de Identidade -->
+      <div class="identity-card">
+        <div class="identity-top">
+          <div class="avatar-circle">GB</div>
+          <div class="identity-info">
+            <h2 class="identity-name">Gabriel Batista</h2>
+            <div class="identity-handle">@gbatistadev</div>
+            <div class="identity-email">gabriel@exemplo.com</div>
+          </div>
+        </div>
+        <button class="btn-edit-profile" onclick="switchState('edit')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 20h9"/>
+            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+          </svg>
+          Editar perfil
+        </button>
+      </div>
+
+      <!-- Linha de Resumo com 2 itens -->
+      <div class="summary-grid">
+        <div class="summary-item left">
+          <span class="summary-label">Membro desde</span>
+          <span class="summary-val">out 2026</span>
+        </div>
+        <div class="summary-divider"></div>
+        <div class="summary-item right">
+          <span class="summary-label">Treinos registrados</span>
+          <span class="summary-val">47</span>
+        </div>
+      </div>
+
+      <!-- Seção Preferências -->
+      <div class="section-title">Preferências</div>
+      <div class="list-card">
+        <!-- Fuso horário -->
+        <div class="list-row" onclick="alert('Ajustar fuso horário')">
+          <div class="row-left">
+            <span class="row-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+            </span>
+            <span>Fuso horário</span>
+          </div>
+          <div class="row-right">
+            <span>Horário de Brasília (UTC−3)</span>
+            <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Unidade de carga -->
+        <div class="list-row">
+          <div class="row-left">
+            <span class="row-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m6.5 6.5 11 11"/>
+                <path d="m21 21-1-1"/>
+                <path d="m3 3 1 1"/>
+                <path d="m18 22 4-4"/>
+                <path d="m2 6 4-4"/>
+                <path d="m3 10 7-7"/>
+                <path d="m14 21 7-7"/>
+              </svg>
+            </span>
+            <span>Unidade de carga</span>
+          </div>
+          <div class="row-right">
+            <span>kg</span>
+          </div>
+        </div>
+
+        <!-- Idioma -->
+        <div class="list-row" onclick="alert('Idioma fixado em PT-BR')">
+          <div class="row-left">
+            <span class="row-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="2" y1="12" x2="22" y2="12"/>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+              </svg>
+            </span>
+            <span>Idioma</span>
+          </div>
+          <div class="row-right">
+            <span>Português (Brasil)</span>
+            <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Seção Conta -->
+      <div class="section-title">Conta</div>
+      <div class="list-card">
+        <!-- Nome de usuário -->
+        <div class="list-row" onclick="switchState('edit')">
+          <div class="row-left">
+            <span class="row-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </span>
+            <span>Nome de usuário</span>
+          </div>
+          <div class="row-right">
+            <span>@gbatistadev</span>
+            <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- E-mail -->
+        <div class="list-row" onclick="switchState('edit')">
+          <div class="row-left">
+            <span class="row-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="20" height="16" x="2" y="4" rx="2"/>
+                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+              </svg>
+            </span>
+            <span>E-mail</span>
+          </div>
+          <div class="row-right">
+            <span>gabriel@exemplo.com</span>
+            <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Alterar senha -->
+        <div class="list-row" onclick="alert('Modal de alteração de senha')">
+          <div class="row-left">
+            <span class="row-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+            </span>
+            <span>Alterar senha</span>
+          </div>
+          <div class="row-right">
+            <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Seção Sobre -->
+      <div class="section-title">Sobre</div>
+      <div class="list-card">
+        <!-- Versão do app -->
+        <div class="list-row">
+          <div class="row-left">
+            <span class="row-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="16" x2="12" y2="12"/>
+                <line x1="12" y1="8" x2="12.01" y2="8"/>
+              </svg>
+            </span>
+            <span>Versão do app</span>
+          </div>
+          <div class="row-right">
+            <span>1.4.0</span>
+            <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Termos de uso -->
+        <div class="list-row" onclick="alert('Termos de uso')">
+          <div class="row-left">
+            <span class="row-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+                <polyline points="10 9 9 9 8 9"/>
+              </svg>
+            </span>
+            <span>Termos de uso</span>
+          </div>
+          <div class="row-right">
+            <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Privacidade -->
+        <div class="list-row" onclick="alert('Política de privacidade')">
+          <div class="row-left">
+            <span class="row-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+            </span>
+            <span>Privacidade</span>
+          </div>
+          <div class="row-right">
+            <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botão de Sair da Conta (Logout) -->
+      <button class="btn-logout" onclick="switchState('logout')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        Sair da conta
+      </button>
+
+    </div>
+
+    <!-- ESTADO 3: EDIÇÃO DE PERFIL -->
+    <div class="edit-mode-view" id="view-edit">
+      <div class="header" style="padding: 12px 20px 0;">
+        <h1 class="page-title">Editar perfil</h1>
+      </div>
+      <div class="edit-content">
+        <!-- Campo: Nome -->
+        <div class="form-group">
+          <label class="form-label">Nome completo</label>
+          <input type="text" class="form-input" value="Gabriel Batista">
+        </div>
+
+        <!-- Campo: Nome de usuário (Com Erro Exibido Conforme Especificação) -->
+        <div class="form-group">
+          <label class="form-label">Nome de usuário</label>
+          <input type="text" class="form-input has-error" value="@gbatista">
+          <div class="form-error-msg">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            Este nome de usuário já está em uso
+          </div>
+        </div>
+
+        <!-- Campo: E-mail -->
+        <div class="form-group">
+          <label class="form-label">E-mail</label>
+          <input type="email" class="form-input" value="gabriel@exemplo.com">
+        </div>
+
+        <!-- Campo: Fuso horário -->
+        <div class="form-group">
+          <label class="form-label">Fuso horário</label>
+          <input type="text" class="form-input" value="America/Sao_Paulo (UTC−3)">
+        </div>
+      </div>
+
+      <!-- Rodapé Fixo da Edição -->
+      <div class="edit-footer-bar">
+        <button class="btn-edit-cancel" onclick="switchState('default')">Cancelar</button>
+        <button class="btn-edit-save" onclick="switchState('default')">Salvar alterações</button>
+      </div>
+    </div>
+
+    <!-- ESTADO 4: CARREGAMENTO (SKELETON) -->
+    <div class="screen-content loading-view" id="view-loading">
+      <div class="sk-pulse" style="width: 140px; height: 32px; margin-bottom: 8px;"></div>
+      <div class="identity-card" style="display:flex; flex-direction:column; gap:16px;">
+        <div style="display:flex; gap:16px; align-items:center;">
+          <div class="sk-pulse sk-avatar"></div>
+          <div style="display:flex; flex-direction:column; gap:8px; flex:1;">
+            <div class="sk-pulse" style="width: 60%; height: 20px;"></div>
+            <div class="sk-pulse" style="width: 40%; height: 14px;"></div>
+            <div class="sk-pulse" style="width: 75%; height: 14px;"></div>
+          </div>
+        </div>
+        <div class="sk-pulse" style="width: 100%; height: 48px; border-radius: 12px;"></div>
+      </div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin: 12px 0;">
+        <div class="sk-pulse" style="height: 36px;"></div>
+        <div class="sk-pulse" style="height: 36px;"></div>
+      </div>
+      <div class="sk-pulse" style="width: 100px; height: 14px; margin-top: 8px;"></div>
+      <div class="list-card" style="display:flex; flex-direction:column; gap:12px; padding:16px;">
+        <div class="sk-pulse" style="height: 28px;"></div>
+        <div class="sk-pulse" style="height: 28px;"></div>
+        <div class="sk-pulse" style="height: 28px;"></div>
+      </div>
+    </div>
+
+    <!-- ESTADO 5: ERRO AO CARREGAR -->
+    <div class="error-view" id="view-error">
+      <div class="error-card">
+        <div class="error-icon-box">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+        </div>
+        <h3 class="error-title">Não foi possível carregar seu perfil</h3>
+        <p class="error-desc">Ocorreu uma instabilidade na conexão com o servidor. Seus dados continuam preservados.</p>
+        <button class="btn-retry" onclick="switchState('default')">Tentar novamente</button>
+      </div>
+    </div>
+
+    <!-- ESTADO 2: DIÁLOGO DE CONFIRMAÇÃO DE LOGOUT (MODAL OVERLAY) -->
+    <div class="modal-backdrop" id="modal-logout" onclick="closeLogout(event)">
+      <div class="dialog-card" onclick="event.stopPropagation()">
+        <h3 class="dialog-title">Sair da conta?</h3>
+        <p class="dialog-text">Seus treinos já registrados continuam salvos e você pode entrar novamente com seu e-mail.</p>
+        <div class="dialog-actions">
+          <button class="dialog-btn-danger" onclick="alert('Sessão encerrada'); switchState('default');">Sair</button>
+          <button class="dialog-btn-cancel" onclick="switchState('default')">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Barra de Navegação Inferior Fixa com 4 Abas (Aba Perfil Ativa) -->
+    <nav class="bottom-nav">
+      <!-- Início -->
+      <a class="nav-tab" onclick="alert('Navegar para Início')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="7" rx="1"/>
+          <rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="14" y="14" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/>
+        </svg>
+        <span class="nav-label">Início</span>
+      </a>
+
+      <!-- Treinar -->
+      <a class="nav-tab" onclick="alert('Navegar para Treinar')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m6.5 6.5 11 11"/>
+          <path d="m21 21-1-1"/>
+          <path d="m3 3 1 1"/>
+          <path d="m18 22 4-4"/>
+          <path d="m2 6 4-4"/>
+          <path d="m3 10 7-7"/>
+          <path d="m14 21 7-7"/>
+        </svg>
+        <span class="nav-label">Treinar</span>
+      </a>
+
+      <!-- Progresso -->
+      <a class="nav-tab" onclick="alert('Navegar para Progresso')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
+          <polyline points="16 7 22 7 22 13"/>
+        </svg>
+        <span class="nav-label">Progresso</span>
+      </a>
+
+      <!-- Perfil (Ativa em #3DDC6E) -->
+      <a class="nav-tab active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+        <span class="nav-label">Perfil</span>
+      </a>
+    </nav>
+
+  </div>
+
+  <script>
+    function switchState(state) {
+      // Atualizar botões de estado da barra superior
+      const pills = document.querySelectorAll('.state-pill');
+      pills.forEach((p, idx) => {
+        p.classList.remove('active');
+        if (state === 'default' && idx === 0) p.classList.add('active');
+        if (state === 'logout' && idx === 1) p.classList.add('active');
+        if (state === 'edit' && idx === 2) p.classList.add('active');
+        if (state === 'loading' && idx === 3) p.classList.add('active');
+        if (state === 'error' && idx === 4) p.classList.add('active');
+      });
+
+      // Esconder todas as telas
+      document.getElementById('view-default').style.display = 'none';
+      document.getElementById('view-edit').style.display = 'none';
+      document.getElementById('view-loading').style.display = 'none';
+      document.getElementById('view-error').style.display = 'none';
+      document.getElementById('modal-logout').style.display = 'none';
+
+      // Exibir o estado selecionado
+      if (state === 'default') {
+        document.getElementById('view-default').style.display = 'block';
+      } else if (state === 'logout') {
+        document.getElementById('view-default').style.display = 'block';
+        document.getElementById('modal-logout').style.display = 'flex';
+      } else if (state === 'edit') {
+        document.getElementById('view-edit').style.display = 'flex';
+      } else if (state === 'loading') {
+        document.getElementById('view-loading').style.display = 'flex';
+      } else if (state === 'error') {
+        document.getElementById('view-error').style.display = 'flex';
+      }
+    }
+
+    function closeLogout(e) {
+      if (e.target.id === 'modal-logout') {
+        switchState('default');
+      }
+    }
+  </script>
+</body>
+</html>

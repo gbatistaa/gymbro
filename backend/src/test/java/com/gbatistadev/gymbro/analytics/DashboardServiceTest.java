@@ -77,9 +77,9 @@ class DashboardServiceTest {
 
         assertEquals(4, dashboard.weeks().size());
         assertEquals(List.of(0L, 0L, 0L, 1L),
-            dashboard.weeks().stream().map(DashboardDto.WeekSummaryDto::sessions).toList());
+            dashboard.weeks().stream().map(week -> week.sessions()).toList());
         assertEquals(List.of(0.0, 0.0, 0.0, 300.0),
-            dashboard.weeks().stream().map(DashboardDto.WeekSummaryDto::volume).toList());
+            dashboard.weeks().stream().map(week -> week.volume()).toList());
         assertEquals(now.atZone(ZONE).toLocalDate().with(java.time.temporal.TemporalAdjusters
                 .previousOrSame(DayOfWeek.MONDAY)).atStartOfDay(ZONE).toInstant(),
             dashboard.weeks().getLast().weekStart());
@@ -157,7 +157,7 @@ class DashboardServiceTest {
 
         assertEquals("Asia/Tokyo", dashboard.timezone());
         assertEquals(List.of(0L, 1L),
-            dashboard.weeks().stream().map(DashboardDto.WeekSummaryDto::sessions).toList(),
+            dashboard.weeks().stream().map(week -> week.sessions()).toList(),
             "a sessão pertence à semana de 09/11 em Tóquio, não à de 02/11");
         assertEquals(Instant.parse("2026-11-08T15:00:00Z"),
             dashboard.weeks().getLast().weekStart(),

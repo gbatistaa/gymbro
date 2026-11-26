@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Estatísticas — Gymbro</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            bg: '#0B0D0C',
+            surface: '#141816',
+            'surface-2': '#1C221F',
+            border: '#262E2A',
+            text: '#F2F5F3',
+            muted: '#8A958F',
+            primary: '#3DDC6E',
+            danger: '#E5604F',
+            warning: '#E8B04A'
+          },
+          fontFamily: {
+            sans: ['"IBM Plex Sans"', 'system-ui', 'sans-serif'],
+            mono: ['"IBM Plex Mono"', 'monospace']
+          },
+          borderRadius: {
+            card: '16px',
+            btn: '12px'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #0B0D0C;
+      color: #F2F5F3;
+      font-family: 'IBM Plex Sans', system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      user-select: none;
+    }
+    .tabular {
+      font-family: 'IBM Plex Mono', monospace;
+      font-variant-numeric: tabular-nums;
+    }
+    /* Deload hatch pattern */
+    .hatch-pattern {
+      background: repeating-linear-gradient(
+        45deg,
+        #1C221F,
+        #1C221F 4px,
+        #262E2A 4px,
+        #262E2A 8px
+      );
+    }
+    /* Hide scrollbar */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="flex justify-center bg-black min-h-screen">
+  <!-- Mobile Container (390 x 844 preview) -->
+  <div class="relative w-[390px] h-[844px] bg-bg flex flex-col overflow-hidden text-text shadow-2xl border-x border-[#1a1c1b]">
+
+    <!-- Control bar for inspecting interactive states required by prompt -->
+    <div class="bg-surface-2/90 border-b border-border/80 px-3 py-1.5 flex items-center justify-between text-[11px] font-mono shrink-0 z-40">
+      <span class="text-muted tracking-tight">ESTADO:</span>
+      <div class="flex gap-1">
+        <button onclick="switchState('main')" id="btn-state-main" class="px-2 py-0.5 rounded bg-primary text-black font-semibold text-[11px]">1. Dados</button>
+        <button onclick="switchState('empty')" id="btn-state-empty" class="px-2 py-0.5 rounded bg-surface border border-border text-muted hover:text-text text-[11px]">2. Vazio</button>
+        <button onclick="switchState('loading')" id="btn-state-loading" class="px-2 py-0.5 rounded bg-surface border border-border text-muted hover:text-text text-[11px]">3. Loading</button>
+        <button onclick="switchState('error')" id="btn-state-error" class="px-2 py-0.5 rounded bg-surface border border-border text-muted hover:text-text text-[11px]">4. Erro</button>
+      </div>
+    </div>
+
+    <!-- 1. Header Fixo Global (Título & Seletor Treino / Bioimpedância) -->
+    <header class="sticky top-0 z-30 bg-bg/95 backdrop-blur-md px-5 pt-3 pb-3 border-b border-border/40 shrink-0">
+      <div class="flex items-center justify-between">
+        <h1 class="text-[28px] font-semibold leading-tight tracking-tight text-text">Estatísticas</h1>
+        
+        <!-- Seletor segmentado: Treino e Bioimpedância -->
+        <div class="flex items-center p-1 bg-surface-2 rounded-btn border border-border">
+          <button class="px-3 py-1 rounded-[8px] bg-surface border border-border text-text font-medium text-[13px] shadow-sm">
+            Treino
+          </button>
+          <button class="px-3 py-1 rounded-[8px] text-muted hover:text-text font-normal text-[13px] transition-colors">
+            Bioimpedância
+          </button>
+        </div>
+      </div>
+
+      <!-- 2. Seletor de período (Semana, Mês, Ano, Tudo) + Intervalo exibido -->
+      <div class="mt-3">
+        <div class="grid grid-cols-4 p-1 bg-surface-2 rounded-btn border border-border text-[13px] text-center">
+          <button class="py-1 rounded-[8px] bg-surface border border-border text-text font-medium shadow-sm">
+            Semana
+          </button>
+          <button class="py-1 rounded-[8px] text-muted hover:text-text">
+            Mês
+          </button>
+          <button class="py-1 rounded-[8px] text-muted hover:text-text">
+            Ano
+          </button>
+          <button class="py-1 rounded-[8px] text-muted hover:text-text">
+            Tudo
+          </button>
+        </div>
+        <div class="mt-2 flex items-center justify-between text-[14px] text-muted">
+          <span>9 a 15 nov 2026</span>
+          <span class="text-[12px] font-mono text-muted/80">Ciclo 4 · Sem 6</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Scrollable Main Content Container -->
+    <div id="content-container" class="flex-1 overflow-y-auto no-scrollbar px-5 pt-4 pb-24 space-y-4">
+
+      <!-- ============================================== -->
+      <!-- ESTADO 1: DADOS REAIS & GRÁFICOS (DEFAULT)    -->
+      <!-- ============================================== -->
+      <div id="view-main" class="space-y-4">
+        
+        <!-- 9. Card de Alerta de Estagnação (Mostrado no topo quando houver alerta) -->
+        <div class="bg-surface rounded-card p-3.5 border border-warning/60 flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-warning/10 flex items-center justify-center shrink-0">
+              <!-- Warning Line Icon -->
+              <svg class="w-4 h-4 text-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <div>
+              <p class="text-[13px] font-medium text-text leading-tight">Supino reto sem evolução há 4 semanas</p>
+              <p class="text-[12px] text-muted mt-0.5">Carga estagnada em 90 kg · Volume platô</p>
+            </div>
+          </div>
+          <button class="shrink-0 px-2.5 py-1.5 rounded-btn bg-surface-2 border border-border text-[12px] text-text hover:border-muted font-medium transition-colors">
+            Ver exercício
+          </button>
+        </div>
+
+        <!-- 3. Linha de KPIs: Grid de 2 colunas com 4 cards pequenos -->
+        <div class="grid grid-cols-2 gap-3">
+          <!-- KPI 1: Sessões -->
+          <div class="bg-surface rounded-card p-3.5 border border-border flex flex-col justify-between">
+            <span class="text-[14px] text-muted">Sessões</span>
+            <div class="my-1">
+              <span class="text-[28px] font-semibold tabular text-text tracking-tight">14 / 16</span>
+            </div>
+            <div class="flex items-center gap-1 text-[13px] text-primary">
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
+              </svg>
+              <span>+2 vs anterior</span>
+            </div>
+          </div>
+
+          <!-- KPI 2: Aderência -->
+          <div class="bg-surface rounded-card p-3.5 border border-border flex flex-col justify-between">
+            <span class="text-[14px] text-muted">Aderência</span>
+            <div class="my-1">
+              <span class="text-[28px] font-semibold tabular text-text tracking-tight">87%</span>
+            </div>
+            <div class="flex items-center gap-1 text-[13px] text-primary">
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
+              </svg>
+              <span>+5 pts</span>
+            </div>
+          </div>
+
+          <!-- KPI 3: Volume total -->
+          <div class="bg-surface rounded-card p-3.5 border border-border flex flex-col justify-between">
+            <span class="text-[14px] text-muted">Volume total</span>
+            <div class="my-1">
+              <span class="text-[26px] font-semibold tabular text-text tracking-tight">48.250 <span class="text-[16px] text-muted font-normal">kg</span></span>
+            </div>
+            <div class="flex items-center gap-1 text-[13px] text-danger">
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+              </svg>
+              <span>−3%</span>
+            </div>
+          </div>
+
+          <!-- KPI 4: Sequência -->
+          <div class="bg-surface rounded-card p-3.5 border border-border flex flex-col justify-between">
+            <span class="text-[14px] text-muted">Sequência</span>
+            <div class="my-1">
+              <span class="text-[28px] font-semibold tabular text-text tracking-tight">6 <span class="text-[16px] text-muted font-normal">sem</span></span>
+            </div>
+            <div class="text-[13px] text-muted">
+              recorde: 9
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Card de Constância: Heatmap de calendário (Acessibilidade: dot no dia treinado) -->
+        <div class="bg-surface rounded-card p-4 border border-border space-y-3">
+          <div class="flex items-center justify-between">
+            <h2 class="text-[16px] font-semibold text-text">Constância</h2>
+            <span class="text-[12px] font-mono text-muted">Últimas 8 semanas</span>
+          </div>
+
+          <!-- Days of week labels -->
+          <div class="grid grid-cols-7 gap-1.5 text-center text-[11px] font-mono text-muted">
+            <span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span><span>D</span>
+          </div>
+
+          <!-- Heatmap Grid: 4 weeks shown clearly for current month context -->
+          <div class="grid grid-cols-7 gap-1.5">
+            <!-- W1 -->
+            <div class="w-full aspect-square rounded-[4px] bg-primary flex items-center justify-center" title="Treino: Upper A"><div class="w-1.5 h-1.5 bg-[#0B0D0C] rounded-full"></div></div>
+            <div class="w-full aspect-square rounded-[4px] bg-surface-2 flex items-center justify-center"></div>
+            <div class="w-full aspect-square rounded-[4px] bg-primary flex items-center justify-center" title="Treino: Lower A"><div class="w-1.5 h-1.5 bg-[#0B0D0C] rounded-full"></div></div>
+            <div class="w-full aspect-square rounded-[4px] bg-surface-2 flex items-center justify-center"></div>
+            <div class="w-full aspect-square rounded-[4px] bg-primary flex items-center justify-center" title="Treino: Upper B"><div class="w-1.5 h-1.5 bg-[#0B0D0C] rounded-full"></div></div>
+            <div class="w-full aspect-square rounded-[4px] border border-dashed border-border flex items-center justify-center"></div>
+            <div class="w-full aspect-square rounded-[4px] border border-dashed border-border flex items-center justify-center"></div>
+
+            <!-- W2 -->
+            <div class="w-full aspect-square rounded-[4px] bg-primary flex items-center justify-center"><div class="w-1.5 h-1.5 bg-[#0B0D0C] rounded-full"></div></div>
+            <div class="w-full aspect-square rounded-[4px] bg-surface-2 flex items-center justify-center"></div>
+            <div class="w-full aspect-square rounded-[4px] bg-primary flex items-center justify-center"><div class="w-1.5 h-1.5 bg-[#0B0D0C] rounded-full"></div></div>
+            <div class="w-full aspect-square rounded-[4px] bg-surface-2 flex items-center justify-center"></div>
+            <div class="w-full aspect-square rounded-[4px] bg-primary flex items-center justify-center"><div class="w-1.5 h-1.5 bg-[#0B0D0C] rounded-full"></div></div>
+            <div class="w-full aspect-square rounded-[4px] bg-primary flex items-center justify-center"><div class="w-1.5 h-1.5 bg-[#0B0D0C] rounded-full"></div></div>
+            <div class="w-full aspect-square rounded-[4px] border border-dashed border-border flex items-center justify-center"></div>
+
+            <!-- W3 (Deload) -->
+            <div class="w-full aspect-square rounded-[4px] bg-primary flex items-center justify-center"><div class="w-1.5 h-1.5 bg-[#0B0D0C] rounded-full"></div></div>
+            <div class="w-full aspect-square rounded-[4px] border border-dashed border-border flex items-center justify-center"></div>
+            <div class="w-full aspect-square rounded-[4px] bg-primary flex items-center justify-center"><div class="w-1.5 h-1.5 bg-[#0B0D0C] rounded-full"></div></div>
+            <div class="w-full aspect-square rounded-[4px] border border-dashed border-border flex items-center justify-center"></div>
+            <div class="w-full aspect-square rounded-[4px] bg-primary flex items-center justify-center"><div class="w-1.5 h-1.5 bg-[#0B0D0C] rounded-full"></div></div>
+            <div class="w-full aspect-square rounded-[4px] border border-dashed border-border flex items-center justify-center"></div>
+            <div class="w-full aspect-square rounded-[4px] border border-dashed border-border flex items-center justify-center"></div>
+
+            <!-- W4 (Semana atual) -->
+            <div class="w-full aspect-square rounded-[4px] bg-primary flex items-center justify-center"><div class="w-1.5 h-1.5 bg-[#0B0D0C] rounded-full"></div></div>
+            <div class="w-full aspect-square rounded-[4px] bg-surface-2 flex items-center justify-center"></div>
+            <div class="w-full aspect-square rounded-[4px] bg-primary flex items-center justify-center"><div class="w-1.5 h-1.5 bg-[#0B0D0C] rounded-full"></div></div>
+            <div class="w-full aspect-square rounded-[4px] bg-primary flex items-center justify-center"><div class="w-1.5 h-1.5 bg-[#0B0D0C] rounded-full"></div></div>
+            <div class="w-full aspect-square rounded-[4px] bg-surface-2 ring-1 ring-primary/40 flex items-center justify-center"><span class="text-[9px] font-mono text-primary">Hoje</span></div>
+            <div class="w-full aspect-square rounded-[4px] border border-dashed border-border flex items-center justify-center"></div>
+            <div class="w-full aspect-square rounded-[4px] border border-dashed border-border flex items-center justify-center"></div>
+          </div>
+
+          <!-- Legenda acessível -->
+          <div class="flex items-center justify-between pt-1 border-t border-border/60 text-[12px] text-muted">
+            <div class="flex items-center gap-1.5">
+              <div class="w-3 h-3 rounded-[2px] bg-primary flex items-center justify-center"><div class="w-1 h-1 bg-[#0B0D0C] rounded-full"></div></div>
+              <span>Treino</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <div class="w-3 h-3 rounded-[2px] bg-surface-2 border border-border"></div>
+              <span>Sem treino</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <div class="w-3 h-3 rounded-[2px] border border-dashed border-border"></div>
+              <span>Descanso</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. Card de Volume (Gráfico de barras verticais com tooltip, média e deload hachurado) -->
+        <div class="bg-surface rounded-card p-4 border border-border space-y-3">
+          <div class="flex items-center justify-between">
+            <h2 class="text-[16px] font-semibold text-text">Volume</h2>
+            <span class="text-[13px] text-muted">Média 16.200 kg por semana</span>
+          </div>
+
+          <!-- Chart Area -->
+          <div class="relative pt-6 pb-2">
+            <!-- Interactive Tooltip mockup (Semana 5 / Ativa) -->
+            <div class="absolute top-0 right-4 bg-surface-2 border border-border px-2 py-0.5 rounded-[6px] text-[11px] tabular text-text shadow-sm flex items-center gap-1.5 z-10">
+              <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+              <span class="font-medium text-text">S6: 18.450 kg</span>
+              <span class="text-primary text-[10px]">+8%</span>
+            </div>
+
+            <!-- Eixo Y e Linha de Média (tracejada em texto secundário) -->
+            <div class="relative h-36 flex items-end">
+              <!-- Y Axis labels -->
+              <div class="absolute left-0 inset-y-0 flex flex-col justify-between text-[11px] font-mono text-muted/70 pointer-events-none pr-2">
+                <span>20k</span>
+                <span>15k</span>
+                <span>10k</span>
+                <span>0</span>
+              </div>
+
+              <!-- Dashed Average Reference Line (at 16.2k) -->
+              <div class="absolute left-7 right-0 top-[20%] border-b border-dashed border-muted/50 pointer-events-none flex items-center justify-end">
+                <span class="bg-surface px-1 text-[10px] font-mono text-muted -mt-3.5">média 16.2k</span>
+              </div>
+
+              <!-- Bars container (6 weeks) -->
+              <div class="ml-8 w-full h-full flex items-end justify-between gap-2.5 pt-4">
+                <!-- S1: 14.200 kg (71%) -->
+                <div class="flex-1 flex flex-col items-center h-full justify-end group">
+                  <div class="w-full bg-surface-2 border border-border rounded-t-[4px] h-[71%]"></div>
+                  <span class="text-[11px] font-mono text-muted mt-2">S1</span>
+                </div>
+
+                <!-- S2: 15.800 kg (79%) -->
+                <div class="flex-1 flex flex-col items-center h-full justify-end group">
+                  <div class="w-full bg-surface-2 border border-border rounded-t-[4px] h-[79%]"></div>
+                  <span class="text-[11px] font-mono text-muted mt-2">S2</span>
+                </div>
+
+                <!-- S3: 16.500 kg (82%) -->
+                <div class="flex-1 flex flex-col items-center h-full justify-end group">
+                  <div class="w-full bg-surface-2 border border-border rounded-t-[4px] h-[82%]"></div>
+                  <span class="text-[11px] font-mono text-muted mt-2">S3</span>
+                </div>
+
+                <!-- S4: Deload (hatch pattern, 9.800 kg - 49%) -->
+                <div class="flex-1 flex flex-col items-center h-full justify-end group">
+                  <div class="w-full hatch-pattern border border-border rounded-t-[4px] h-[49%]"></div>
+                  <span class="text-[11px] font-mono text-muted mt-2">S4</span>
+                </div>
+
+                <!-- S5: 17.100 kg (85%) -->
+                <div class="flex-1 flex flex-col items-center h-full justify-end group">
+                  <div class="w-full bg-surface-2 border border-border rounded-t-[4px] h-[85%]"></div>
+                  <span class="text-[11px] font-mono text-muted mt-2">S5</span>
+                </div>
+
+                <!-- S6: Atual (Primary color, 18.450 kg - 92%) -->
+                <div class="flex-1 flex flex-col items-center h-full justify-end group">
+                  <div class="w-full bg-primary rounded-t-[4px] h-[92%] shadow-[0_0_12px_rgba(61,220,110,0.15)]"></div>
+                  <span class="text-[11px] font-mono text-primary font-medium mt-2">S6</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Legenda Deload -->
+          <div class="pt-2 border-t border-border/60 flex items-center justify-between text-[12px] text-muted">
+            <div class="flex items-center gap-1.5">
+              <div class="w-3 h-3 rounded-[2px] hatch-pattern border border-border"></div>
+              <span>Deload · volume reduzido de propósito</span>
+            </div>
+            <span class="font-mono text-[11px] text-muted">kg / semana</span>
+          </div>
+        </div>
+
+        <!-- 6. Card de Séries por Grupo Muscular (Faixa recomendada 10-20 séries e alerta âmbar se abaixo) -->
+        <div class="bg-surface rounded-card p-4 border border-border space-y-3">
+          <div class="flex items-center justify-between">
+            <h2 class="text-[16px] font-semibold text-text">Séries por grupo</h2>
+            <span class="text-[12px] font-mono text-muted">Alvo: 10–20 séries/sem</span>
+          </div>
+
+          <div class="space-y-3 pt-1">
+            <!-- Costas: 18 séries (Ótimo, dentro da faixa) -->
+            <div class="space-y-1">
+              <div class="flex justify-between text-[13px]">
+                <span class="text-text font-medium">Costas</span>
+                <span class="tabular font-medium text-text">18 <span class="text-[11px] text-muted font-normal">séries</span></span>
+              </div>
+              <div class="relative h-2.5 bg-surface-2 rounded-full overflow-hidden">
+                <!-- Marcação vertical discreta da faixa recomendada (min 10 = 40%, max 20 = 80%) -->
+                <div class="absolute left-[40%] top-0 bottom-0 w-[1px] bg-border z-10"></div>
+                <div class="absolute left-[80%] top-0 bottom-0 w-[1px] bg-border z-10"></div>
+                <!-- Barra de progresso -->
+                <div class="h-full bg-primary rounded-full w-[72%]"></div>
+              </div>
+            </div>
+
+            <!-- Pernas: 16 séries (Ótimo) -->
+            <div class="space-y-1">
+              <div class="flex justify-between text-[13px]">
+                <span class="text-text font-medium">Pernas</span>
+                <span class="tabular font-medium text-text">16 <span class="text-[11px] text-muted font-normal">séries</span></span>
+              </div>
+              <div class="relative h-2.5 bg-surface-2 rounded-full overflow-hidden">
+                <div class="absolute left-[40%] top-0 bottom-0 w-[1px] bg-border z-10"></div>
+                <div class="absolute left-[80%] top-0 bottom-0 w-[1px] bg-border z-10"></div>
+                <div class="h-full bg-primary rounded-full w-[64%]"></div>
+              </div>
+            </div>
+
+            <!-- Peito: 14 séries (Ótimo) -->
+            <div class="space-y-1">
+              <div class="flex justify-between text-[13px]">
+                <span class="text-text font-medium">Peito</span>
+                <span class="tabular font-medium text-text">14 <span class="text-[11px] text-muted font-normal">séries</span></span>
+              </div>
+              <div class="relative h-2.5 bg-surface-2 rounded-full overflow-hidden">
+                <div class="absolute left-[40%] top-0 bottom-0 w-[1px] bg-border z-10"></div>
+                <div class="absolute left-[80%] top-0 bottom-0 w-[1px] bg-border z-10"></div>
+                <div class="h-full bg-primary rounded-full w-[56%]"></div>
+              </div>
+            </div>
+
+            <!-- Ombros: 12 séries (Ótimo) -->
+            <div class="space-y-1">
+              <div class="flex justify-between text-[13px]">
+                <span class="text-text font-medium">Ombros</span>
+                <span class="tabular font-medium text-text">12 <span class="text-[11px] text-muted font-normal">séries</span></span>
+              </div>
+              <div class="relative h-2.5 bg-surface-2 rounded-full overflow-hidden">
+                <div class="absolute left-[40%] top-0 bottom-0 w-[1px] bg-border z-10"></div>
+                <div class="absolute left-[80%] top-0 bottom-0 w-[1px] bg-border z-10"></div>
+                <div class="h-full bg-primary rounded-full w-[48%]"></div>
+              </div>
+            </div>
+
+            <!-- Braços: 10 séries (No limiar mínimo) -->
+            <div class="space-y-1">
+              <div class="flex justify-between text-[13px]">
+                <span class="text-text font-medium">Braços</span>
+                <span class="tabular font-medium text-text">10 <span class="text-[11px] text-muted font-normal">séries</span></span>
+              </div>
+              <div class="relative h-2.5 bg-surface-2 rounded-full overflow-hidden">
+                <div class="absolute left-[40%] top-0 bottom-0 w-[1px] bg-border z-10"></div>
+                <div class="absolute left-[80%] top-0 bottom-0 w-[1px] bg-border z-10"></div>
+                <div class="h-full bg-primary rounded-full w-[40%]"></div>
+              </div>
+            </div>
+
+            <!-- Core: 6 séries (Abaixo da faixa recomendada -> número em âmbar) -->
+            <div class="space-y-1">
+              <div class="flex justify-between text-[13px]">
+                <span class="text-text font-medium">Core</span>
+                <span class="tabular font-medium text-warning">6 <span class="text-[11px] text-warning/80 font-normal">séries (abaixo)</span></span>
+              </div>
+              <div class="relative h-2.5 bg-surface-2 rounded-full overflow-hidden">
+                <div class="absolute left-[40%] top-0 bottom-0 w-[1px] bg-border z-10"></div>
+                <div class="absolute left-[80%] top-0 bottom-0 w-[1px] bg-border z-10"></div>
+                <div class="h-full bg-warning rounded-full w-[24%]"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Legenda de recomendação -->
+          <div class="pt-2 border-t border-border/60 flex items-center justify-between text-[12px] text-muted">
+            <span class="flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-border"></span>
+              Faixa de hipertrofia recomendada: 10 a 20 séries/semana
+            </span>
+          </div>
+        </div>
+
+        <!-- 7. Card de Progressão de Carga (Dropdown de exercício + Gráfico de linha e1RM + pontos de PR) -->
+        <div class="bg-surface rounded-card p-4 border border-border space-y-3">
+          <div class="flex items-center justify-between">
+            <h2 class="text-[16px] font-semibold text-text">Progressão</h2>
+            
+            <!-- Seletor em Dropdown de Exercício -->
+            <div class="flex items-center gap-1.5 px-2.5 py-1 bg-surface-2 rounded-[8px] border border-border text-[13px] text-text">
+              <span class="font-medium">Agachamento livre</span>
+              <svg class="w-3.5 h-3.5 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Valor e1RM em destaque com variação em verde -->
+          <div class="flex items-baseline justify-between pt-1">
+            <div>
+              <span class="text-[13px] text-muted">Estimativa atual:</span>
+              <div class="text-[24px] font-semibold tabular text-text mt-0.5">
+                e1RM 112 <span class="text-[14px] text-muted font-normal">kg</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-1 text-[13px] text-primary tabular font-medium">
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
+              </svg>
+              <span>+8 kg no período</span>
+            </div>
+          </div>
+
+          <!-- Line Chart SVG (Sem gradientes, sem área preenchida, linha de tendência tracejada) -->
+          <div class="relative pt-2">
+            <svg class="w-full h-32 overflow-visible" viewBox="0 0 310 120">
+              <!-- Horizontal grid lines -->
+              <line x1="0" y1="10" x2="310" y2="10" stroke="#262E2A" stroke-width="1" />
+              <line x1="0" y1="60" x2="310" y2="60" stroke="#262E2A" stroke-width="1" />
+              <line x1="0" y1="110" x2="310" y2="110" stroke="#262E2A" stroke-width="1" />
+
+              <!-- Linha de tendência tracejada (cinza secundário) -->
+              <line x1="15" y1="105" x2="295" y2="25" stroke="#8A958F" stroke-width="1.5" stroke-dasharray="4 4" />
+
+              <!-- Linha principal de progressão e1RM (verde primary) -->
+              <polyline
+                fill="none"
+                stroke="#3DDC6E"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                points="15,102 70,95 125,78 180,82 235,50 295,20"
+              />
+
+              <!-- Pontos de Sessão (Primary) -->
+              <!-- P1: 104 kg -->
+              <circle cx="15" cy="102" r="4" fill="#3DDC6E" />
+              <!-- P2: 105 kg -->
+              <circle cx="70" cy="95" r="4" fill="#3DDC6E" />
+              <!-- P3: 108 kg (PR) -->
+              <circle cx="125" cy="78" r="6" fill="#3DDC6E" stroke="#0B0D0C" stroke-width="2" />
+              <rect x="110" y="58" width="30" height="14" rx="2" fill="#3DDC6E" />
+              <text x="125" y="69" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="9" font-weight="bold" fill="#0B0D0C">PR</text>
+              <!-- P4: 107 kg -->
+              <circle cx="180" cy="82" r="4" fill="#3DDC6E" />
+              <!-- P5: 110 kg -->
+              <circle cx="235" cy="50" r="4" fill="#3DDC6E" />
+              <!-- P6: 112 kg (PR Atual) -->
+              <circle cx="295" cy="20" r="6" fill="#3DDC6E" stroke="#0B0D0C" stroke-width="2" />
+              <rect x="280" y="0" width="30" height="14" rx="2" fill="#3DDC6E" />
+              <text x="295" y="11" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="9" font-weight="bold" fill="#0B0D0C">PR</text>
+            </svg>
+
+            <!-- Eixo X labels -->
+            <div class="flex justify-between text-[11px] font-mono text-muted mt-2 pt-1 border-t border-border">
+              <span>08 out</span>
+              <span>18 out</span>
+              <span>28 out</span>
+              <span>07 nov</span>
+              <span>15 nov</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 8. Card de Recordes no Período (Lista com 3 linhas + badge PR + link 'Ver todos') -->
+        <div class="bg-surface rounded-card p-4 border border-border space-y-3">
+          <div class="flex items-center justify-between">
+            <h2 class="text-[16px] font-semibold text-text">Recordes no período</h2>
+            <span class="text-[12px] font-mono text-primary font-medium">3 novos</span>
+          </div>
+
+          <div class="divide-y divide-border/60">
+            <!-- Recorde 1 -->
+            <div class="py-2.5 flex items-center justify-between first:pt-0">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-[16px] font-medium text-text">Agachamento livre</span>
+                  <span class="px-1.5 py-0.2 rounded-[2px] bg-primary text-[#0B0D0C] font-mono text-[10px] font-bold">PR</span>
+                </div>
+                <div class="text-[13px] text-muted mt-0.5">há 2 dias · 100 kg × 8</div>
+              </div>
+              <div class="text-right">
+                <span class="text-[16px] font-medium tabular text-text">112 kg</span>
+                <span class="block text-[11px] font-mono text-muted">e1RM</span>
+              </div>
+            </div>
+
+            <!-- Recorde 2 -->
+            <div class="py-2.5 flex items-center justify-between">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-[16px] font-medium text-text">Remada curvada</span>
+                  <span class="px-1.5 py-0.2 rounded-[2px] bg-primary text-[#0B0D0C] font-mono text-[10px] font-bold">PR</span>
+                </div>
+                <div class="text-[13px] text-muted mt-0.5">há 3 dias · 80 kg × 8</div>
+              </div>
+              <div class="text-right">
+                <span class="text-[16px] font-medium tabular text-text">96 kg</span>
+                <span class="block text-[11px] font-mono text-muted">e1RM</span>
+              </div>
+            </div>
+
+            <!-- Recorde 3 -->
+            <div class="py-2.5 flex items-center justify-between last:pb-0">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-[16px] font-medium text-text">Levantamento terra</span>
+                  <span class="px-1.5 py-0.2 rounded-[2px] bg-primary text-[#0B0D0C] font-mono text-[10px] font-bold">PR</span>
+                </div>
+                <div class="text-[13px] text-muted mt-0.5">há 5 dias · 160 kg × 5</div>
+              </div>
+              <div class="text-right">
+                <span class="text-[16px] font-medium tabular text-text">187 kg</span>
+                <span class="block text-[11px] font-mono text-muted">e1RM</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-2 border-t border-border/60">
+            <button class="w-full text-center text-[13px] text-text hover:text-primary font-medium py-1 transition-colors flex items-center justify-center gap-1">
+              <span>Ver todos os recordes</span>
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ============================================== -->
+      <!-- ESTADO 2: SEM DADOS NO PERÍODO (FRAME VAZIO) -->
+      <!-- ============================================== -->
+      <div id="view-empty" class="hidden space-y-4 pt-10">
+        <div class="bg-surface rounded-card p-6 border border-border text-center space-y-4">
+          <div class="w-14 h-14 rounded-full bg-surface-2 border border-border mx-auto flex items-center justify-center">
+            <!-- Line Chart Empty Icon -->
+            <svg class="w-6 h-6 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-[18px] font-semibold text-text">Sem treinos neste período</h3>
+            <p class="text-[14px] text-muted mt-1 max-w-[240px] mx-auto">
+              Escolha outro período ou registre seu primeiro treino para gerar telemetria.
+            </p>
+          </div>
+          <div class="pt-2">
+            <button class="w-full h-12 rounded-btn bg-primary text-[#0B0D0C] font-semibold text-[15px] flex items-center justify-center gap-2 hover:bg-[#34c75e] transition-colors">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+              </svg>
+              <span>Iniciar treino</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================== -->
+      <!-- ESTADO 3: CARREGAMENTO (SKELETON PULSANTE)    -->
+      <!-- ============================================== -->
+      <div id="view-loading" class="hidden space-y-4 animate-pulse">
+        <!-- KPI Skeletons -->
+        <div class="grid grid-cols-2 gap-3">
+          <div class="bg-surface rounded-card p-3.5 border border-border h-24 flex flex-col justify-between">
+            <div class="w-16 h-3 bg-surface-2 rounded"></div>
+            <div class="w-24 h-6 bg-surface-2 rounded"></div>
+            <div class="w-20 h-3 bg-surface-2 rounded"></div>
+          </div>
+          <div class="bg-surface rounded-card p-3.5 border border-border h-24 flex flex-col justify-between">
+            <div class="w-16 h-3 bg-surface-2 rounded"></div>
+            <div class="w-16 h-6 bg-surface-2 rounded"></div>
+            <div class="w-16 h-3 bg-surface-2 rounded"></div>
+          </div>
+          <div class="bg-surface rounded-card p-3.5 border border-border h-24 flex flex-col justify-between">
+            <div class="w-20 h-3 bg-surface-2 rounded"></div>
+            <div class="w-28 h-6 bg-surface-2 rounded"></div>
+            <div class="w-14 h-3 bg-surface-2 rounded"></div>
+          </div>
+          <div class="bg-surface rounded-card p-3.5 border border-border h-24 flex flex-col justify-between">
+            <div class="w-16 h-3 bg-surface-2 rounded"></div>
+            <div class="w-20 h-6 bg-surface-2 rounded"></div>
+            <div class="w-18 h-3 bg-surface-2 rounded"></div>
+          </div>
+        </div>
+
+        <!-- Big Card Skeleton: Volume Chart -->
+        <div class="bg-surface rounded-card p-4 border border-border h-56 flex flex-col justify-between">
+          <div class="flex justify-between">
+            <div class="w-20 h-4 bg-surface-2 rounded"></div>
+            <div class="w-36 h-3 bg-surface-2 rounded"></div>
+          </div>
+          <div class="flex items-end justify-between gap-3 h-32 pt-4">
+            <div class="flex-1 bg-surface-2 rounded h-20"></div>
+            <div class="flex-1 bg-surface-2 rounded h-24"></div>
+            <div class="flex-1 bg-surface-2 rounded h-28"></div>
+            <div class="flex-1 bg-surface-2 rounded h-14"></div>
+            <div class="flex-1 bg-surface-2 rounded h-30"></div>
+            <div class="flex-1 bg-surface-2 rounded h-32"></div>
+          </div>
+        </div>
+
+        <!-- Big Card Skeleton: Séries -->
+        <div class="bg-surface rounded-card p-4 border border-border h-48 space-y-3">
+          <div class="w-32 h-4 bg-surface-2 rounded"></div>
+          <div class="w-full h-3 bg-surface-2 rounded"></div>
+          <div class="w-full h-3 bg-surface-2 rounded"></div>
+          <div class="w-full h-3 bg-surface-2 rounded"></div>
+        </div>
+      </div>
+
+      <!-- ============================================== -->
+      <!-- ESTADO 4: ERRO AO CARREGAR                     -->
+      <!-- ============================================== -->
+      <div id="view-error" class="hidden space-y-4 pt-10">
+        <div class="bg-surface rounded-card p-6 border border-danger/40 text-center space-y-4">
+          <div class="w-14 h-14 rounded-full bg-danger/10 border border-danger/30 mx-auto flex items-center justify-center">
+            <!-- Alert Octagon Line Icon in Danger color -->
+            <svg class="w-6 h-6 text-danger" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-[17px] font-semibold text-text">Não foi possível carregar as estatísticas</h3>
+            <p class="text-[14px] text-muted mt-1 max-w-[260px] mx-auto">
+              Falha ao sincronizar dados com o servidor. Verifique sua conexão e tente novamente.
+            </p>
+          </div>
+          <div class="pt-2">
+            <button onclick="switchState('main')" class="w-full h-12 rounded-btn bg-surface-2 border border-border text-text font-semibold text-[15px] hover:border-muted transition-colors">
+              Tentar novamente
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 10. Barra de Navegação Inferior (4 abas: Início, Treinar, Progresso [ATIVA], Perfil) -->
+    <nav class="absolute bottom-0 inset-x-0 bg-surface border-t border-border px-6 pt-2 pb-6 z-30">
+      <div class="flex items-center justify-between">
+        <!-- Aba 1: Início -->
+        <button class="flex flex-col items-center gap-1 text-muted hover:text-text transition-colors min-w-[48px]">
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+            <rect x="3" y="3" width="7" height="7" rx="1.5" />
+            <rect x="14" y="3" width="7" height="7" rx="1.5" />
+            <rect x="14" y="14" width="7" height="7" rx="1.5" />
+            <rect x="3" y="14" width="7" height="7" rx="1.5" />
+          </svg>
+          <span class="text-[11px] font-medium">Início</span>
+        </button>
+
+        <!-- Aba 2: Treinar -->
+        <button class="flex flex-col items-center gap-1 text-muted hover:text-text transition-colors min-w-[48px]">
+          <!-- Dumbbell Line Icon -->
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 8l2-2m0 0l2 2M6 6v12m0 0l-2-2m2 2l2-2M18 8l2-2m0 0l2 2M20 6v12m0 0l-2-2m2 2l2-2M9 12h6" />
+          </svg>
+          <span class="text-[11px] font-medium">Treinar</span>
+        </button>
+
+        <!-- Aba 3: Progresso (ATIVA EM PRIMARY) -->
+        <button class="flex flex-col items-center gap-1 text-primary min-w-[48px]">
+          <!-- Analytics Line Chart Icon -->
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.25">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+          </svg>
+          <span class="text-[11px] font-semibold text-primary">Progresso</span>
+        </button>
+
+        <!-- Aba 4: Perfil -->
+        <button class="flex flex-col items-center gap-1 text-muted hover:text-text transition-colors min-w-[48px]">
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+          <span class="text-[11px] font-medium">Perfil</span>
+        </button>
+      </div>
+    </nav>
+
+  </div>
+
+  <script>
+    function switchState(state) {
+      // Hide all views
+      document.getElementById('view-main').classList.add('hidden');
+      document.getElementById('view-empty').classList.add('hidden');
+      document.getElementById('view-loading').classList.add('hidden');
+      document.getElementById('view-error').classList.add('hidden');
+
+      // Reset button styles
+      ['main', 'empty', 'loading', 'error'].forEach(s => {
+        const btn = document.getElementById('btn-state-' + s);
+        btn.className = "px-2 py-0.5 rounded bg-surface border border-border text-muted hover:text-text text-[11px]";
+      });
+
+      // Show selected view
+      document.getElementById('view-' + state).classList.remove('hidden');
+      const activeBtn = document.getElementById('btn-state-' + state);
+      activeBtn.className = "px-2 py-0.5 rounded bg-primary text-black font-semibold text-[11px]";
+    }
+  </script>
+</body>
+</html>

@@ -32,7 +32,7 @@ public class PlaylistService {
         }
 
         Map<UUID, List<PlaylistExerciseDto>> itemsByPlaylist = items
-            .findDetailByPlaylistIdIn(rows.stream().map(PlaylistSummaryRow::id).toList())
+            .findDetailByPlaylistIdIn(rows.stream().map(row -> row.id()).toList())
             .stream()
             .collect(Collectors.groupingBy(
                 item -> item.getPlaylist().getId(),
@@ -155,7 +155,7 @@ public class PlaylistService {
         List<PlaylistExercise> current = items.findByPlaylistIdOrderByOrderIndexAsc(id);
 
         Map<UUID, PlaylistExercise> byId = current.stream()
-            .collect(Collectors.toMap(PlaylistExercise::getId, item -> item));
+            .collect(Collectors.toMap(item -> item.getId(), item -> item));
         Set<Integer> indices = new HashSet<>();
 
         if (request.items().size() != current.size()) {
