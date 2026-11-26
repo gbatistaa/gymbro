@@ -1,0 +1,1 @@
+org.springframework.boot.EnvironmentPostProcessor=com.gbatistadev.gymbro.config.database.DatabaseFallbackEnvironmentPostProcessor

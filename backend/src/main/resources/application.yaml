@@ -59,3 +59,7 @@ app:
     rate-limit:
       max-attempts: ${LOGIN_MAX_ATTEMPTS:5}
       window: ${LOGIN_ATTEMPT_WINDOW:PT15M}
+  datasource-fallback:
+    url: ${LOCAL_DB_URL:jdbc:postgresql://localhost:5432/gymbro}
+    username: ${LOCAL_DB_USER:postgres}
+    password: ${LOCAL_DB_PASS:postgres}
