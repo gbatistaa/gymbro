@@ -65,10 +65,10 @@ class HttpBioimpedanceParserTest {
             JsonNode result = new HttpBioimpedanceParser(new BioimpedanceParserProperties(
                 "http://127.0.0.1:" + server.getAddress().getPort(), Duration.ofSeconds(5), ""))
                 .extract("%PDF-1.4".getBytes(StandardCharsets.ISO_8859_1), "inbody.pdf");
-            assertEquals("2026-10-01T08:00:00Z", result.get("measuredAt").asText());
+            assertEquals("2026-10-01T08:00:00Z", result.get("measuredAt").stringValue());
             assertEquals(82.4, result.get("bodyWeightKg").asDouble());
             assertTrue(result.get("skeletalMuscleMassKg").isNull());
-            assertEquals("skeletalMuscleMassKg", result.get("missingFields").get(0).textValue());
+            assertEquals("skeletalMuscleMassKg", result.get("missingFields").get(0).stringValue());
         } finally {
             server.stop(0);
         }

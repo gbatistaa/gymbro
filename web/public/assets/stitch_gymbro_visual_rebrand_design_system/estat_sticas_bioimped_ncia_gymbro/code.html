@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Estatísticas — Bioimpedância — Gymbro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            canvas: '#0B0D0C',
+            surface: '#141816',
+            'surface-2': '#1C221F',
+            border: '#262E2A',
+            'text-primary': '#F2F5F3',
+            'text-secondary': '#8A958F',
+            primary: '#3DDC6E',
+            danger: '#E5604F',
+            warning: '#E8B04A'
+          },
+          fontFamily: {
+            sans: ['IBM Plex Sans', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+            mono: ['IBM Plex Mono', 'monospace']
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body {
+      background-color: #0B0D0C;
+      color: #F2F5F3;
+      font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    .tabular {
+      font-variant-numeric: tabular-nums;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    @keyframes pulse-slow {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    .animate-skeleton {
+      animation: pulse-slow 1.6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+  </style>
+</head>
+<body class="bg-canvas text-text-primary min-h-screen flex justify-center selection:bg-primary selection:text-canvas">
+
+  <!-- Mobile Device Container: 390px fixed width for pixel-perfect standard preview -->
+  <div class="w-full max-w-[390px] min-h-screen bg-canvas flex flex-col relative pb-24 border-x border-border shadow-2xl">
+
+    <!-- DEV / STATE CONTROLS BAR (Multi-state inspector) -->
+    <header class="sticky top-0 z-50 bg-[#070908] border-b border-border px-3 py-2 flex items-center justify-between text-xs">
+      <span class="text-text-secondary font-mono text-[10px] tracking-wider uppercase">Estado:</span>
+      <div class="flex items-center gap-1 overflow-x-auto no-scrollbar">
+        <button onclick="switchState('dados')" id="btn-dados" class="px-2 py-0.5 rounded text-[11px] font-mono bg-primary text-canvas font-semibold transition-colors">1. Dados</button>
+        <button onclick="switchState('unica')" id="btn-unica" class="px-2 py-0.5 rounded text-[11px] font-mono bg-surface-2 text-text-secondary hover:text-text-primary transition-colors">2. Única</button>
+        <button onclick="switchState('parcial')" id="btn-parcial" class="px-2 py-0.5 rounded text-[11px] font-mono bg-surface-2 text-text-secondary hover:text-text-primary transition-colors">3. Parcial</button>
+        <button onclick="switchState('vazio')" id="btn-vazio" class="px-2 py-0.5 rounded text-[11px] font-mono bg-surface-2 text-text-secondary hover:text-text-primary transition-colors">4. Vazio</button>
+        <button onclick="switchState('loading')" id="btn-loading" class="px-2 py-0.5 rounded text-[11px] font-mono bg-surface-2 text-text-secondary hover:text-text-primary transition-colors">5. Loading</button>
+        <button onclick="switchState('erro')" id="btn-erro" class="px-2 py-0.5 rounded text-[11px] font-mono bg-surface-2 text-text-secondary hover:text-text-primary transition-colors">6. Erro</button>
+      </div>
+    </header>
+
+    <!-- 1. CABEÇALHO GLOBAL & SELETOR SEGMENTADO (Fixo ao rolar) -->
+    <section class="sticky top-[37px] z-40 bg-canvas/95 backdrop-blur-md px-5 pt-4 pb-3 border-b border-border flex items-center justify-between">
+      <h1 class="text-[28px] font-semibold tracking-tight text-text-primary leading-tight">Estatísticas</h1>
+      
+      <!-- Segmented Switch: Treino vs Bioimpedância -->
+      <nav aria-label="Seletor de módulo" class="flex p-0.5 bg-surface-2 rounded-[12px] border border-border">
+        <button class="px-3 py-1.5 text-[13px] font-medium text-text-secondary hover:text-text-primary rounded-[10px] transition-all">
+          Treino
+        </button>
+        <button class="px-3 py-1.5 text-[13px] font-semibold text-text-primary bg-surface rounded-[10px] border border-border shadow-sm">
+          Bioimpedância
+        </button>
+      </nav>
+    </section>
+
+    <!-- CONTENT WRAPPER -->
+    <main class="flex-1 px-5 pt-3 pb-6 flex flex-col gap-4">
+
+      <!-- 2. SELETOR DE PERÍODO (Comum a todos os estados interativos) -->
+      <div id="section-periodo" class="flex flex-col gap-2">
+        <div class="grid grid-cols-4 p-1 bg-surface-2 rounded-[12px] border border-border">
+          <button class="py-1.5 text-center text-[13px] font-medium text-text-secondary hover:text-text-primary rounded-[9px] transition-all">Semana</button>
+          <button class="py-1.5 text-center text-[13px] font-semibold text-text-primary bg-surface rounded-[9px] border border-border shadow-sm">Mês</button>
+          <button class="py-1.5 text-center text-[13px] font-medium text-text-secondary hover:text-text-primary rounded-[9px] transition-all">Ano</button>
+          <button class="py-1.5 text-center text-[13px] font-medium text-text-secondary hover:text-text-primary rounded-[9px] transition-all">Tudo</button>
+        </div>
+        <div class="flex items-center justify-between text-[14px] text-text-secondary px-0.5 font-normal">
+          <span>9 a 15 nov 2026</span>
+          <span class="tabular font-medium" id="meta-count">5 medições</span>
+        </div>
+      </div>
+
+      <!-- ============================================================== -->
+      <!-- ESTADO 1: DADOS COMPLETOS (Padrão) -->
+      <!-- ============================================================== -->
+      <div id="state-dados" class="flex flex-col gap-4">
+
+        <!-- 3. GRID 2x2 DE KPIS -->
+        <section aria-label="Indicadores chave" class="grid grid-cols-2 gap-2.5">
+          <!-- Peso -->
+          <div class="bg-surface p-3.5 rounded-[16px] border border-border flex flex-col justify-between">
+            <span class="text-[14px] text-text-secondary">Peso</span>
+            <div class="my-1.5">
+              <span class="text-[28px] font-semibold tabular text-text-primary tracking-tight">81,2</span>
+              <span class="text-[15px] font-normal text-text-secondary ml-1">kg</span>
+            </div>
+            <div class="text-[13px]">
+              <span class="tabular font-medium text-primary flex items-center gap-0.5">
+                <svg class="w-3.5 h-3.5 stroke-[2.2]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                </svg>
+                −2,2 kg
+              </span>
+              <span class="text-[12px] text-text-secondary block mt-0.5">desde 12 out</span>
+            </div>
+          </div>
+
+          <!-- Gordura Corporal -->
+          <div class="bg-surface p-3.5 rounded-[16px] border border-border flex flex-col justify-between">
+            <span class="text-[14px] text-text-secondary">Gordura corporal</span>
+            <div class="my-1.5">
+              <span class="text-[28px] font-semibold tabular text-text-primary tracking-tight">17,6</span>
+              <span class="text-[15px] font-normal text-text-secondary ml-1">%</span>
+            </div>
+            <div class="text-[13px]">
+              <span class="tabular font-medium text-primary flex items-center gap-0.5">
+                <svg class="w-3.5 h-3.5 stroke-[2.2]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                </svg>
+                −2,2 pts
+              </span>
+              <span class="text-[12px] text-text-secondary block mt-0.5">desde 12 out</span>
+            </div>
+          </div>
+
+          <!-- Massa Muscular -->
+          <div class="bg-surface p-3.5 rounded-[16px] border border-border flex flex-col justify-between">
+            <span class="text-[14px] text-text-secondary">Massa muscular</span>
+            <div class="my-1.5">
+              <span class="text-[28px] font-semibold tabular text-text-primary tracking-tight">36,9</span>
+              <span class="text-[15px] font-normal text-text-secondary ml-1">kg</span>
+            </div>
+            <div class="text-[13px]">
+              <span class="tabular font-medium text-primary flex items-center gap-0.5">
+                <svg class="w-3.5 h-3.5 stroke-[2.2]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                </svg>
+                +0,8 kg
+              </span>
+              <span class="text-[12px] text-text-secondary block mt-0.5">desde 12 out</span>
+            </div>
+          </div>
+
+          <!-- IMC -->
+          <div class="bg-surface p-3.5 rounded-[16px] border border-border flex flex-col justify-between">
+            <span class="text-[14px] text-text-secondary">IMC</span>
+            <div class="my-1.5">
+              <span class="text-[28px] font-semibold tabular text-text-primary tracking-tight">25,6</span>
+            </div>
+            <div class="text-[13px]">
+              <span class="tabular font-medium text-text-primary flex items-center gap-0.5">
+                <svg class="w-3.5 h-3.5 stroke-[2.2] text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                </svg>
+                −0,7
+              </span>
+              <span class="text-[12px] text-text-secondary block mt-0.5">altura 178 cm</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- 4. CARD DE GRÁFICO DE EVOLUÇÃO (Com lacuna de dados real e tooltip) -->
+        <section class="bg-surface p-4 rounded-[16px] border border-border flex flex-col gap-3">
+          <div class="flex items-center justify-between">
+            <h2 class="text-[16px] font-semibold text-text-primary">Evolução</h2>
+            <!-- Dropdown Métrica Ativa -->
+            <div class="relative">
+              <select class="appearance-none bg-surface-2 text-text-primary text-[13px] font-medium py-1.5 pl-3 pr-8 rounded-[10px] border border-border focus:outline-none focus:border-primary/60 cursor-pointer">
+                <option selected>Gordura corporal</option>
+                <option>Peso</option>
+                <option>Massa gorda</option>
+                <option>Massa magra</option>
+                <option>Massa muscular</option>
+                <option>Massa muscular esquelética</option>
+                <option>Gordura visceral</option>
+                <option>Água corporal</option>
+                <option>IMC</option>
+              </select>
+              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-text-secondary">
+                <svg class="w-4 h-4 stroke-[2]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- Valor Destaque & Variação do Período -->
+          <div class="flex items-baseline justify-between pt-1">
+            <div class="flex items-baseline gap-1">
+              <span class="text-[28px] font-semibold tabular text-text-primary tracking-tight">17,6</span>
+              <span class="text-[16px] font-normal text-text-secondary">%</span>
+            </div>
+            <span class="text-[13px] text-primary font-medium tabular">−2,2 pts no período</span>
+          </div>
+
+          <!-- SVG Chart Area (Sem preenchimento, com lacuna tracejada e ponto final maior) -->
+          <div class="relative w-full h-[155px] mt-1">
+            <!-- Tooltip ativo no último ponto -->
+            <div class="absolute right-[22px] top-[14px] bg-[#0E1210] border border-border px-2.5 py-1 rounded-[6px] shadow-lg flex items-center gap-1.5 z-10">
+              <span class="tabular text-[12px] font-semibold text-primary">17,6 %</span>
+              <span class="text-text-secondary text-[11px] font-mono">15 nov</span>
+            </div>
+
+            <svg class="w-full h-full overflow-visible" viewBox="0 0 318 135" fill="none">
+              <!-- Linhas de Grade e Eixo Y (3 marcas de referência) -->
+              <g stroke="#262E2A" stroke-width="1">
+                <!-- Top: 20% -->
+                <line x1="28" y1="15" x2="318" y2="15" />
+                <!-- Mid: 18% -->
+                <line x1="28" y1="65" x2="318" y2="65" />
+                <!-- Bottom: 16% -->
+                <line x1="28" y1="115" x2="318" y2="115" />
+              </g>
+
+              <!-- Rótulos Eixo Y -->
+              <text x="2" y="19" fill="#8A958F" font-size="11" font-family="IBM Plex Mono">20%</text>
+              <text x="2" y="69" fill="#8A958F" font-size="11" font-family="IBM Plex Mono">18%</text>
+              <text x="2" y="119" fill="#8A958F" font-size="11" font-family="IBM Plex Mono">16%</text>
+
+              <!-- Segmento 1 Contínuo (12 out a 19 out) -->
+              <!-- P1: (45, 20) -> 19,8% | P2: (105, 45) -> 18,8% -->
+              <polyline points="45,20 105,45" stroke="#3DDC6E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+
+              <!-- Segmento 2: Lacuna de dados (19 out a 2 nov sem medição - linha tracejada em #262E2A) -->
+              <!-- P2: (105, 45) até P3: (175, 55) -->
+              <line x1="105" y1="45" x2="175" y2="55" stroke="#262E2A" stroke-width="2" stroke-dasharray="4 4" />
+
+              <!-- Segmento 3 Contínuo (2 nov a 15 nov) -->
+              <!-- P3: (175, 55) -> 18,4% | P4: (235, 62) -> 18,1% | P5: (295, 75) -> 17,6% -->
+              <polyline points="175,55 235,62 295,75" stroke="#3DDC6E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+
+              <!-- Pontos de Medição -->
+              <!-- P1: 12 out -->
+              <circle cx="45" cy="20" r="3.5" fill="#3DDC6E" stroke="#0B0D0C" stroke-width="1.5" />
+              <!-- P2: 19 out -->
+              <circle cx="105" cy="45" r="3.5" fill="#3DDC6E" stroke="#0B0D0C" stroke-width="1.5" />
+              <!-- P3: 02 nov -->
+              <circle cx="175" cy="55" r="3.5" fill="#3DDC6E" stroke="#0B0D0C" stroke-width="1.5" />
+              <!-- P4: 08 nov -->
+              <circle cx="235" cy="62" r="3.5" fill="#3DDC6E" stroke="#0B0D0C" stroke-width="1.5" />
+              <!-- P5: 15 nov (Última medição: ponto maior com anel de foco) -->
+              <circle cx="295" cy="75" r="6" fill="#3DDC6E" stroke="#0B0D0C" stroke-width="2" />
+              <circle cx="295" cy="75" r="1.5" fill="#0B0D0C" />
+            </svg>
+
+            <!-- Rótulos Eixo X -->
+            <div class="flex justify-between pl-7 pr-1 mt-1 text-[11px] text-text-secondary font-mono">
+              <span>12 out</span>
+              <span>19 out</span>
+              <span class="text-warning/80">lacuna</span>
+              <span>02 nov</span>
+              <span>08 nov</span>
+              <span class="text-primary font-medium">15 nov</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- 5. CARD DE COMPOSIÇÃO CORPORAL (Barras Empilhadas) -->
+        <section class="bg-surface p-4 rounded-[16px] border border-border flex flex-col gap-3">
+          <div>
+            <h2 class="text-[16px] font-semibold text-text-primary">Composição</h2>
+            <p class="text-[13px] text-text-secondary mt-0.5">Peso dividido em massa gorda e massa magra</p>
+          </div>
+
+          <!-- Barras Empilhadas Verticais -->
+          <div class="grid grid-cols-4 gap-3 pt-2 pb-1 items-end h-[160px] border-b border-border">
+            <!-- Barra 1: 12 out (Total 83,4 kg) -->
+            <div class="flex flex-col items-center gap-1.5 h-full justify-end">
+              <span class="tabular text-[12px] text-text-secondary">83,4</span>
+              <div class="w-full max-w-[36px] flex flex-col rounded-[6px] overflow-hidden border border-border">
+                <!-- Massa gorda (topo): 16,5 kg (20%) -->
+                <div class="w-full bg-surface-2 border-b border-border h-[28px]" title="Massa gorda: 16,5 kg"></div>
+                <!-- Massa magra (base): 66,9 kg (80%) -->
+                <div class="w-full bg-primary h-[82px]" title="Massa magra: 66,9 kg"></div>
+              </div>
+              <span class="text-[11px] text-text-secondary font-mono">12 out</span>
+            </div>
+
+            <!-- Barra 2: 02 nov (Total 82,6 kg) -->
+            <div class="flex flex-col items-center gap-1.5 h-full justify-end">
+              <span class="tabular text-[12px] text-text-secondary">82,6</span>
+              <div class="w-full max-w-[36px] flex flex-col rounded-[6px] overflow-hidden border border-border">
+                <div class="w-full bg-surface-2 border-b border-border h-[26px]"></div>
+                <div class="w-full bg-primary h-[83px]"></div>
+              </div>
+              <span class="text-[11px] text-text-secondary font-mono">02 nov</span>
+            </div>
+
+            <!-- Barra 3: 08 nov (Total 81,9 kg) -->
+            <div class="flex flex-col items-center gap-1.5 h-full justify-end">
+              <span class="tabular text-[12px] text-text-secondary">81,9</span>
+              <div class="w-full max-w-[36px] flex flex-col rounded-[6px] overflow-hidden border border-border">
+                <div class="w-full bg-surface-2 border-b border-border h-[24px]"></div>
+                <div class="w-full bg-primary h-[84px]"></div>
+              </div>
+              <span class="text-[11px] text-text-secondary font-mono">08 nov</span>
+            </div>
+
+            <!-- Barra 4: 15 nov (Total 81,2 kg) -->
+            <div class="flex flex-col items-center gap-1.5 h-full justify-end">
+              <span class="tabular text-[12px] font-semibold text-text-primary">81,2</span>
+              <div class="w-full max-w-[36px] flex flex-col rounded-[6px] overflow-hidden border border-primary/50 shadow-sm">
+                <!-- Massa gorda: 14,3 kg -->
+                <div class="w-full bg-surface-2 border-b border-border h-[22px]"></div>
+                <!-- Massa magra: 66,9 kg -->
+                <div class="w-full bg-primary h-[85px]"></div>
+              </div>
+              <span class="text-[11px] text-primary font-mono font-medium">15 nov</span>
+            </div>
+          </div>
+
+          <!-- Legenda e Nota Explicativa -->
+          <div class="flex flex-col gap-1.5 pt-0.5">
+            <div class="flex items-center gap-4 text-[13px]">
+              <div class="flex items-center gap-1.5">
+                <span class="w-2.5 h-2.5 rounded-sm bg-primary"></span>
+                <span class="text-text-primary font-medium">Massa magra</span>
+                <span class="tabular text-text-secondary text-[12px]">(66,9 kg)</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="w-2.5 h-2.5 rounded-sm bg-surface-2 border border-border"></span>
+                <span class="text-text-primary font-medium">Massa gorda</span>
+                <span class="tabular text-text-secondary text-[12px]">(14,3 kg)</span>
+              </div>
+            </div>
+            <p class="text-[12px] text-text-secondary leading-relaxed">
+              Massa magra calculada como peso − massa gorda.
+              <span class="text-warning/90 block mt-0.5">1 medição sem peso não exibida no gráfico.</span>
+            </p>
+          </div>
+        </section>
+
+        <!-- 6. CARD DE MÉTRICAS SECUNDÁRIAS ("Outras medidas") -->
+        <section class="bg-surface p-4 rounded-[16px] border border-border flex flex-col gap-1">
+          <h2 class="text-[16px] font-semibold text-text-primary mb-2">Outras medidas</h2>
+
+          <!-- Item 1: Gordura Visceral com barra de 3 níveis -->
+          <div class="py-2.5 flex items-center justify-between border-b border-border">
+            <div class="flex flex-col">
+              <span class="text-[14px] text-text-primary font-medium">Gordura visceral</span>
+              <span class="text-[12px] text-text-secondary">Nível 1 a 12 ideal</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <!-- Barra de 3 segmentos (Nível 9 = Normal/Alto controlado) -->
+              <div class="flex items-center gap-1">
+                <span class="w-4 h-2 rounded-[2px] bg-primary"></span>
+                <span class="w-4 h-2 rounded-[2px] bg-warning"></span>
+                <span class="w-4 h-2 rounded-[2px] bg-surface-2 border border-border"></span>
+              </div>
+              <span class="tabular text-[18px] font-semibold text-text-primary w-6 text-right">9</span>
+            </div>
+          </div>
+
+          <!-- Item 2: Água Corporal -->
+          <div class="py-2.5 flex items-center justify-between border-b border-border">
+            <div class="flex flex-col">
+              <span class="text-[14px] text-text-primary font-medium">Água corporal</span>
+              <span class="text-[12px] text-text-secondary">Hidratação celular</span>
+            </div>
+            <div class="flex items-baseline gap-1">
+              <span class="tabular text-[18px] font-semibold text-text-primary">58,2</span>
+              <span class="text-[13px] text-text-secondary">%</span>
+            </div>
+          </div>
+
+          <!-- Item 3: Massa Muscular Esquelética -->
+          <div class="py-2.5 flex items-center justify-between">
+            <div class="flex flex-col">
+              <span class="text-[14px] text-text-primary font-medium">Massa muscular esquelética</span>
+              <span class="text-[12px] text-text-secondary">Hipertrofia motora</span>
+            </div>
+            <div class="flex items-baseline gap-1">
+              <span class="tabular text-[18px] font-semibold text-text-primary">31,4</span>
+              <span class="text-[13px] text-text-secondary">kg</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- 7. CARD DE REGISTROS DE MEDIÇÕES -->
+        <section class="bg-surface p-4 rounded-[16px] border border-border flex flex-col gap-2">
+          <div class="flex items-center justify-between pb-1">
+            <h2 class="text-[16px] font-semibold text-text-primary">Medições</h2>
+            <button class="text-[13px] font-medium text-text-secondary hover:text-text-primary transition-colors">
+              Ver todas
+            </button>
+          </div>
+
+          <div class="flex flex-col divide-y divide-border">
+            <!-- Linha 1: 15 nov (Manual) -->
+            <div class="py-3 flex flex-col gap-1">
+              <div class="flex items-center justify-between">
+                <span class="text-[15px] font-medium text-text-primary">há 3 dias</span>
+                <div class="flex items-baseline gap-3 tabular">
+                  <span class="text-[15px] font-semibold text-text-primary">81,2 kg</span>
+                  <span class="text-[14px] text-text-secondary">17,6 %</span>
+                </div>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-[11px] px-2 py-0.5 rounded-[4px] bg-primary text-canvas font-medium">Manual</span>
+                <span class="text-[12px] text-text-secondary font-mono">15 nov 2026 · 07:15</span>
+              </div>
+            </div>
+
+            <!-- Linha 2: 08 nov (Importado) -->
+            <div class="py-3 flex flex-col gap-1">
+              <div class="flex items-center justify-between">
+                <span class="text-[15px] font-medium text-text-primary">há 10 dias</span>
+                <div class="flex items-baseline gap-3 tabular">
+                  <span class="text-[15px] font-semibold text-text-primary">81,9 kg</span>
+                  <span class="text-[14px] text-text-secondary">18,1 %</span>
+                </div>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-[11px] px-2 py-0.5 rounded-[4px] bg-surface-2 border border-border text-text-secondary font-medium">Importado</span>
+                <span class="text-[12px] text-text-secondary font-mono">08 nov 2026 · InBody 270</span>
+              </div>
+            </div>
+
+            <!-- Linha 3: 02 nov (Importado com dados parciais) -->
+            <div class="py-3 flex flex-col gap-1">
+              <div class="flex items-center justify-between">
+                <span class="text-[15px] font-medium text-text-primary">há 2 semanas</span>
+                <div class="flex items-baseline gap-3 tabular">
+                  <span class="text-[15px] font-semibold text-text-primary">82,6 kg</span>
+                  <span class="text-[14px] text-text-secondary">18,4 %</span>
+                </div>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-[11px] px-2 py-0.5 rounded-[4px] bg-surface-2 border border-border text-text-secondary font-medium">Importado</span>
+                <span class="text-[12px] text-warning font-medium">Dados incompletos</span>
+              </div>
+            </div>
+
+            <!-- Linha 4: 12 out (Manual) -->
+            <div class="py-3 flex flex-col gap-1">
+              <div class="flex items-center justify-between">
+                <span class="text-[15px] font-medium text-text-primary">12 out 2026</span>
+                <div class="flex items-baseline gap-3 tabular">
+                  <span class="text-[15px] font-semibold text-text-primary">83,4 kg</span>
+                  <span class="text-[14px] text-text-secondary">19,8 %</span>
+                </div>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-[11px] px-2 py-0.5 rounded-[4px] bg-primary text-canvas font-medium">Manual</span>
+                <span class="text-[12px] text-text-secondary font-mono">12 out 2026 · Inicial</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 8. CARD DE AÇÃO PRIMÁRIA -->
+        <section class="pt-1">
+          <button class="w-full h-[50px] bg-primary hover:bg-[#34c75e] active:scale-[0.99] text-[#07110A] font-semibold text-[16px] rounded-[12px] flex items-center justify-center gap-2 transition-all shadow-md">
+            <svg class="w-5 h-5 stroke-[2.4]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+            Registrar bioimpedância
+          </button>
+        </section>
+
+      </div>
+
+      <!-- ============================================================== -->
+      <!-- ESTADO 2: UMA ÚNICA MEDIÇÃO NO PERÍODO -->
+      <!-- ============================================================== -->
+      <div id="state-unica" class="hidden flex-col gap-4">
+        <!-- KPIs com 1 dado (sem comparação prévia) -->
+        <section class="grid grid-cols-2 gap-2.5">
+          <div class="bg-surface p-3.5 rounded-[16px] border border-border">
+            <span class="text-[14px] text-text-secondary">Peso</span>
+            <div class="my-1.5">
+              <span class="text-[28px] font-semibold tabular text-text-primary">79,5</span>
+              <span class="text-[15px] text-text-secondary ml-1">kg</span>
+            </div>
+            <span class="text-[12px] text-text-secondary">— primeira medição</span>
+          </div>
+
+          <div class="bg-surface p-3.5 rounded-[16px] border border-border">
+            <span class="text-[14px] text-text-secondary">Gordura corporal</span>
+            <div class="my-1.5">
+              <span class="text-[28px] font-semibold tabular text-text-primary">16,2</span>
+              <span class="text-[15px] text-text-secondary ml-1">%</span>
+            </div>
+            <span class="text-[12px] text-text-secondary">— primeira medição</span>
+          </div>
+        </section>
+
+        <!-- Gráfico com único ponto -->
+        <section class="bg-surface p-4 rounded-[16px] border border-border flex flex-col gap-3">
+          <div class="flex items-center justify-between">
+            <h2 class="text-[16px] font-semibold text-text-primary">Evolução</h2>
+            <span class="text-[13px] text-text-secondary bg-surface-2 px-2.5 py-1 rounded-[8px] border border-border">Gordura corporal</span>
+          </div>
+          <div class="flex items-baseline gap-1">
+            <span class="text-[28px] font-semibold tabular text-text-primary">16,2</span>
+            <span class="text-[16px] text-text-secondary">%</span>
+          </div>
+
+          <!-- Área SVG com apenas 1 ponto e sem linha -->
+          <div class="relative w-full h-[120px] border border-dashed border-border rounded-[10px] flex items-center justify-center">
+            <div class="flex flex-col items-center gap-1">
+              <div class="w-4 h-4 rounded-full bg-primary border-2 border-canvas"></div>
+              <span class="text-[12px] font-mono tabular text-text-primary">16,2% · 14 nov</span>
+            </div>
+          </div>
+          <p class="text-[13px] text-text-secondary text-center">
+            Registre mais medições para ver a tendência.
+          </p>
+        </section>
+
+        <button class="w-full h-[50px] bg-primary text-[#07110A] font-semibold text-[16px] rounded-[12px] flex items-center justify-center gap-2">
+          <svg class="w-5 h-5 stroke-[2.4]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+          Registrar bioimpedância
+        </button>
+      </div>
+
+      <!-- ============================================================== -->
+      <!-- ESTADO 3: DADOS PARCIAIS (Campos vazios com "—" e alertas) -->
+      <!-- ============================================================== -->
+      <div id="state-parcial" class="hidden flex-col gap-4">
+        <div class="p-3 bg-surface-2 border border-warning/40 rounded-[12px] flex items-start gap-2.5">
+          <svg class="w-5 h-5 text-warning shrink-0 mt-0.5 stroke-[2]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <div class="text-[13px]">
+            <span class="font-semibold text-text-primary block">Existem medições com dados parciais</span>
+            <span class="text-text-secondary text-[12px]">Campos não preenchidos são identificados com traço e não distorcem cálculos.</span>
+          </div>
+        </div>
+
+        <section class="grid grid-cols-2 gap-2.5">
+          <div class="bg-surface p-3.5 rounded-[16px] border border-border">
+            <span class="text-[14px] text-text-secondary">Peso</span>
+            <div class="my-1.5">
+              <span class="text-[28px] font-semibold tabular text-text-primary">80,4</span>
+              <span class="text-[15px] text-text-secondary ml-1">kg</span>
+            </div>
+            <span class="text-[12px] text-text-secondary">última medição</span>
+          </div>
+
+          <div class="bg-surface p-3.5 rounded-[16px] border border-border">
+            <span class="text-[14px] text-text-secondary">Gordura corporal</span>
+            <div class="my-1.5">
+              <span class="text-[28px] font-semibold tabular text-text-secondary tracking-wide">—</span>
+            </div>
+            <span class="text-[12px] text-warning font-medium">Dados incompletos</span>
+          </div>
+        </section>
+
+        <!-- Lista demonstrando campos com 'Não informado' e '—' -->
+        <section class="bg-surface p-4 rounded-[16px] border border-border flex flex-col gap-2">
+          <h2 class="text-[16px] font-semibold text-text-primary">Medições com pendência</h2>
+          <div class="py-2.5 flex items-center justify-between border-b border-border">
+            <div>
+              <span class="text-[14px] font-medium text-text-primary block">Ontem</span>
+              <span class="text-[12px] text-warning">Dados incompletos</span>
+            </div>
+            <div class="text-right">
+              <span class="text-[15px] tabular font-semibold text-text-primary block">80,4 kg</span>
+              <span class="text-[13px] text-text-secondary tabular">% gordura: —</span>
+            </div>
+          </div>
+          <div class="py-2.5 flex items-center justify-between">
+            <div>
+              <span class="text-[14px] font-medium text-text-primary block">Água corporal</span>
+            </div>
+            <span class="text-[13px] text-text-secondary italic">Não informado</span>
+          </div>
+        </section>
+      </div>
+
+      <!-- ============================================================== -->
+      <!-- ESTADO 4: SEM MEDIÇÕES NO PERÍODO (Vazio) -->
+      <!-- ============================================================== -->
+      <div id="state-vazio" class="hidden flex-col items-center justify-center p-8 bg-surface rounded-[16px] border border-border text-center gap-4 my-6">
+        <div class="w-14 h-14 rounded-full bg-surface-2 border border-border flex items-center justify-center text-text-secondary">
+          <!-- Ícone Balança de Bioimpedância -->
+          <svg class="w-7 h-7 stroke-[1.8]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+          </svg>
+        </div>
+        <div class="flex flex-col gap-1 max-w-[260px]">
+          <h2 class="text-[18px] font-semibold text-text-primary">Nenhuma medição neste período</h2>
+          <p class="text-[13px] text-text-secondary leading-relaxed">
+            Escolha outro período ou registre sua primeira bioimpedância.
+          </p>
+        </div>
+        <button class="w-full max-w-[240px] h-[46px] bg-primary text-[#07110A] font-semibold text-[15px] rounded-[10px] flex items-center justify-center gap-2 mt-2">
+          <svg class="w-4 h-4 stroke-[2.4]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+          Registrar bioimpedância
+        </button>
+      </div>
+
+      <!-- ============================================================== -->
+      <!-- ESTADO 5: CARREGAMENTO (Skeleton pulsante de mesma geometria) -->
+      <!-- ============================================================== -->
+      <div id="state-loading" class="hidden flex-col gap-4 animate-skeleton">
+        <div class="grid grid-cols-2 gap-2.5">
+          <div class="h-[105px] bg-surface rounded-[16px] border border-border p-3.5 flex flex-col justify-between">
+            <div class="h-3 w-14 bg-surface-2 rounded"></div>
+            <div class="h-7 w-20 bg-surface-2 rounded"></div>
+            <div class="h-3 w-16 bg-surface-2 rounded"></div>
+          </div>
+          <div class="h-[105px] bg-surface rounded-[16px] border border-border p-3.5 flex flex-col justify-between">
+            <div class="h-3 w-20 bg-surface-2 rounded"></div>
+            <div class="h-7 w-16 bg-surface-2 rounded"></div>
+            <div class="h-3 w-16 bg-surface-2 rounded"></div>
+          </div>
+        </div>
+        <div class="h-[210px] bg-surface rounded-[16px] border border-border p-4 flex flex-col gap-3">
+          <div class="flex justify-between">
+            <div class="h-4 w-24 bg-surface-2 rounded"></div>
+            <div class="h-6 w-32 bg-surface-2 rounded"></div>
+          </div>
+          <div class="h-8 w-28 bg-surface-2 rounded"></div>
+          <div class="flex-1 bg-surface-2/60 rounded-lg"></div>
+        </div>
+        <div class="h-[160px] bg-surface rounded-[16px] border border-border p-4 flex flex-col gap-3">
+          <div class="h-4 w-28 bg-surface-2 rounded"></div>
+          <div class="h-3 w-44 bg-surface-2 rounded"></div>
+          <div class="flex-1 bg-surface-2/60 rounded-lg"></div>
+        </div>
+      </div>
+
+      <!-- ============================================================== -->
+      <!-- ESTADO 6: ERRO AO CARREGAR (Com botão de retry) -->
+      <!-- ============================================================== -->
+      <div id="state-erro" class="hidden flex-col items-center justify-center p-8 bg-surface rounded-[16px] border border-border text-center gap-3 my-6">
+        <div class="w-12 h-12 rounded-full bg-danger/10 border border-danger/30 flex items-center justify-center text-danger">
+          <svg class="w-6 h-6 stroke-[2]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <div class="flex flex-col gap-1 max-w-[260px]">
+          <h2 class="text-[17px] font-semibold text-text-primary">Não foi possível carregar as medições</h2>
+          <p class="text-[13px] text-text-secondary leading-relaxed">
+            Verifique sua conexão ou tente novamente em instantes.
+          </p>
+        </div>
+        <button onclick="switchState('dados')" class="px-5 h-[42px] bg-surface-2 hover:bg-border text-text-primary border border-border font-medium text-[14px] rounded-[10px] mt-2 transition-colors">
+          Tentar novamente
+        </button>
+      </div>
+
+    </main>
+
+    <!-- 9. BARRA DE NAVEGAÇÃO INFERIOR (Mobile Shell - 4 abas, "Progresso" ativa) -->
+    <nav aria-label="Navegação principal" class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[390px] h-16 bg-surface/95 backdrop-blur-md border-t border-border grid grid-cols-4 items-center z-50 px-2 pb-[env(safe-area-inset-bottom,0px)]">
+      
+      <!-- Início -->
+      <a href="#" class="flex flex-col items-center justify-center gap-1 text-text-secondary hover:text-text-primary transition-colors">
+        <svg class="w-6 h-6 stroke-[1.8]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <rect x="3" y="3" width="7" height="7" rx="1" />
+          <rect x="14" y="3" width="7" height="7" rx="1" />
+          <rect x="14" y="14" width="7" height="7" rx="1" />
+          <rect x="3" y="14" width="7" height="7" rx="1" />
+        </svg>
+        <span class="text-[11px] font-medium leading-none">Início</span>
+      </a>
+
+      <!-- Treinar -->
+      <a href="#" class="flex flex-col items-center justify-center gap-1 text-text-secondary hover:text-text-primary transition-colors">
+        <svg class="w-6 h-6 stroke-[1.8]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 5v14M18 5v14M2 9h4v6H2zm16 0h4v6h-4zm-8-2h4v10h-4z" />
+        </svg>
+        <span class="text-[11px] font-medium leading-none">Treinar</span>
+      </a>
+
+      <!-- Progresso (ATIVA - primary #3DDC6E) -->
+      <a href="#" class="flex flex-col items-center justify-center gap-1 text-primary transition-colors">
+        <svg class="w-6 h-6 stroke-[2.2]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+        </svg>
+        <span class="text-[11px] font-semibold leading-none">Progresso</span>
+      </a>
+
+      <!-- Perfil -->
+      <a href="#" class="flex flex-col items-center justify-center gap-1 text-text-secondary hover:text-text-primary transition-colors">
+        <svg class="w-6 h-6 stroke-[1.8]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+        </svg>
+        <span class="text-[11px] font-medium leading-none">Perfil</span>
+      </a>
+    </nav>
+
+  </div>
+
+  <!-- State Toggle Script -->
+  <script>
+    function switchState(stateName) {
+      const states = ['dados', 'unica', 'parcial', 'vazio', 'loading', 'erro'];
+      states.forEach(st => {
+        const el = document.getElementById('state-' + st);
+        const btn = document.getElementById('btn-' + st);
+        if (st === stateName) {
+          el.classList.remove('hidden');
+          el.classList.add('flex');
+          btn.className = "px-2 py-0.5 rounded text-[11px] font-mono bg-primary text-canvas font-semibold transition-colors";
+        } else {
+          el.classList.add('hidden');
+          el.classList.remove('flex');
+          btn.className = "px-2 py-0.5 rounded text-[11px] font-mono bg-surface-2 text-text-secondary hover:text-text-primary transition-colors";
+        }
+      });
+
+      const metaCount = document.getElementById('meta-count');
+      if (stateName === 'unica') metaCount.textContent = '1 medição';
+      else if (stateName === 'vazio') metaCount.textContent = '0 medições';
+      else metaCount.textContent = '5 medições';
+    }
+  </script>
+</body>
+</html>

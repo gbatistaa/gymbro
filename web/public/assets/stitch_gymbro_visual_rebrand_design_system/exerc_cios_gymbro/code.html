@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="pt-BR"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "on-secondary-fixed": "#001e2c", "secondary-fixed-dim": "#7bd0ff", "on-error": "#690005", "secondary-container": "#00a6e0", "on-tertiary-container": "#ad393d", "outline-variant": "#3b4b3b", "inverse-surface": "#e2e3e0", "on-tertiary-fixed": "#410006", "border-strong": "#3D5246", "on-error-container": "#ffdad6", "surface-container-lowest": "#0c0f0d", "primary-fixed-dim": "#00e560", "background": "#111413", "primary": "#f3ffef", "on-primary-container": "#00722c", "tertiary-fixed-dim": "#ffb3b0", "outline": "#859582", "inverse-primary": "#006e2a", "border": "#1F2B23", "tertiary": "#fffaf9", "surface-tint": "#00e560", "on-accent": "#040D07", "neon-tint": "#0A2312", "error-container": "#93000a", "on-surface-variant": "#bacbb7", "on-primary": "#003912", "text-muted": "#8FA397", "surface-dim": "#111413", "on-primary-fixed-variant": "#00531e", "rule": "#2A3830", "inverse-on-surface": "#2f312f", "secondary-fixed": "#c4e7ff", "info-tint": "#081B2B", "primary-fixed": "#6aff87", "secondary": "#7bd0ff", "on-tertiary": "#670211", "text-primary": "#F1F7F3", "tertiary-container": "#ffd5d3", "surface-variant": "#333534", "on-secondary-container": "#00374d", "on-secondary": "#00354a", "surface-bright": "#373a38", "on-background": "#e2e3e0", "neon-pressed": "#22C55E", "on-tertiary-fixed-variant": "#881d24", "surface-container-high": "#282a29", "canvas": "#060807", "surface-container-low": "#1a1c1b", "primary-container": "#39ff74", "on-secondary-fixed-variant": "#004c69", "surface": "#0D120F", "on-primary-fixed": "#002108", "raised": "#141C17", "text-secondary": "#C6D2CC", "surface-container-highest": "#333534", "tertiary-fixed": "#ffdad8", "error": "#ffb4ab", "surface-container": "#1e201f", "on-surface": "#e2e3e0" }, borderRadius: { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" }, spacing: { "margin": "1.25rem", "gutter-desktop": "2rem", "space-lg": "1.25rem", "space-xl": "1.5rem", "margin-desktop": "2rem", "space-sm": "0.5rem", "space-xs": "0.25rem", "gutter": "1.25rem", "space-md": "1rem" }, fontFamily: { "headline-sm": ["IBM Plex Sans"], "label-mono": ["IBM Plex Mono"], "numeral-lg": ["IBM Plex Mono"], "body-lg": ["IBM Plex Sans"], "label-sm": ["IBM Plex Sans"], "numeral-md": ["IBM Plex Mono"], "headline-md": ["IBM Plex Sans"], "numeral-xl": ["IBM Plex Mono"], "body-sm": ["IBM Plex Sans"], "headline-lg": ["IBM Plex Sans"], "body-md": ["IBM Plex Sans"] }, fontSize: { "headline-sm": ["19px", { "lineHeight": "26px", "fontWeight": "600" }], "label-mono": ["12px", { "lineHeight": "16px", "letterSpacing": "0.08em", "fontWeight": "500" }], "numeral-lg": ["56px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "500" }], "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "600" }], "label-sm": ["11px", { "lineHeight": "14px", "fontWeight": "500" }], "numeral-md": ["34px", { "lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "500" }], "headline-md": ["23px", { "lineHeight": "30px", "fontWeight": "600" }], "numeral-xl": ["88px", { "lineHeight": "84px", "letterSpacing": "-0.02em", "fontWeight": "500" }], "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }], "headline-lg": ["28px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "600" }], "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }] } } } };</script><style>@layer base{html,body{width:100vw;min-height:100vh;margin:0;padding:0;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-canvas text-on-surface font-body-md text-body-md antialiased flex flex-col selection:bg-primary-container selection:text-on-accent"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.5)]"><div class="h-16 px-margin flex items-center justify-between max-w-xl mx-auto"><div class="flex items-center gap-space-sm"><span class="text-primary-container font-headline-md text-headline-md tracking-wider">GYMBRO</span><span class="font-label-mono text-label-mono text-text-muted mt-0.5">// v2.4</span></div><div class="flex items-center gap-space-md"><span class="font-headline-sm text-headline-sm text-text-primary tracking-tight hidden xs:inline">Treinar</span><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex flex-col relative w-full max-w-xl mx-auto px-margin pt-16 pb-28 min-h-screen bg-canvas"><div class="flex flex-col w-full text-[#F2F5F3] font-['IBM_Plex_Sans'] select-none">
+<!-- Simulation State Switcher Bar (Auditing Toolbar) -->
+<div class="w-full bg-[#141816] rounded-xl p-1 mb-5 flex items-center justify-between gap-1 overflow-x-auto text-[11px] border border-[#262E2A]">
+<button class="state-btn flex-1 py-1.5 px-2 rounded-lg bg-[#1C221F] text-[#F2F5F3] font-medium whitespace-nowrap text-center transition-colors" id="btn-state-default" onclick="switchState('state-default')" type="button">
+      1. Lista (128)
+    </button>
+<button class="state-btn flex-1 py-1.5 px-2 rounded-lg text-[#8A958F] whitespace-nowrap text-center hover:text-[#F2F5F3] transition-colors" id="btn-state-empty-search" onclick="switchState('state-empty-search')" type="button">
+      2. Sem Resultados
+    </button>
+<button class="state-btn flex-1 py-1.5 px-2 rounded-lg text-[#8A958F] whitespace-nowrap text-center hover:text-[#F2F5F3] transition-colors" id="btn-state-empty-lib" onclick="switchState('state-empty-lib')" type="button">
+      3. Vazio (Init)
+    </button>
+<button class="state-btn flex-1 py-1.5 px-2 rounded-lg text-[#8A958F] whitespace-nowrap text-center hover:text-[#F2F5F3] transition-colors" id="btn-state-skeleton" onclick="switchState('state-skeleton')" type="button">
+      4. Carregando
+    </button>
+</div>
+<!-- Screen Top Bar -->
+<div class="flex items-center justify-between mb-4">
+<div class="flex flex-col">
+<h1 class="text-[28px] leading-[32px] font-semibold text-[#F2F5F3] tracking-normal">Exercícios</h1>
+<span class="text-[14px] leading-[20px] font-normal text-[#8A958F] mt-0.5" id="total-indicator">128 no total</span>
+</div>
+<!-- Quick New Exercise Action -->
+<button aria-label="Criar novo exercício" class="w-10 h-10 rounded-full bg-[#1C221F] border border-[#262E2A] flex items-center justify-center text-[#F2F5F3] active:bg-[#262E2A] transition-colors" type="button">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<line x1="12" x2="12" y1="5" y2="19"></line>
+<line x1="5" x2="19" y1="12" y2="12"></line>
+</svg>
+</button>
+</div>
+<!-- Search Input Bar -->
+<div class="relative w-full mb-3.5">
+<div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#8A958F]">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24">
+<circle cx="11" cy="11" r="8"></circle>
+<line x1="21" x2="16.65" y1="21" y2="16.65"></line>
+</svg>
+</div>
+<input class="w-full h-12 bg-[#1C221F] border border-[#262E2A] rounded-xl pl-11 pr-10 text-[15px] text-[#F2F5F3] placeholder-[#8A958F] focus:outline-none focus:border-[#3DDC6E] transition-colors" id="search-input" oninput="handleSearch(this.value)" placeholder="Buscar por nome ou equipamento" type="text"/>
+<button aria-label="Limpar pesquisa" class="hidden absolute inset-y-0 right-0 pr-3.5 items-center text-[#8A958F] hover:text-[#F2F5F3]" id="clear-search-btn" onclick="clearSearch()" type="button">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<line x1="18" x2="6" y1="6" y2="18"></line>
+<line x1="6" x2="18" y1="6" y2="18"></line>
+</svg>
+</button>
+</div>
+<!-- Muscle Group Filter Chips (Horizontal Scroll) -->
+<div class="w-full -mx-margin px-margin overflow-x-auto no-scrollbar flex items-center gap-2 pb-1 mb-3">
+<button class="muscle-chip h-9 px-4 rounded-full bg-[#3DDC6E] text-[#0B0D0C] font-semibold text-[13px] whitespace-nowrap transition-colors flex items-center justify-center" type="button">
+      Todos
+    </button>
+<button class="muscle-chip h-9 px-4 rounded-full bg-[#1C221F] border border-[#262E2A] text-[#8A958F] text-[13px] font-normal whitespace-nowrap active:bg-[#262E2A] transition-colors flex items-center justify-center" type="button">
+      Peito
+    </button>
+<button class="muscle-chip h-9 px-4 rounded-full bg-[#1C221F] border border-[#262E2A] text-[#8A958F] text-[13px] font-normal whitespace-nowrap active:bg-[#262E2A] transition-colors flex items-center justify-center" type="button">
+      Costas
+    </button>
+<button class="muscle-chip h-9 px-4 rounded-full bg-[#1C221F] border border-[#262E2A] text-[#8A958F] text-[13px] font-normal whitespace-nowrap active:bg-[#262E2A] transition-colors flex items-center justify-center" type="button">
+      Pernas
+    </button>
+<button class="muscle-chip h-9 px-4 rounded-full bg-[#1C221F] border border-[#262E2A] text-[#8A958F] text-[13px] font-normal whitespace-nowrap active:bg-[#262E2A] transition-colors flex items-center justify-center" type="button">
+      Ombros
+    </button>
+<button class="muscle-chip h-9 px-4 rounded-full bg-[#1C221F] border border-[#262E2A] text-[#8A958F] text-[13px] font-normal whitespace-nowrap active:bg-[#262E2A] transition-colors flex items-center justify-center" type="button">
+      Braços
+    </button>
+<button class="muscle-chip h-9 px-4 rounded-full bg-[#1C221F] border border-[#262E2A] text-[#8A958F] text-[13px] font-normal whitespace-nowrap active:bg-[#262E2A] transition-colors flex items-center justify-center" type="button">
+      Core
+    </button>
+</div>
+<!-- View Segment Control -->
+<div class="w-full bg-[#1C221F] rounded-xl p-1 mb-5 flex items-center gap-1 border border-[#262E2A]">
+<button class="view-seg flex-1 py-2 text-center text-sm font-medium rounded-lg bg-[#141816] text-[#F2F5F3] border border-[#262E2A] transition-all" type="button">
+      Todos
+    </button>
+<button class="view-seg flex-1 py-2 text-center text-sm font-normal text-[#8A958F] rounded-lg transition-all hover:text-[#F2F5F3]" type="button">
+      Favoritos
+    </button>
+<button class="view-seg flex-1 py-2 text-center text-sm font-normal text-[#8A958F] rounded-lg transition-all hover:text-[#F2F5F3]" type="button">
+      Recentes
+    </button>
+</div>
+<!-- CONTAINER: STATE 1 - GROUPED EXERCISE LIST (DEFAULT) -->
+<div class="view-state flex flex-col w-full" id="state-default">
+<!-- Group 1: Costas -->
+<div class="mb-5">
+<div class="flex items-center gap-3 mb-2.5">
+<span class="text-[14px] font-medium text-[#8A958F] whitespace-nowrap">Costas · 18</span>
+<div class="h-[1px] w-full bg-[#262E2A]"></div>
+</div>
+<!-- Card 1 -->
+<div class="w-full bg-[#141816] border border-[#262E2A] rounded-2xl p-3.5 mb-2.5 flex items-center justify-between active:border-[#3DDC6E] transition-colors">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-11 h-11 rounded-xl bg-[#1C221F] flex items-center justify-center shrink-0">
+<!-- Barbell Icon -->
+<svg class="w-5 h-5 text-[#F2F5F3]" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24">
+<path d="M2 12h20"></path>
+<path d="M6 7v10"></path>
+<path d="M18 7v10"></path>
+<rect height="6" rx="0.5" width="2" x="4" y="9"></rect>
+<rect height="6" rx="0.5" width="2" x="18" y="9"></rect>
+</svg>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-1.5 truncate">
+<span class="text-[16px] font-medium text-[#F2F5F3] leading-5 truncate">Remada curvada com barra</span>
+<span class="bg-[#3DDC6E] text-[#0B0D0C] px-1.5 py-0.5 rounded text-[11px] font-semibold leading-none shrink-0">PR</span>
+</div>
+<span class="text-[14px] text-[#8A958F] leading-5 mt-0.5 truncate">Barra · Costas</span>
+</div>
+</div>
+<div class="flex flex-col items-end shrink-0 pl-3">
+<span class="text-[16px] font-semibold text-[#F2F5F3] font-['IBM_Plex_Mono'] tabular-nums leading-5">80 kg</span>
+<span class="text-[14px] text-[#8A958F] font-normal leading-5 mt-0.5">há 3 dias</span>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="w-full bg-[#141816] border border-[#262E2A] rounded-2xl p-3.5 mb-2.5 flex items-center justify-between active:border-[#3DDC6E] transition-colors">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-11 h-11 rounded-xl bg-[#1C221F] flex items-center justify-center shrink-0">
+<!-- Pulley / Cable Icon -->
+<svg class="w-5 h-5 text-[#F2F5F3]" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24">
+<circle cx="12" cy="7" r="3"></circle>
+<path d="M12 10v10"></path>
+<path d="M8 20h8"></path>
+<path d="M5 4h14"></path>
+</svg>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="text-[16px] font-medium text-[#F2F5F3] leading-5 truncate">Puxada frontal</span>
+<span class="text-[14px] text-[#8A958F] leading-5 mt-0.5 truncate">Máquina · Costas</span>
+</div>
+</div>
+<div class="flex flex-col items-end shrink-0 pl-3">
+<span class="text-[16px] font-semibold text-[#F2F5F3] font-['IBM_Plex_Mono'] tabular-nums leading-5">62,5 kg</span>
+<span class="text-[14px] text-[#8A958F] font-normal leading-5 mt-0.5">há 5 dias</span>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="w-full bg-[#141816] border border-[#262E2A] rounded-2xl p-3.5 mb-2.5 flex items-center justify-between active:border-[#3DDC6E] transition-colors">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-11 h-11 rounded-xl bg-[#1C221F] flex items-center justify-center shrink-0">
+<!-- Dumbbell Icon -->
+<svg class="w-5 h-5 text-[#F2F5F3]" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24">
+<path d="M6 7v10"></path>
+<path d="M18 7v10"></path>
+<path d="M9 12h6"></path>
+<rect height="6" rx="1" width="3" x="2" y="9"></rect>
+<rect height="6" rx="1" width="3" x="19" y="9"></rect>
+</svg>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="text-[16px] font-medium text-[#F2F5F3] leading-5 truncate">Remada unilateral com haltere</span>
+<span class="text-[14px] text-[#8A958F] leading-5 mt-0.5 truncate">Halter · Costas</span>
+</div>
+</div>
+<div class="flex flex-col items-end shrink-0 pl-3">
+<span class="text-[16px] font-semibold text-[#F2F5F3] font-['IBM_Plex_Mono'] tabular-nums leading-5">32 kg</span>
+<span class="text-[14px] text-[#8A958F] font-normal leading-5 mt-0.5">há 1 semana</span>
+</div>
+</div>
+</div>
+<!-- Group 2: Pernas -->
+<div class="mb-5">
+<div class="flex items-center gap-3 mb-2.5">
+<span class="text-[14px] font-medium text-[#8A958F] whitespace-nowrap">Pernas · 24</span>
+<div class="h-[1px] w-full bg-[#262E2A]"></div>
+</div>
+<!-- Card 4 -->
+<div class="w-full bg-[#141816] border border-[#262E2A] rounded-2xl p-3.5 mb-2.5 flex items-center justify-between active:border-[#3DDC6E] transition-colors">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-11 h-11 rounded-xl bg-[#1C221F] flex items-center justify-center shrink-0">
+<svg class="w-5 h-5 text-[#F2F5F3]" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24">
+<path d="M2 12h20"></path>
+<path d="M6 7v10"></path>
+<path d="M18 7v10"></path>
+<rect height="6" rx="0.5" width="2" x="4" y="9"></rect>
+<rect height="6" rx="0.5" width="2" x="18" y="9"></rect>
+</svg>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-1.5 truncate">
+<span class="text-[16px] font-medium text-[#F2F5F3] leading-5 truncate">Agachamento livre</span>
+<span class="bg-[#3DDC6E] text-[#0B0D0C] px-1.5 py-0.5 rounded text-[11px] font-semibold leading-none shrink-0">PR</span>
+</div>
+<span class="text-[14px] text-[#8A958F] leading-5 mt-0.5 truncate">Barra · Pernas</span>
+</div>
+</div>
+<div class="flex flex-col items-end shrink-0 pl-3">
+<span class="text-[16px] font-semibold text-[#F2F5F3] font-['IBM_Plex_Mono'] tabular-nums leading-5">100 kg</span>
+<span class="text-[14px] text-[#8A958F] font-normal leading-5 mt-0.5">há 2 dias</span>
+</div>
+</div>
+<!-- Card 5 -->
+<div class="w-full bg-[#141816] border border-[#262E2A] rounded-2xl p-3.5 mb-2.5 flex items-center justify-between active:border-[#3DDC6E] transition-colors">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-11 h-11 rounded-xl bg-[#1C221F] flex items-center justify-center shrink-0">
+<!-- Machine Platform Icon -->
+<svg class="w-5 h-5 text-[#F2F5F3]" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24">
+<path d="M4 19h16"></path>
+<path d="M7 15l4-8 6 8"></path>
+<circle cx="12" cy="7" r="1.5"></circle>
+</svg>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="text-[16px] font-medium text-[#F2F5F3] leading-5 truncate">Leg press 45°</span>
+<span class="text-[14px] text-[#8A958F] leading-5 mt-0.5 truncate">Máquina · Pernas</span>
+</div>
+</div>
+<div class="flex flex-col items-end shrink-0 pl-3">
+<span class="text-[16px] font-semibold text-[#F2F5F3] font-['IBM_Plex_Mono'] tabular-nums leading-5">240 kg</span>
+<span class="text-[14px] text-[#8A958F] font-normal leading-5 mt-0.5">há 4 dias</span>
+</div>
+</div>
+<!-- Card 6 -->
+<div class="w-full bg-[#141816] border border-[#262E2A] rounded-2xl p-3.5 mb-2.5 flex items-center justify-between active:border-[#3DDC6E] transition-colors">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-11 h-11 rounded-xl bg-[#1C221F] flex items-center justify-center shrink-0">
+<svg class="w-5 h-5 text-[#F2F5F3]" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24">
+<path d="M2 12h20"></path>
+<path d="M6 7v10"></path>
+<path d="M18 7v10"></path>
+<rect height="6" rx="0.5" width="2" x="4" y="9"></rect>
+<rect height="6" rx="0.5" width="2" x="18" y="9"></rect>
+</svg>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="text-[16px] font-medium text-[#F2F5F3] leading-5 truncate">Stiff</span>
+<span class="text-[14px] text-[#8A958F] leading-5 mt-0.5 truncate">Barra · Pernas</span>
+</div>
+</div>
+<div class="flex flex-col items-end shrink-0 pl-3">
+<span class="text-[16px] font-semibold text-[#F2F5F3] font-['IBM_Plex_Mono'] tabular-nums leading-5">60 kg</span>
+<span class="text-[14px] text-[#8A958F] font-normal leading-5 mt-0.5">há 6 dias</span>
+</div>
+</div>
+</div>
+<!-- Group 3: Peito -->
+<div class="mb-5">
+<div class="flex items-center gap-3 mb-2.5">
+<span class="text-[14px] font-medium text-[#8A958F] whitespace-nowrap">Peito · 16</span>
+<div class="h-[1px] w-full bg-[#262E2A]"></div>
+</div>
+<!-- Card 7 -->
+<div class="w-full bg-[#141816] border border-[#262E2A] rounded-2xl p-3.5 mb-2.5 flex items-center justify-between active:border-[#3DDC6E] transition-colors">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-11 h-11 rounded-xl bg-[#1C221F] flex items-center justify-center shrink-0">
+<svg class="w-5 h-5 text-[#F2F5F3]" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24">
+<path d="M2 12h20"></path>
+<path d="M6 7v10"></path>
+<path d="M18 7v10"></path>
+<rect height="6" rx="0.5" width="2" x="4" y="9"></rect>
+<rect height="6" rx="0.5" width="2" x="18" y="9"></rect>
+</svg>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-1.5 truncate">
+<span class="text-[16px] font-medium text-[#F2F5F3] leading-5 truncate">Supino reto</span>
+<span class="bg-[#3DDC6E] text-[#0B0D0C] px-1.5 py-0.5 rounded text-[11px] font-semibold leading-none shrink-0">PR</span>
+</div>
+<span class="text-[14px] text-[#8A958F] leading-5 mt-0.5 truncate">Barra · Peito</span>
+</div>
+</div>
+<div class="flex flex-col items-end shrink-0 pl-3">
+<span class="text-[16px] font-semibold text-[#F2F5F3] font-['IBM_Plex_Mono'] tabular-nums leading-5">90 kg</span>
+<span class="text-[14px] text-[#8A958F] font-normal leading-5 mt-0.5">há 2 dias</span>
+</div>
+</div>
+<!-- Card 8 -->
+<div class="w-full bg-[#141816] border border-[#262E2A] rounded-2xl p-3.5 mb-2.5 flex items-center justify-between active:border-[#3DDC6E] transition-colors">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-11 h-11 rounded-xl bg-[#1C221F] flex items-center justify-center shrink-0">
+<svg class="w-5 h-5 text-[#F2F5F3]" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24">
+<path d="M6 7v10"></path>
+<path d="M18 7v10"></path>
+<path d="M9 12h6"></path>
+<rect height="6" rx="1" width="3" x="2" y="9"></rect>
+<rect height="6" rx="1" width="3" x="19" y="9"></rect>
+</svg>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="text-[16px] font-medium text-[#F2F5F3] leading-5 truncate">Crucifixo inclinado</span>
+<span class="text-[14px] text-[#8A958F] leading-5 mt-0.5 truncate">Halter · Peito</span>
+</div>
+</div>
+<div class="flex flex-col items-end shrink-0 pl-3">
+<span class="text-[16px] font-semibold text-[#F2F5F3] font-['IBM_Plex_Mono'] tabular-nums leading-5">16 kg</span>
+<span class="text-[14px] text-[#8A958F] font-normal leading-5 mt-0.5">há 1 semana</span>
+</div>
+</div>
+</div>
+</div>
+<!-- CONTAINER: STATE 2 - SEARCH NO RESULTS -->
+<div class="view-state hidden flex-col items-center justify-center py-16 px-4 text-center" id="state-empty-search">
+<div class="w-16 h-16 rounded-2xl bg-[#1C221F] border border-[#262E2A] flex items-center justify-center text-[#8A958F] mb-4">
+<svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24">
+<circle cx="11" cy="11" r="8"></circle>
+<line x1="21" x2="16.65" y1="21" y2="16.65"></line>
+<line x1="8" x2="14" y1="11" y2="11"></line>
+</svg>
+</div>
+<h3 class="text-[18px] font-semibold text-[#F2F5F3] leading-6 mb-1.5">Nenhum exercício encontrado</h3>
+<p class="text-[14px] text-[#8A958F] leading-5 max-w-[280px] mb-6">Tente outro nome ou remova o filtro de grupo muscular</p>
+<button class="h-11 px-5 rounded-xl bg-[#1C221F] border border-[#262E2A] text-[#F2F5F3] text-[14px] font-medium active:bg-[#262E2A] transition-colors flex items-center justify-center" onclick="resetFilters()" type="button">
+      Limpar filtros
+    </button>
+</div>
+<!-- CONTAINER: STATE 3 - EMPTY LIBRARY (FIRST USE) -->
+<div class="view-state hidden flex-col items-center justify-center py-16 px-4 text-center" id="state-empty-lib">
+<div class="w-16 h-16 rounded-2xl bg-[#1C221F] border border-[#262E2A] flex items-center justify-center text-[#8A958F] mb-4">
+<svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24">
+<path d="M6 7v10"></path>
+<path d="M18 7v10"></path>
+<path d="M9 12h6"></path>
+<rect height="6" rx="1" width="3" x="2" y="9"></rect>
+<rect height="6" rx="1" width="3" x="19" y="9"></rect>
+</svg>
+</div>
+<h3 class="text-[18px] font-semibold text-[#F2F5F3] leading-6 mb-1.5">Sua biblioteca está vazia</h3>
+<p class="text-[14px] text-[#8A958F] leading-5 max-w-[280px] mb-6">Os exercícios aparecem aqui ao criar um treino ou rotina.</p>
+<button class="h-11 px-6 rounded-xl bg-[#3DDC6E] text-[#0B0D0C] text-[14px] font-semibold active:bg-[#22C55E] transition-colors flex items-center justify-center" type="button">
+      Criar primeiro exercício
+    </button>
+</div>
+<!-- CONTAINER: STATE 4 - SKELETON LOADING -->
+<div class="view-state hidden flex-col w-full" id="state-skeleton">
+<!-- Header skeleton -->
+<div class="flex items-center gap-3 mb-3.5">
+<div class="h-4 w-24 bg-[#1C221F] rounded animate-pulse"></div>
+<div class="h-[1px] w-full bg-[#262E2A]"></div>
+</div>
+<!-- Skeleton Card 1 -->
+<div class="w-full bg-[#141816] border border-[#262E2A] rounded-2xl p-3.5 mb-2.5 flex items-center justify-between">
+<div class="flex items-center gap-3 w-3/4">
+<div class="w-11 h-11 rounded-xl bg-[#1C221F] animate-pulse shrink-0"></div>
+<div class="flex flex-col gap-2 w-full">
+<div class="h-4 bg-[#1C221F] rounded w-4/5 animate-pulse"></div>
+<div class="h-3 bg-[#1C221F] rounded w-2/5 animate-pulse"></div>
+</div>
+</div>
+<div class="flex flex-col items-end gap-2 w-1/4">
+<div class="h-4 bg-[#1C221F] rounded w-12 animate-pulse"></div>
+<div class="h-3 bg-[#1C221F] rounded w-16 animate-pulse"></div>
+</div>
+</div>
+<!-- Skeleton Card 2 -->
+<div class="w-full bg-[#141816] border border-[#262E2A] rounded-2xl p-3.5 mb-2.5 flex items-center justify-between">
+<div class="flex items-center gap-3 w-3/4">
+<div class="w-11 h-11 rounded-xl bg-[#1C221F] animate-pulse shrink-0"></div>
+<div class="flex flex-col gap-2 w-full">
+<div class="h-4 bg-[#1C221F] rounded w-3/5 animate-pulse"></div>
+<div class="h-3 bg-[#1C221F] rounded w-1/2 animate-pulse"></div>
+</div>
+</div>
+<div class="flex flex-col items-end gap-2 w-1/4">
+<div class="h-4 bg-[#1C221F] rounded w-14 animate-pulse"></div>
+<div class="h-3 bg-[#1C221F] rounded w-14 animate-pulse"></div>
+</div>
+</div>
+<!-- Skeleton Card 3 -->
+<div class="w-full bg-[#141816] border border-[#262E2A] rounded-2xl p-3.5 mb-2.5 flex items-center justify-between">
+<div class="flex items-center gap-3 w-3/4">
+<div class="w-11 h-11 rounded-xl bg-[#1C221F] animate-pulse shrink-0"></div>
+<div class="flex flex-col gap-2 w-full">
+<div class="h-4 bg-[#1C221F] rounded w-5/6 animate-pulse"></div>
+<div class="h-3 bg-[#1C221F] rounded w-1/3 animate-pulse"></div>
+</div>
+</div>
+<div class="flex flex-col items-end gap-2 w-1/4">
+<div class="h-4 bg-[#1C221F] rounded w-10 animate-pulse"></div>
+<div class="h-3 bg-[#1C221F] rounded w-16 animate-pulse"></div>
+</div>
+</div>
+<!-- Header skeleton 2 -->
+<div class="flex items-center gap-3 mt-3 mb-3.5">
+<div class="h-4 w-28 bg-[#1C221F] rounded animate-pulse"></div>
+<div class="h-[1px] w-full bg-[#262E2A]"></div>
+</div>
+<!-- Skeleton Card 4 -->
+<div class="w-full bg-[#141816] border border-[#262E2A] rounded-2xl p-3.5 mb-2.5 flex items-center justify-between">
+<div class="flex items-center gap-3 w-3/4">
+<div class="w-11 h-11 rounded-xl bg-[#1C221F] animate-pulse shrink-0"></div>
+<div class="flex flex-col gap-2 w-full">
+<div class="h-4 bg-[#1C221F] rounded w-2/3 animate-pulse"></div>
+<div class="h-3 bg-[#1C221F] rounded w-2/5 animate-pulse"></div>
+</div>
+</div>
+<div class="flex flex-col items-end gap-2 w-1/4">
+<div class="h-4 bg-[#1C221F] rounded w-14 animate-pulse"></div>
+<div class="h-3 bg-[#1C221F] rounded w-12 animate-pulse"></div>
+</div>
+</div>
+<!-- Skeleton Card 5 -->
+<div class="w-full bg-[#141816] border border-[#262E2A] rounded-2xl p-3.5 mb-2.5 flex items-center justify-between">
+<div class="flex items-center gap-3 w-3/4">
+<div class="w-11 h-11 rounded-xl bg-[#1C221F] animate-pulse shrink-0"></div>
+<div class="flex flex-col gap-2 w-full">
+<div class="h-4 bg-[#1C221F] rounded w-1/2 animate-pulse"></div>
+<div class="h-3 bg-[#1C221F] rounded w-1/3 animate-pulse"></div>
+</div>
+</div>
+<div class="flex flex-col items-end gap-2 w-1/4">
+<div class="h-4 bg-[#1C221F] rounded w-12 animate-pulse"></div>
+<div class="h-3 bg-[#1C221F] rounded w-14 animate-pulse"></div>
+</div>
+</div>
+</div>
+</div>
+<script>
+  function switchState(stateId) {
+    // Hide all view states
+    document.querySelectorAll('.view-state').forEach(el => {
+      el.classList.add('hidden');
+    });
+
+    // Reveal target state
+    const target = document.getElementById(stateId);
+    if (target) {
+      target.classList.remove('hidden');
+    }
+
+    // Update switcher toolbar active style
+    document.querySelectorAll('.state-btn').forEach(btn => {
+      btn.classList.remove('bg-[#1C221F]', 'text-[#F2F5F3]', 'font-medium');
+      btn.classList.add('text-[#8A958F]');
+    });
+
+    const activeBtn = document.getElementById('btn-' + stateId);
+    if (activeBtn) {
+      activeBtn.classList.add('bg-[#1C221F]', 'text-[#F2F5F3]', 'font-medium');
+      activeBtn.classList.remove('text-[#8A958F]');
+    }
+
+    // Dynamic discrete counter indicator
+    const totalIndicator = document.getElementById('total-indicator');
+    if (totalIndicator) {
+      if (stateId === 'state-empty-search') {
+        totalIndicator.textContent = '0 encontrados';
+      } else if (stateId === 'state-empty-lib') {
+        totalIndicator.textContent = '0 no total';
+      } else if (stateId === 'state-skeleton') {
+        totalIndicator.textContent = 'Carregando...';
+      } else {
+        totalIndicator.textContent = '128 no total';
+      }
+    }
+  }
+
+  function handleSearch(val) {
+    const clearBtn = document.getElementById('clear-search-btn');
+    if (val && val.trim().length > 0) {
+      clearBtn.classList.remove('hidden');
+      clearBtn.classList.add('flex');
+
+      // If user types gibberish or specific trigger, switch to empty search state
+      if (val.toLowerCase().includes('xyz') || val.length > 10) {
+        switchState('state-empty-search');
+      } else {
+        switchState('state-default');
+      }
+    } else {
+      clearBtn.classList.add('hidden');
+      clearBtn.classList.remove('flex');
+      switchState('state-default');
+    }
+  }
+
+  function clearSearch() {
+    const searchInput = document.getElementById('search-input');
+    searchInput.value = '';
+    handleSearch('');
+    searchInput.focus();
+  }
+
+  function resetFilters() {
+    clearSearch();
+    // Reset chips
+    document.querySelectorAll('.muscle-chip').forEach((chip, index) => {
+      if (index === 0) {
+        chip.className = 'muscle-chip h-9 px-4 rounded-full bg-[#3DDC6E] text-[#0B0D0C] font-semibold text-[13px] whitespace-nowrap transition-colors flex items-center justify-center';
+      } else {
+        chip.className = 'muscle-chip h-9 px-4 rounded-full bg-[#1C221F] border border-[#262E2A] text-[#8A958F] text-[13px] font-normal whitespace-nowrap active:bg-[#262E2A] transition-colors flex items-center justify-center';
+      }
+    });
+    switchState('state-default');
+  }
+
+  // Interactivity for Muscle Group Filter Chips
+  document.querySelectorAll('.muscle-chip').forEach(chip => {
+    chip.addEventListener('click', function() {
+      document.querySelectorAll('.muscle-chip').forEach(c => {
+        c.className = 'muscle-chip h-9 px-4 rounded-full bg-[#1C221F] border border-[#262E2A] text-[#8A958F] text-[13px] font-normal whitespace-nowrap active:bg-[#262E2A] transition-colors flex items-center justify-center';
+      });
+      this.className = 'muscle-chip h-9 px-4 rounded-full bg-[#3DDC6E] text-[#0B0D0C] font-semibold text-[13px] whitespace-nowrap transition-colors flex items-center justify-center';
+    });
+  });
+
+  // Interactivity for Segmented View Controls
+  document.querySelectorAll('.view-seg').forEach(tab => {
+    tab.addEventListener('click', function() {
+      document.querySelectorAll('.view-seg').forEach(t => {
+        t.className = 'view-seg flex-1 py-2 text-center text-sm font-normal text-[#8A958F] rounded-lg transition-all hover:text-[#F2F5F3]';
+      });
+      this.className = 'view-seg flex-1 py-2 text-center text-sm font-medium rounded-lg bg-[#141816] text-[#F2F5F3] border border-[#262E2A] transition-all';
+    });
+  });
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/95 backdrop-blur-xl shadow-[0_-4px_24px_rgba(0,0,0,0.7)]" data-active-classes="text-primary-container font-body-lg"><div class="flex justify-around items-center h-20 px-space-xs max-w-xl mx-auto"><a class="flex flex-col items-center justify-center gap-1 min-w-[56px] min-h-[48px] text-text-muted hover:text-text-primary transition-colors" data-path="inicio" href="#"><span class="material-symbols-outlined text-[24px]">grid_view</span><span class="font-label-sm text-label-sm">Início</span></a><a aria-current="page" class="flex flex-col items-center justify-center gap-1 min-w-[56px] min-h-[48px] transition-colors text-primary-container font-body-lg" data-path="treinar" href="#"><span class="material-symbols-outlined text-[24px]">fitness_center</span><span class="font-label-sm text-label-sm">Treinar</span></a><a class="flex flex-col items-center justify-center gap-1 min-w-[56px] min-h-[48px] text-text-muted hover:text-text-primary transition-colors" data-path="progresso" href="#"><span class="material-symbols-outlined text-[24px]">monitoring</span><span class="font-label-sm text-label-sm">Progresso</span></a><a class="flex flex-col items-center justify-center gap-1 min-w-[56px] min-h-[48px] text-text-muted hover:text-text-primary transition-colors" data-path="perfil" href="#"><span class="material-symbols-outlined text-[24px]">manage_accounts</span><span class="font-label-sm text-label-sm">Perfil</span></a></div></nav></body></html>
