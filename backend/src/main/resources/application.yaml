@@ -48,6 +48,16 @@ bioimpedance:
   import:
     stale-after: ${BIOIMPEDANCE_IMPORT_STALE_AFTER:3m}
 
+storage:
+  r2:
+    # defaults apontam para um S3 local; R2 real vem do .env (nunca versionado)
+    endpoint: ${R2_ENDPOINT:http://localhost:9000}
+    access-key-id: ${R2_ACCESS_KEY_ID:local}
+    secret-access-key: ${R2_SECRET_ACCESS_KEY:local}
+    bucket: ${R2_BUCKET:gymbro-local}
+    # validade do link assinado de leitura: o bucket é privado
+    read-url-ttl: ${R2_READ_URL_TTL:1h}
+
 app:
   openapi:
     public: ${OPENAPI_PUBLIC:true}

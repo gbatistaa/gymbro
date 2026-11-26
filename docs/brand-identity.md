@@ -27,7 +27,7 @@ compita com os dados.
 | Plataforma | PWA web, mobile-first, escuro no MVP. Tema claro futuro terá paleta própria. |
 | Marca | Gymbro, wordmark tipográfico. |
 | Idioma e unidade | PT-BR, kg, decimal com vírgula (`42,5 kg`). |
-| Navegação autenticada | Início, Treinar, Progresso, Perfil. Barra inferior no mobile. |
+| Navegação autenticada | Início, Treinar, Corpo, Progresso, Perfil. Barra inferior no mobile. |
 
 ### Contexto de uso
 

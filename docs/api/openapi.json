@@ -62,6 +62,64 @@
         }
       }
     },
+    "/api/users/me/photo" : {
+      "get" : {
+        "tags" : [ "profile-photo-controller" ],
+        "operationId" : "get",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProfilePhotoDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put" : {
+        "tags" : [ "profile-photo-controller" ],
+        "operationId" : "replace",
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "file" : {
+                    "type" : "string",
+                    "format" : "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProfilePhotoDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete" : {
+        "tags" : [ "profile-photo-controller" ],
+        "operationId" : "remove",
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          }
+        }
+      }
+    },
     "/api/users/me/password" : {
       "put" : {
         "tags" : [ "user-controller" ],
@@ -1406,7 +1464,7 @@
     "/api/bioimpedance/imports/{jobId}" : {
       "get" : {
         "tags" : [ "bioimpedance-import-controller" ],
-        "operationId" : "get",
+        "operationId" : "get_1",
         "parameters" : [ {
           "name" : "jobId",
           "in" : "path",
@@ -1541,6 +1599,21 @@
           },
           "timezone" : {
             "type" : "string"
+          }
+        }
+      },
+      "ProfilePhotoDto" : {
+        "type" : "object",
+        "properties" : {
+          "url" : {
+            "type" : "string"
+          },
+          "contentType" : {
+            "type" : "string"
+          },
+          "sizeBytes" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         }
       },

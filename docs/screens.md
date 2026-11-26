@@ -62,7 +62,7 @@ ter, o que cada tela consome, estados obrigatórios, lacunas do backend e a orde
 
 ## 2. Navegação
 
-Quatro abas, conforme `docs/brand-identity.md`: **Início · Treinar · Progresso · Perfil**.
+Cinco abas, conforme `docs/brand-identity.md`: **Início · Treinar · Corpo · Progresso · Perfil**.
 
 - Mobile: barra inferior fixa, respeitando `--safe-area-top` no topo e a safe area inferior na barra.
 - Ícone + rótulo visível em cada aba; estado ativo indicado por cor **e** forma/peso.
@@ -81,8 +81,7 @@ Sub-rotas previstas:
 /train/exercises         Biblioteca de exercícios
 /progress                Progresso
 /progress/exercises/[id] Estatísticas de um exercício
-/progress/body           Corpo / bioimpedância
-/progress/body/new       Nova medição e importação
+/bioimpedance            Corpo / bioimpedância (entrada manual e importação em modais)
 /profile                 Perfil e configurações
 ```
 
@@ -221,7 +220,7 @@ Tela de leitura, densidade alta, sem animação.
 
 ---
 
-### J. Corpo / Bioimpedância — `/progress/body`
+### J. Corpo / Bioimpedância — `/bioimpedance`
 
 - Tendência por métrica (`GET /api/bioimpedance/trend?metric=&window=`): `bodyWeightKg`,
   `bodyFatPercentage`, `muscleMassKg`, `skeletalMuscleMassKg`, `visceralFat`, `waterPercentage`.
@@ -234,7 +233,7 @@ Tela de leitura, densidade alta, sem animação.
 
 ---
 
-### K. Nova medição e importação — `/progress/body/new`
+### K. Nova medição e importação — modais em `/bioimpedance`
 
 Dois caminhos no mesmo fluxo:
 

@@ -7,6 +7,7 @@ import com.gbatistadev.gymbro.user.dto.CreateUserDto;
 import com.gbatistadev.gymbro.user.dto.UpdatePasswordRequest;
 import com.gbatistadev.gymbro.user.dto.UpdateUserDto;
 import com.gbatistadev.gymbro.user.dto.UserDto;
+import com.gbatistadev.gymbro.user.photo.ProfilePhotoService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -33,13 +34,16 @@ class UserServiceTest {
     @Mock
     private RefreshTokenRepository refreshTokens;
 
+    @Mock
+    private ProfilePhotoService profilePhotos;
+
     // mapper e encoder reais: o comportamento de update parcial e o hash da senha são o que se testa
     private final UserMapper mapper = new UserMapperImpl();
     private UserService service;
 
     @BeforeEach
     void setUp() {
-        service = new UserService(repository, refreshTokens, mapper, new BCryptPasswordEncoder());
+        service = new UserService(repository, refreshTokens, mapper, new BCryptPasswordEncoder(), profilePhotos);
     }
 
     @Test

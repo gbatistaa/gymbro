@@ -23,6 +23,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { userSummarySchema, type UserSummary } from "@/contracts/auth";
 import { completionSummarySchema, type CompletionSummary } from "@/contracts/completion";
 import { playlistSummarySchema } from "@/contracts/playlist";
+import type { ProfilePhoto } from "@/contracts/user";
 import { logout } from "@/features/auth/api";
 import { formatCount, formatDate } from "@/lib/format";
 import { request } from "@/lib/http";
@@ -31,34 +32,26 @@ import { timeZoneLabel } from "@/lib/timezones";
 import { useResource } from "@/lib/use-resource";
 import { sessionAtom } from "@/stores/session";
 import { EditProfileDialog } from "./edit-profile-dialog";
+import { fetchProfilePhoto } from "./photo-api";
+import { ProfilePhotoEditor } from "./profile-photo-editor";
 import styles from "./profile.module.css";
 
 type ProfileData = {
   user: UserSummary;
+  photo: ProfilePhoto | null;
   summary: CompletionSummary;
   planCount: number;
 };
 
 async function loadProfile(): Promise<ProfileData> {
-  const [user, summary, plans] = await Promise.all([
+  const [user, photo, summary, plans] = await Promise.all([
     request({ url: "/api/users/me" }, userSummarySchema),
+    fetchProfilePhoto(),
     request({ url: "/api/completions/summary" }, completionSummarySchema),
     request({ url: "/api/playlists" }, playlistSummarySchema.array()),
   ]);
 
-  return { user, summary, planCount: plans.length };
-}
-
-function initialsOf(name: string): string {
-  const initials = name
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join("");
-
-  return initials || "?";
+  return { user, photo, summary, planCount: plans.length };
 }
 
 type StatTileProps = {
@@ -133,7 +126,7 @@ export function ProfileScreen() {
     );
   }
 
-  const { user, summary, planCount } = data;
+  const { user, photo, summary, planCount } = data;
   const memberSince = formatDate(user.createdAt, user.timezone);
 
   function handleSaved(saved: UserSummary) {
@@ -163,15 +156,12 @@ export function ProfileScreen() {
       </header>
 
       <section className={styles.hero} aria-label="Seu perfil">
-        <div className={styles.heroTop}>
-          <span className={styles.avatar} aria-hidden="true">
-            {initialsOf(user.name)}
-          </span>
+        <ProfilePhotoEditor name={user.name} initialPhoto={photo}>
           <div className={styles.identity}>
             <p className={styles.name}>{user.name}</p>
             <p className={styles.username}>@{user.username}</p>
           </div>
-        </div>
+        </ProfilePhotoEditor>
 
         <div className={styles.chips}>
           <span className={styles.chip}>

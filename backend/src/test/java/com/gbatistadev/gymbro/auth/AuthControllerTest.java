@@ -10,6 +10,7 @@ import com.gbatistadev.gymbro.user.UserMapper;
 import com.gbatistadev.gymbro.user.UserMapperImpl;
 import com.gbatistadev.gymbro.user.UserRepository;
 import com.gbatistadev.gymbro.user.UserService;
+import com.gbatistadev.gymbro.user.photo.ProfilePhotoService;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -60,6 +61,9 @@ class AuthControllerTest {
     @Mock
     private RefreshTokenRepository refreshTokenRepository;
 
+    @Mock
+    private ProfilePhotoService profilePhotoService;
+
     private MockMvc mockMvc;
     private JwtService jwtService;
     private LoginRateLimiter loginRateLimiter;
@@ -69,7 +73,7 @@ class AuthControllerTest {
     void setUp() {
         UserMapper mapper = new UserMapperImpl();
         JwtProperties properties = new JwtProperties(SECRET, 900_000L, 15_552_000_000L);
-        UserService userService = new UserService(userRepository, refreshTokenRepository, mapper, encoder);
+        UserService userService = new UserService(userRepository, refreshTokenRepository, mapper, encoder, profilePhotoService);
         jwtService = new JwtService(properties);
         AuthService authService = new AuthService(
             userService, userRepository, refreshTokenRepository,

@@ -9,6 +9,7 @@ import com.gbatistadev.gymbro.user.dto.CreateUserDto;
 import com.gbatistadev.gymbro.user.dto.UpdatePasswordRequest;
 import com.gbatistadev.gymbro.user.dto.UpdateUserDto;
 import com.gbatistadev.gymbro.user.dto.UserDto;
+import com.gbatistadev.gymbro.user.photo.ProfilePhotoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,7 @@ public class UserService {
     private final RefreshTokenRepository refreshTokens;
     private final UserMapper mapper;
     private final PasswordEncoder passwordEncoder;
+    private final ProfilePhotoService profilePhotos;
 
     @Transactional
     public UserDto create(CreateUserDto dto) {
@@ -82,7 +84,8 @@ public class UserService {
 
     /**
      * Apaga a conta e, por cascata no banco, tudo que pende dela (ver V11). Sem soft delete: o
-     * histórico de treino é dado pessoal e some junto — decisão em docs/adr/0002.
+     * histórico de treino é dado pessoal e some junto — decisão em docs/adr/0002. A foto de perfil
+     * mora no bucket, fora do alcance da cascata, e por isso é removida explicitamente.
      *
      * <p>Usuário já apagado responde 401, e não 404: o token apresentado aponta para uma identidade
      * que não existe mais, então a sessão é inválida.
@@ -93,6 +96,7 @@ public class UserService {
         User user = repository.findById(id)
             .orElseThrow(() -> new UnauthorizedException("Session is no longer valid"));
 
+        profilePhotos.remove(id);
         repository.delete(user);
     }
 }

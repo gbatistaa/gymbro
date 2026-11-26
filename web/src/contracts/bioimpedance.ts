@@ -132,27 +132,34 @@ function rangeText({ min, max, exclusiveMin }: Range, unit: string): string {
   return `de ${min} a ${max}${unit}`;
 }
 
-/** Campo numérico do formulário: texto com vírgula ou ponto → número, ou `null` se opcional e vazio. */
-function measurementField(label: string, range: Range, unit: string, required: boolean) {
-  return z.string().transform((raw, ctx): number | null => {
-    const text = raw.trim();
+type FieldText = {
+  /** Nome do campo no início da mensagem, ex.: `Gordura corporal`. */
+  title: string;
+  /** Pedido quando o campo obrigatório está vazio, ex.: `Informe a gordura corporal.` */
+  whenEmpty: string;
+};
 
-    if (text === "") {
+/** Campo numérico do formulário: texto com vírgula ou ponto → número, ou `null` se opcional e vazio. */
+function measurementField(text: FieldText, range: Range, unit: string, required: boolean) {
+  return z.string().transform((raw, ctx): number | null => {
+    const typed = raw.trim();
+
+    if (typed === "") {
       if (!required) return null;
-      ctx.issues.push({ code: "custom", input: raw, message: `Informe ${label}.` });
+      ctx.issues.push({ code: "custom", input: raw, message: text.whenEmpty });
       return z.NEVER;
     }
 
-    if (!DECIMAL_TEXT.test(text)) {
+    if (!DECIMAL_TEXT.test(typed)) {
       ctx.issues.push({
         code: "custom",
         input: raw,
-        message: `${capitalize(label)}: digite só o número, ex.: 18,5.`,
+        message: `${text.title}: digite só o número, ex.: 18,5.`,
       });
       return z.NEVER;
     }
 
-    const value = Number(text.replace(",", "."));
+    const value = Number(typed.replace(",", "."));
     const belowMin = range.exclusiveMin ? value <= range.min : value < range.min;
     const aboveMax = range.max !== undefined && value > range.max;
 
@@ -160,17 +167,13 @@ function measurementField(label: string, range: Range, unit: string, required: b
       ctx.issues.push({
         code: "custom",
         input: raw,
-        message: `${capitalize(label)}: use um valor ${rangeText(range, unit)}.`,
+        message: `${text.title}: use um valor ${rangeText(range, unit)}.`,
       });
       return z.NEVER;
     }
 
     return value;
   });
-}
-
-function capitalize(text: string): string {
-  return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
 /**
@@ -197,18 +200,48 @@ export function createBioimpedanceFormSchema(timeZone: string) {
 
       return iso;
     }),
-    bodyWeightKg: measurementField("o peso", { min: 20, max: 400 }, " kg", false),
-    heightCm: measurementField("a altura", { min: 100, max: 250 }, " cm", false),
-    bodyFatPercentage: measurementField("a gordura corporal", { min: 0, max: 70 }, "%", true),
-    muscleMassKg: measurementField("a massa muscular", { min: 0, exclusiveMin: true }, " kg", true),
+    bodyWeightKg: measurementField(
+      { title: "Peso", whenEmpty: "Informe o peso." },
+      { min: 20, max: 400 },
+      " kg",
+      false,
+    ),
+    heightCm: measurementField(
+      { title: "Altura", whenEmpty: "Informe a altura." },
+      { min: 100, max: 250 },
+      " cm",
+      false,
+    ),
+    bodyFatPercentage: measurementField(
+      { title: "Gordura corporal", whenEmpty: "Informe a gordura corporal." },
+      { min: 0, max: 70 },
+      "%",
+      true,
+    ),
+    muscleMassKg: measurementField(
+      { title: "Massa muscular", whenEmpty: "Informe a massa muscular." },
+      { min: 0, exclusiveMin: true },
+      " kg",
+      true,
+    ),
     skeletalMuscleMassKg: measurementField(
-      "a massa muscular esquelética",
+      { title: "Massa muscular esquelética", whenEmpty: "Informe a massa muscular esquelética." },
       { min: 0, exclusiveMin: true },
       " kg",
       false,
     ),
-    visceralFat: measurementField("a gordura visceral", { min: 0, max: 60 }, "", false),
-    waterPercentage: measurementField("a água corporal", { min: 0, max: 100 }, "%", false),
+    visceralFat: measurementField(
+      { title: "Gordura visceral", whenEmpty: "Informe a gordura visceral." },
+      { min: 0, max: 60 },
+      "",
+      false,
+    ),
+    waterPercentage: measurementField(
+      { title: "Água corporal", whenEmpty: "Informe a água corporal." },
+      { min: 0, max: 100 },
+      "%",
+      false,
+    ),
   });
 }
 
