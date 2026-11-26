@@ -1,6 +1,6 @@
 "use client";
 
-import { Dumbbell, Home, TrendingUp, UserRound } from "lucide-react";
+import { Dumbbell, Home, Scale, TrendingUp, UserRound } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import styles from "./shell.module.css";
@@ -12,6 +12,12 @@ const DESTINATIONS = [
     label: "Treinar",
     icon: Dumbbell,
     matchPrefixes: ["/treinar", "/train"],
+  },
+  {
+    href: "/bioimpedance",
+    label: "Corpo",
+    icon: Scale,
+    matchPrefixes: ["/bioimpedance"],
   },
   {
     href: "/progress",

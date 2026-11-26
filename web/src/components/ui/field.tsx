@@ -1,10 +1,14 @@
 import type { ComponentPropsWithRef } from "react";
 import styles from "./ui.module.css";
 
+type HintTone = "muted" | "info";
+
 type FieldProps = Omit<ComponentPropsWithRef<"input">, "id"> & {
   id: string;
   label: string;
   hint?: string;
+  /** `info` destaca a dica em azul, para um aviso que não é erro. */
+  hintTone?: HintTone;
   error?: string;
 };
 
@@ -12,6 +16,7 @@ export function Field({
   id,
   label,
   hint,
+  hintTone = "muted",
   error,
   className,
   "aria-describedby": describedBy,
@@ -28,7 +33,12 @@ export function Field({
           {label}
         </label>
         {hint ? (
-          <span id={hintId} className={styles.hint}>
+          <span
+            id={hintId}
+            className={[styles.hint, hintTone === "info" ? styles.hintInfo : null]
+              .filter(Boolean)
+              .join(" ")}
+          >
             {hint}
           </span>
         ) : null}

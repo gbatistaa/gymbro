@@ -80,13 +80,31 @@ def test_extract_returns_502_when_extraction_fails(monkeypatch):
     assert response.status_code == 502
 
 
-def test_normalize_measured_at_for_java_instant():
+def test_normalize_measured_at_keeps_the_report_date():
     date_only = app.normalize_extraction({"measuredAt": "2026-10-01"})
     naive = app.normalize_extraction({"measuredAt": "2026-10-01T08:00:00"})
     with_offset = app.normalize_extraction({"measuredAt": "2026-10-01T08:00:00Z"})
     missing = app.normalize_extraction({})
+    unreadable = app.normalize_extraction({"measuredAt": "01/10/2026"})
 
-    assert date_only["measuredAt"] == "2026-10-01T00:00:00Z"
-    assert naive["measuredAt"] == "2026-10-01T08:00:00Z"
+    assert date_only["measuredAt"] == "2026-10-01"
+    assert naive["measuredAt"] == "2026-10-01T08:00:00"
     assert with_offset["measuredAt"] == "2026-10-01T08:00:00Z"
     assert missing["measuredAt"] is None
+    assert unreadable["measuredAt"] is None
+    assert "measuredAt" in unreadable["missingFields"]
+
+
+def test_normalize_numbers_written_as_text():
+    result = app.normalize_extraction({
+        "bodyWeightKg": "82,4 kg",
+        "bodyFatPercentage": "18.2",
+        "visceralFat": 8,
+        "waterPercentage": "não informado",
+    })
+
+    assert result["bodyWeightKg"] == 82.4
+    assert result["bodyFatPercentage"] == 18.2
+    assert result["visceralFat"] == 8.0
+    assert result["waterPercentage"] is None
+    assert "waterPercentage" in result["missingFields"]

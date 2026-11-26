@@ -20,6 +20,8 @@ def normalize_extraction(result: dict) -> dict:
     for field, value in normalized.items():
         if value is not None and not isinstance(value, (int, float, str)):
             raise ValueError(f"invalid value for {field}")
+    for field in NUMERIC_FIELDS:
+        normalized[field] = normalize_number(normalized[field])
     normalized["measuredAt"] = normalize_measured_at(normalized["measuredAt"])
     normalized["missingFields"] = [
         field for field in BIOIMPEDANCE_FIELDS if normalized[field] is None
@@ -27,15 +29,39 @@ def normalize_extraction(result: dict) -> dict:
     return normalized
 
 
+NUMERIC_FIELDS = tuple(field for field in BIOIMPEDANCE_FIELDS if field != "measuredAt")
+NUMBER = re.compile(r"-?\d+(?:[.,]\d+)?")
+
+
+def normalize_number(value):
+    """Numbers sometimes come back as text ("82,4 kg"); unreadable values become None."""
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, (int, float)):
+        return float(value)
+    if isinstance(value, str):
+        match = NUMBER.search(value)
+        return float(match.group().replace(",", ".")) if match else None
+    return None
+
+
+DATE_ONLY = re.compile(r"\d{4}-\d{2}-\d{2}")
+DATE_TIME = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:\d{2})?")
+
+
 def normalize_measured_at(value):
-    """Java's Instant requires an ISO-8601 UTC timestamp, not a date-only string."""
+    """Keeps the date as printed in the report, without inventing a time zone.
+
+    Reports rarely state an offset, so a date-only or naive value is returned as is and the
+    client resolves it in the user's time zone. Anything that is not ISO-8601 becomes None,
+    which lists the field as missing for the user to fill in.
+    """
     if not isinstance(value, str):
-        return value
-    if re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
-        return value + "T00:00:00Z"
-    if re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?", value):
-        return value + "Z"
-    return value
+        return None
+    text = value.strip()
+    if DATE_ONLY.fullmatch(text) or DATE_TIME.fullmatch(text):
+        return text
+    return None
 
 @app.post("/pdf-to-markdown")
 async def pdf_to_markdown(file: UploadFile = File(...)):

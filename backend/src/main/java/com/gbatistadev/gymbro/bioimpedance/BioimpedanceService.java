@@ -22,6 +22,10 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class BioimpedanceService {
+    /** Error codes the client uses to explain each conflict. */
+    public static final String MEASUREMENT_TIME_TAKEN = "BIOIMPEDANCE_MEASUREMENT_TIME_TAKEN";
+    public static final String FILE_ALREADY_IMPORTED = "BIOIMPEDANCE_FILE_ALREADY_IMPORTED";
+
     private final BioimpedanceRepository repository;
     private final BioimpedanceLogRepository auditRepository;
     private final BioimpedanceMapper mapper;
@@ -30,7 +34,20 @@ public class BioimpedanceService {
 
     @Transactional
     public BioimpedanceDto create(CreateBioimpedanceRequest request) {
-        return persist(request, "MANUAL");
+        return persist(request, "MANUAL", null);
+    }
+
+    /** Persists the values the user reviewed from an uploaded report, keeping the file name. */
+    @Transactional
+    public BioimpedanceDto createFromImport(CreateBioimpedanceRequest request, String sourceFileName) {
+        return persist(request, "IMPORT", sourceFileName);
+    }
+
+    /** Whether an active measurement of the current user already came from this file. */
+    @Transactional(readOnly = true)
+    public boolean isFileImported(String sourceFileHash) {
+        return repository.existsByUserIdAndSourceFileHashAndDeletedAtIsNull(
+            currentUser.id(), sourceFileHash);
     }
 
     @Transactional(readOnly = true)
@@ -65,7 +82,8 @@ public class BioimpedanceService {
             && !request.measuredAt().equals(entity.getMeasuredAt())
             && repository.existsByUserIdAndMeasuredAtAndDeletedAtIsNull(
                 currentUser.id(), request.measuredAt())) {
-            throw new ConflictException("A measurement already exists at that time");
+            throw new ConflictException(
+                MEASUREMENT_TIME_TAKEN, "A measurement already exists at that time");
         }
 
         BioimpedanceDto before = mapper.toDto(entity);
@@ -102,7 +120,7 @@ public class BioimpedanceService {
         for (int index = 0; index < request.items().size(); index++) {
             CreateBioimpedanceRequest item = request.items().get(index);
             try {
-                BioimpedanceDto dto = persist(item, "IMPORT");
+                BioimpedanceDto dto = persist(item, "IMPORT", null);
                 results.add(new ImportResultItem(index, ImportStatus.CREATED, dto.id(), null));
                 created++;
             } catch (ConflictException e) {
@@ -128,7 +146,11 @@ public class BioimpedanceService {
             .toList();
     }
 
-    private BioimpedanceDto persist(CreateBioimpedanceRequest request, String defaultSource) {
+    private BioimpedanceDto persist(
+        CreateBioimpedanceRequest request,
+        String defaultSource,
+        String sourceFileName
+    ) {
         validateMeasurement(
             request.measuredAt(),
             request.bodyFatPercentage(),
@@ -148,12 +170,14 @@ public class BioimpedanceService {
 
         UUID userId = currentUser.id();
         if (repository.existsByUserIdAndMeasuredAtAndDeletedAtIsNull(userId, request.measuredAt())) {
-            throw new ConflictException("A measurement already exists at that time");
+            throw new ConflictException(
+                MEASUREMENT_TIME_TAKEN, "A measurement already exists at that time");
         }
         if (request.sourceFileHash() != null
             && repository.existsByUserIdAndSourceFileHashAndDeletedAtIsNull(
                 userId, request.sourceFileHash())) {
-            throw new ConflictException("This file was already imported");
+            throw new ConflictException(
+                FILE_ALREADY_IMPORTED, "This file was already imported");
         }
 
         Bioimpedance entity = mapper.toEntity(request);
@@ -162,6 +186,7 @@ public class BioimpedanceService {
             request.source() == null || request.source().isBlank()
                 ? defaultSource
                 : request.source());
+        entity.setSourceFileName(sourceFileName);
         repository.save(entity);
 
         BioimpedanceDto dto = mapper.toDto(entity);

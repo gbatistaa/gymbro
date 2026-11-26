@@ -52,7 +52,7 @@ public class BioimpedanceTrendService {
             int fromIndex = Math.max(0, values.size() - size);
             double average = values.subList(fromIndex, values.size())
                 .stream()
-                .mapToDouble(Double::doubleValue)
+                .mapToDouble(v -> v)
                 .average()
                 .orElse(value);
             points.add(new TrendDto.TrendPointDto(

@@ -177,16 +177,17 @@
 .bottomNavList {
   max-width: var(--content-max);
   margin: 0 auto;
-  padding: 6px 12px;
+  padding: 6px 8px;
   list-style: none;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 4px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 2px;
 }
 
 .bottomNavItem {
+  min-width: 0;
   min-height: 54px;
-  padding: 6px 4px;
+  padding: 6px 2px;
   border-radius: 12px;
   display: flex;
   flex-direction: column;

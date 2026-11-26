@@ -29,11 +29,13 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
+import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -92,6 +94,13 @@ class BioimpedanceImportFlowIT {
             .andExpect(jsonPath("$.result.missingFields[0]").value("skeletalMuscleMassKg"))
             .andExpect(jsonPath("$.sourceFileHash").exists());
 
+        // ready for review: listed as an open import
+        mockMvc.perform(get("/api/bioimpedance/imports").header(HttpHeaders.AUTHORIZATION, owner))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.length()").value(1))
+            .andExpect(jsonPath("$[0].id").value(jobId))
+            .andExpect(jsonPath("$[0].bioimpedanceId").doesNotExist());
+
         String confirmation = """
             {"measuredAt":"2026-10-01T08:00:00Z","bodyFatPercentage":18.2,"muscleMassKg":38.1,
              "bodyWeightKg":82.4,"heightCm":178.0,"visceralFat":8.0,"waterPercentage":55.3,
@@ -105,27 +114,97 @@ class BioimpedanceImportFlowIT {
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.bodyFatPercentage").value(18.2))
             .andExpect(jsonPath("$.source").value("IMPORT"))
-            .andExpect(jsonPath("$.sourceFileHash").exists());
+            .andExpect(jsonPath("$.sourceFileHash").exists())
+            .andExpect(jsonPath("$.sourceFileName").value("inbody.pdf"))
+            .andExpect(jsonPath("$.createdAt").exists());
 
-        // the same job cannot create a second measurement (same file hash)
+        // the same job cannot create a second measurement
         mockMvc.perform(post("/api/bioimpedance/imports/{id}/confirm", jobId)
                 .header(HttpHeaders.AUTHORIZATION, owner)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(confirmation))
-            .andExpect(status().isConflict());
+            .andExpect(status().isConflict())
+            .andExpect(jsonPath("$.code").value("BIOIMPEDANCE_IMPORT_ALREADY_CONFIRMED"));
 
         mockMvc.perform(get("/api/bioimpedance").header(HttpHeaders.AUTHORIZATION, owner))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.length()").value(1));
+            .andExpect(jsonPath("$.length()").value(1))
+            .andExpect(jsonPath("$[0].sourceFileName").value("inbody.pdf"));
 
-        // same file: returns the existing job and does not call the parser again
+        // confirmed: no longer an open import, and the job points to the measurement
+        mockMvc.perform(get("/api/bioimpedance/imports").header(HttpHeaders.AUTHORIZATION, owner))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.length()").value(0));
+        mockMvc.perform(get("/api/bioimpedance/imports/{id}", jobId).header(HttpHeaders.AUTHORIZATION, owner))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.bioimpedanceId").exists());
+
+        // same file again: rejected up front, without calling the parser
         mockMvc.perform(multipart("/api/bioimpedance/imports")
                 .file(pdfFile())
                 .header(HttpHeaders.AUTHORIZATION, owner))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.id").value(jobId));
+            .andExpect(status().isConflict())
+            .andExpect(jsonPath("$.code").value("BIOIMPEDANCE_FILE_ALREADY_IMPORTED"));
 
         verify(parser, times(1)).extract(any(byte[].class), anyString());
+    }
+
+    @Test
+    @DisplayName("an open import can be discarded")
+    void shouldDiscardOpenImport() throws Exception {
+        String owner = bearer(createUser());
+        when(parser.extract(any(byte[].class), anyString())).thenReturn(extraction());
+
+        MvcResult upload = mockMvc.perform(multipart("/api/bioimpedance/imports")
+                .file(pdfFile())
+                .header(HttpHeaders.AUTHORIZATION, owner))
+            .andExpect(status().isAccepted())
+            .andReturn();
+        String jobId = JsonPath.read(upload.getResponse().getContentAsString(), "$.id");
+        awaitStatus(jobId, owner, "DONE");
+
+        mockMvc.perform(delete("/api/bioimpedance/imports/{id}", jobId).header(HttpHeaders.AUTHORIZATION, owner))
+            .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/api/bioimpedance/imports/{id}", jobId).header(HttpHeaders.AUTHORIZATION, owner))
+            .andExpect(status().isNotFound());
+        mockMvc.perform(get("/api/bioimpedance/imports").header(HttpHeaders.AUTHORIZATION, owner))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
+    @DisplayName("a file whose measurement was deleted can be imported again")
+    void shouldReimportAfterMeasurementDeletion() throws Exception {
+        String owner = bearer(createUser());
+        when(parser.extract(any(byte[].class), anyString())).thenReturn(extraction());
+
+        MvcResult upload = mockMvc.perform(multipart("/api/bioimpedance/imports")
+                .file(pdfFile())
+                .header(HttpHeaders.AUTHORIZATION, owner))
+            .andExpect(status().isAccepted())
+            .andReturn();
+        String jobId = JsonPath.read(upload.getResponse().getContentAsString(), "$.id");
+        awaitStatus(jobId, owner, "DONE");
+
+        MvcResult confirmed = mockMvc.perform(post("/api/bioimpedance/imports/{id}/confirm", jobId)
+                .header(HttpHeaders.AUTHORIZATION, owner)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"measuredAt":"2026-10-01T08:00:00Z","bodyFatPercentage":18.2,"muscleMassKg":38.1}
+                    """))
+            .andExpect(status().isCreated())
+            .andReturn();
+        String measurementId = JsonPath.read(confirmed.getResponse().getContentAsString(), "$.id");
+
+        mockMvc.perform(delete("/api/bioimpedance/{id}", measurementId).header(HttpHeaders.AUTHORIZATION, owner))
+            .andExpect(status().isNoContent());
+
+        mockMvc.perform(multipart("/api/bioimpedance/imports")
+                .file(pdfFile())
+                .header(HttpHeaders.AUTHORIZATION, owner))
+            .andExpect(status().isAccepted())
+            .andExpect(jsonPath("$.id").value(not(jobId)));
     }
 
     @Test

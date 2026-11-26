@@ -48,6 +48,9 @@ public class Bioimpedance extends BaseEntity {
     @Column(name = "source_file_hash", length = 64)
     private String sourceFileHash;
 
+    @Column(name = "source_file_name")
+    private String sourceFileName;
+
     @Column(name = "deleted_at")
     private Instant deletedAt;
 }

@@ -12,6 +12,7 @@ import com.gbatistadev.gymbro.errors.exceptions.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.task.TaskRejectedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -27,7 +28,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class BioimpedanceImportService {
     private static final int MAX_FILE_BYTES = 10 * 1024 * 1024;
-    private static final List<ImportJobStatus> ACTIVE_STATUSES =
+    /** An open job in one of these states is returned again instead of re-reading the file. */
+    private static final List<ImportJobStatus> REUSABLE_STATUSES =
         List.of(ImportJobStatus.PENDING, ImportJobStatus.PROCESSING, ImportJobStatus.DONE);
 
     private final BioimpedanceImportJobRepository repository;
@@ -42,9 +44,14 @@ public class BioimpedanceImportService {
         String hash = sha256Hex(bytes);
         UUID userId = currentUser.id();
 
+        if (bioimpedanceService.isFileImported(hash)) {
+            throw new ConflictException(
+                BioimpedanceService.FILE_ALREADY_IMPORTED, "This file was already imported");
+        }
+
         Optional<BioimpedanceImportJob> existing = repository
-            .findFirstByUserIdAndSourceFileHashAndStatusInOrderByCreatedAtDesc(
-                userId, hash, ACTIVE_STATUSES);
+            .findFirstByUserIdAndSourceFileHashAndStatusInAndBioimpedanceIdIsNullOrderByCreatedAtDesc(
+                userId, hash, REUSABLE_STATUSES);
         if (existing.isPresent()) {
             return new ImportJobSubmitResult(mapper.toDto(existing.get()), false);
         }
@@ -67,21 +74,50 @@ public class BioimpedanceImportService {
         return new ImportJobSubmitResult(mapper.toDto(current), true);
     }
 
+    /** Creates the measurement from the reviewed values and closes the import. */
+    @Transactional
     public BioimpedanceDto confirm(UUID jobId, CreateBioimpedanceRequest request) {
-        BioimpedanceImportJob job = repository.findByIdAndUserId(jobId, currentUser.id())
-            .orElseThrow(() -> new NotFoundException("Import job not found: " + jobId));
+        BioimpedanceImportJob job = loadOwned(jobId);
 
+        if (job.getBioimpedanceId() != null) {
+            throw new ConflictException(
+                "BIOIMPEDANCE_IMPORT_ALREADY_CONFIRMED", "This import was already confirmed");
+        }
         if (job.getStatus() != ImportJobStatus.DONE) {
             throw new ConflictException("Import job is not ready");
         }
 
-        return bioimpedanceService.create(
-            mapper.toImportRequest(request, job.getSourceFileHash()));
+        BioimpedanceDto created = bioimpedanceService.createFromImport(
+            mapper.toImportRequest(request, job.getSourceFileHash()),
+            job.getSourceFileName());
+
+        job.setBioimpedanceId(created.id());
+        repository.save(job);
+        return created;
     }
 
     public ImportJobDto get(UUID jobId) {
-        return repository.findByIdAndUserId(jobId, currentUser.id())
+        return mapper.toDto(loadOwned(jobId));
+    }
+
+    /** Open imports of the current user, newest first. */
+    public List<ImportJobDto> listOpen() {
+        return repository.findByUserIdAndBioimpedanceIdIsNullOrderByCreatedAtDesc(currentUser.id())
+            .stream()
             .map(mapper::toDto)
+            .toList();
+    }
+
+    /**
+     * Drops an import the user does not want to review. A job still being processed is removed as
+     * well: the worker finds no row when it finishes and its result is discarded.
+     */
+    public void discard(UUID jobId) {
+        repository.delete(loadOwned(jobId));
+    }
+
+    private BioimpedanceImportJob loadOwned(UUID jobId) {
+        return repository.findByIdAndUserId(jobId, currentUser.id())
             .orElseThrow(() -> new NotFoundException("Import job not found: " + jobId));
     }
 

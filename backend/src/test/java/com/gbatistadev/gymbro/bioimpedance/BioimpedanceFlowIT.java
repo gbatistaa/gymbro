@@ -137,7 +137,8 @@ class BioimpedanceFlowIT {
                 .header(HttpHeaders.AUTHORIZATION, auth)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(measurementBody("2026-09-01T08:00:00Z", 20.0)))
-            .andExpect(status().isConflict());
+            .andExpect(status().isConflict())
+            .andExpect(jsonPath("$.code").value("BIOIMPEDANCE_MEASUREMENT_TIME_TAKEN"));
     }
 
     private String createMeasurement(String auth, String measuredAt, double bodyFat)

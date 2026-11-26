@@ -40,4 +40,8 @@ public class BioimpedanceImportJob extends BaseEntity {
 
     @Column(name = "finished_at")
     private Instant finishedAt;
+
+    /** Measurement created when the user confirmed this import; {@code null} while it is open. */
+    @Column(name = "bioimpedance_id")
+    private UUID bioimpedanceId;
 }

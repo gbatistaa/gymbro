@@ -31,6 +31,14 @@ export function apiFieldMessages(error: unknown): ApiError["errors"] {
   return parsed.success ? parsed.data.errors : [];
 }
 
+/** `code` estável do erro do backend, para o cliente explicar a causa; `null` sem resposta legível. */
+export function apiErrorCode(error: unknown): string | null {
+  if (!axios.isAxiosError(error)) return null;
+
+  const parsed = apiErrorSchema.safeParse(error.response?.data);
+  return parsed.success ? parsed.data.code : null;
+}
+
 /** Todas as mensagens do backend em uma só linha, para estados de tela (`ErrorState`). */
 export function describeApiError(error: unknown): string {
   return apiErrorMessages(error).join("; ");

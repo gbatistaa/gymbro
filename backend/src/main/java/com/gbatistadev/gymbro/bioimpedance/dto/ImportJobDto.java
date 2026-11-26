@@ -6,6 +6,10 @@ import tools.jackson.databind.JsonNode;
 import java.time.Instant;
 import java.util.UUID;
 
+/**
+ * {@code bioimpedanceId} stays {@code null} while the import is open; it points to the
+ * measurement once the user confirms the reviewed values.
+ */
 public record ImportJobDto(
     UUID id,
     ImportJobStatus status,
@@ -14,5 +18,6 @@ public record ImportJobDto(
     JsonNode result,
     String error,
     Instant createdAt,
-    Instant finishedAt
+    Instant finishedAt,
+    UUID bioimpedanceId
 ) {}

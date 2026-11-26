@@ -14,5 +14,8 @@ public record BioimpedanceDto(
     Double visceralFat,
     Double waterPercentage,
     String source,
-    String sourceFileHash
+    String sourceFileHash,
+    String sourceFileName,
+    Instant createdAt,
+    Instant updatedAt
 ) {}

@@ -19,6 +19,7 @@ import org.springframework.core.task.TaskRejectedException;
 import org.springframework.mock.web.MockMultipartFile;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
@@ -62,7 +63,7 @@ class BioimpedanceImportServiceTest {
         AtomicReference<BioimpedanceImportJob> saved = new AtomicReference<>();
 
         when(currentUser.id()).thenReturn(userId);
-        when(repository.findFirstByUserIdAndSourceFileHashAndStatusInOrderByCreatedAtDesc(
+        when(repository.findFirstByUserIdAndSourceFileHashAndStatusInAndBioimpedanceIdIsNullOrderByCreatedAtDesc(
             eq(userId), anyString(), anyList())).thenReturn(Optional.empty());
         when(repository.save(any(BioimpedanceImportJob.class))).thenAnswer(invocation -> {
             BioimpedanceImportJob job = invocation.getArgument(0);
@@ -73,7 +74,7 @@ class BioimpedanceImportServiceTest {
         when(repository.findById(jobId)).thenAnswer(invocation -> Optional.of(saved.get()));
         when(mapper.toDto(any(BioimpedanceImportJob.class)))
             .thenReturn(new ImportJobDto(jobId, ImportJobStatus.PENDING, "inbody.pdf",
-                "hash", null, null, null, null));
+                "hash", null, null, null, null, null));
 
         ImportJobSubmitResult result = service.submit(file);
 
@@ -94,10 +95,10 @@ class BioimpedanceImportServiceTest {
         existing.setId(jobId);
         existing.setStatus(ImportJobStatus.DONE);
         ImportJobDto dto = new ImportJobDto(jobId, ImportJobStatus.DONE, "inbody.pdf",
-            "hash", null, null, null, null);
+            "hash", null, null, null, null, null);
 
         when(currentUser.id()).thenReturn(userId);
-        when(repository.findFirstByUserIdAndSourceFileHashAndStatusInOrderByCreatedAtDesc(
+        when(repository.findFirstByUserIdAndSourceFileHashAndStatusInAndBioimpedanceIdIsNullOrderByCreatedAtDesc(
             eq(userId), anyString(), anyList())).thenReturn(Optional.of(existing));
         when(mapper.toDto(existing)).thenReturn(dto);
 
@@ -149,7 +150,7 @@ class BioimpedanceImportServiceTest {
         AtomicReference<BioimpedanceImportJob> saved = new AtomicReference<>();
 
         when(currentUser.id()).thenReturn(userId);
-        when(repository.findFirstByUserIdAndSourceFileHashAndStatusInOrderByCreatedAtDesc(
+        when(repository.findFirstByUserIdAndSourceFileHashAndStatusInAndBioimpedanceIdIsNullOrderByCreatedAtDesc(
             eq(userId), anyString(), anyList())).thenReturn(Optional.empty());
         when(repository.save(any(BioimpedanceImportJob.class))).thenAnswer(invocation -> {
             BioimpedanceImportJob job = invocation.getArgument(0);
@@ -160,7 +161,7 @@ class BioimpedanceImportServiceTest {
         when(repository.findById(jobId)).thenAnswer(invocation -> Optional.of(saved.get()));
         when(mapper.toDto(any(BioimpedanceImportJob.class)))
             .thenReturn(new ImportJobDto(jobId, ImportJobStatus.PENDING, "inbody.pdf",
-                "hash", null, null, null, null));
+                "hash", null, null, null, null, null));
         doThrow(new TaskRejectedException("full"))
             .when(processor).process(any(), any(), any());
 
@@ -170,12 +171,13 @@ class BioimpedanceImportServiceTest {
     }
 
     @Test
-    @DisplayName("confirm persists a DONE job with the job file hash")
+    @DisplayName("confirm persists a DONE job with the job file hash and links the measurement")
     void shouldConfirmDoneJob() {
         BioimpedanceImportJob job = new BioimpedanceImportJob();
         job.setId(jobId);
         job.setStatus(ImportJobStatus.DONE);
         job.setSourceFileHash("file-hash");
+        job.setSourceFileName("inbody.pdf");
 
         CreateBioimpedanceRequest request = new CreateBioimpedanceRequest(
             java.time.Instant.parse("2026-10-01T08:00:00Z"),
@@ -184,14 +186,88 @@ class BioimpedanceImportServiceTest {
             request.measuredAt(), 18.0, 38.0, null, null, null, null, null, "IMPORT", "file-hash");
         BioimpedanceDto expected = new BioimpedanceDto(
             UUID.randomUUID(), request.measuredAt(), null, null, 18.0, 38.0, null,
-            null, null, "IMPORT", "file-hash");
+            null, null, "IMPORT", "file-hash", "inbody.pdf", request.measuredAt(), null);
 
         when(currentUser.id()).thenReturn(userId);
         when(repository.findByIdAndUserId(jobId, userId)).thenReturn(Optional.of(job));
         when(mapper.toImportRequest(request, "file-hash")).thenReturn(confirmed);
-        when(bioimpedanceService.create(confirmed)).thenReturn(expected);
+        when(bioimpedanceService.createFromImport(confirmed, "inbody.pdf")).thenReturn(expected);
 
         assertSame(expected, service.confirm(jobId, request));
+        assertEquals(expected.id(), job.getBioimpedanceId());
+        verify(repository).save(job);
+    }
+
+    @Test
+    @DisplayName("confirm rejects a job that was already confirmed")
+    void shouldRejectSecondConfirmation() {
+        BioimpedanceImportJob job = new BioimpedanceImportJob();
+        job.setId(jobId);
+        job.setStatus(ImportJobStatus.DONE);
+        job.setBioimpedanceId(UUID.randomUUID());
+
+        when(currentUser.id()).thenReturn(userId);
+        when(repository.findByIdAndUserId(jobId, userId)).thenReturn(Optional.of(job));
+
+        ConflictException error = assertThrows(ConflictException.class, () -> service.confirm(
+            jobId, new CreateBioimpedanceRequest(
+                java.time.Instant.parse("2026-10-01T08:00:00Z"),
+                18.0, 38.0, null, null, null, null, null, null, null)));
+        assertEquals("BIOIMPEDANCE_IMPORT_ALREADY_CONFIRMED", error.getCode());
+        verifyNoInteractions(bioimpedanceService);
+    }
+
+    @Test
+    @DisplayName("submit rejects a file that already produced an active measurement")
+    void shouldRejectAlreadyImportedFile() {
+        when(currentUser.id()).thenReturn(userId);
+        when(bioimpedanceService.isFileImported(anyString())).thenReturn(true);
+
+        ConflictException error = assertThrows(ConflictException.class,
+            () -> service.submit(pdfFile()));
+        assertEquals("BIOIMPEDANCE_FILE_ALREADY_IMPORTED", error.getCode());
+        verify(repository, never()).save(any());
+        verifyNoInteractions(processor);
+    }
+
+    @Test
+    @DisplayName("listOpen returns the current user's unconfirmed jobs")
+    void shouldListOpenJobs() {
+        BioimpedanceImportJob job = new BioimpedanceImportJob();
+        job.setId(jobId);
+        ImportJobDto dto = new ImportJobDto(jobId, ImportJobStatus.PROCESSING, "inbody.pdf",
+            "hash", null, null, null, null, null);
+
+        when(currentUser.id()).thenReturn(userId);
+        when(repository.findByUserIdAndBioimpedanceIdIsNullOrderByCreatedAtDesc(userId))
+            .thenReturn(List.of(job));
+        when(mapper.toDto(job)).thenReturn(dto);
+
+        assertEquals(List.of(dto), service.listOpen());
+    }
+
+    @Test
+    @DisplayName("discard deletes the owned job")
+    void shouldDiscardOwnedJob() {
+        BioimpedanceImportJob job = new BioimpedanceImportJob();
+        job.setId(jobId);
+
+        when(currentUser.id()).thenReturn(userId);
+        when(repository.findByIdAndUserId(jobId, userId)).thenReturn(Optional.of(job));
+
+        service.discard(jobId);
+
+        verify(repository).delete(job);
+    }
+
+    @Test
+    @DisplayName("discard hides a job owned by another user")
+    void shouldNotDiscardForeignJob() {
+        when(currentUser.id()).thenReturn(userId);
+        when(repository.findByIdAndUserId(jobId, userId)).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () -> service.discard(jobId));
+        verify(repository, never()).delete(any());
     }
 
     @Test

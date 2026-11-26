@@ -23,6 +23,7 @@ public interface BioimpedanceMapper {
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "userId", ignore = true)
     @Mapping(target = "deletedAt", ignore = true)
+    @Mapping(target = "sourceFileName", ignore = true)
     @Mapping(target = "source", defaultValue = "MANUAL")
     Bioimpedance toEntity(CreateBioimpedanceRequest request);
 
@@ -32,5 +33,6 @@ public interface BioimpedanceMapper {
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "userId", ignore = true)
     @Mapping(target = "deletedAt", ignore = true)
+    @Mapping(target = "sourceFileName", ignore = true)
     void updateEntity(UpdateBioimpedanceRequest request, @MappingTarget Bioimpedance bioimpedance);
 }

@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -38,9 +39,20 @@ public class BioimpedanceImportController {
         return ResponseEntity.accepted().location(location).body(result.job());
     }
 
+    @GetMapping
+    public ResponseEntity<List<ImportJobDto>> listOpen() {
+        return ResponseEntity.ok(service.listOpen());
+    }
+
     @GetMapping("/{jobId}")
     public ResponseEntity<ImportJobDto> get(@PathVariable UUID jobId) {
         return ResponseEntity.ok(service.get(jobId));
+    }
+
+    @DeleteMapping("/{jobId}")
+    public ResponseEntity<Void> discard(@PathVariable UUID jobId) {
+        service.discard(jobId);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{jobId}/confirm")

@@ -40,16 +40,19 @@ export function formatDate(iso: string, timeZone: string): string {
   }).format(new Date(iso));
 }
 
-/** Data e hora no fuso do usuário, ex.: `26 de nov. de 2026 14:05`. */
-export function formatDateTime(iso: string, timeZone: string): string {
-  const time = new Intl.DateTimeFormat("pt-BR", {
+/** Hora no fuso do usuário, ex.: `14:05`. */
+export function formatTime(iso: string, timeZone: string): string {
+  return new Intl.DateTimeFormat("pt-BR", {
     hourCycle: "h23",
     timeZone,
     hour: "2-digit",
     minute: "2-digit",
   }).format(new Date(iso));
+}
 
-  return `${formatDate(iso, timeZone)} ${time}`;
+/** Data e hora no fuso do usuário, ex.: `26 de nov. de 2026 14:05`. */
+export function formatDateTime(iso: string, timeZone: string): string {
+  return `${formatDate(iso, timeZone)} ${formatTime(iso, timeZone)}`;
 }
 
 /** Duração em segundos: `1h 12min`, `48min`, `30s`. */

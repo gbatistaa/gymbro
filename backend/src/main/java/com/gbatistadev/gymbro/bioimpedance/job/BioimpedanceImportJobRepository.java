@@ -12,8 +12,13 @@ public interface BioimpedanceImportJobRepository extends JpaRepository<Bioimpeda
 
     Optional<BioimpedanceImportJob> findByIdAndUserId(UUID id, UUID userId);
 
-    Optional<BioimpedanceImportJob> findFirstByUserIdAndSourceFileHashAndStatusInOrderByCreatedAtDesc(
-        UUID userId, String sourceFileHash, Collection<ImportJobStatus> statuses);
+    /** Most recent open (not yet confirmed) job for the same file. */
+    Optional<BioimpedanceImportJob>
+        findFirstByUserIdAndSourceFileHashAndStatusInAndBioimpedanceIdIsNullOrderByCreatedAtDesc(
+            UUID userId, String sourceFileHash, Collection<ImportJobStatus> statuses);
+
+    /** Imports waiting for the user: processing, ready for review or failed. */
+    List<BioimpedanceImportJob> findByUserIdAndBioimpedanceIdIsNullOrderByCreatedAtDesc(UUID userId);
 
     List<BioimpedanceImportJob> findByStatusAndUpdatedAtBefore(
         ImportJobStatus status, Instant cutoff);

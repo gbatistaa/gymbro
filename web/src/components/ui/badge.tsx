@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import styles from "./ui.module.css";
 
-type BadgeTone = "neutral" | "primary" | "strong";
+type BadgeTone = "neutral" | "primary" | "info" | "strong";
 
 type BadgeProps = {
   children: ReactNode;
@@ -12,6 +12,7 @@ type BadgeProps = {
 const TONE_CLASS: Record<BadgeTone, string> = {
   neutral: `${styles.badgeNeutral} text-muted`,
   primary: `${styles.badgePrimary} text-primary`,
+  info: styles.badgeInfo,
   strong: `${styles.badgeTextStrong} text-text`,
 };
 

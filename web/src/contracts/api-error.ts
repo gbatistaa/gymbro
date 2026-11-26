@@ -6,7 +6,8 @@ export const fieldErrorSchema = z.object({
 });
 
 export const apiErrorSchema = z.object({
-  timestamp: z.iso.datetime({ offset: true }),
+  // O backend serializa `LocalDateTime`, sem fuso (docs/adr/0001-contrato-de-erro.md).
+  timestamp: z.iso.datetime({ offset: true, local: true }),
   status: z.number().int(),
   code: z.string(),
   message: z.string(),

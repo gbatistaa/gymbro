@@ -42,8 +42,8 @@ public class ProgressionService {
                 userId, playlistItems.stream().map(item -> item.getExercise().getId()).toList())
             .stream()
             .collect(Collectors.toMap(
-                WorkoutLogRepository.LatestExerciseSession::getExerciseId,
-                WorkoutLogRepository.LatestExerciseSession::getSessionId));
+                session -> session.getExerciseId(),
+                session -> session.getSessionId()));
 
         Map<UUID, List<WorkoutLog>> latestSets = latestSessionByExercise.isEmpty()
             ? Map.of()
@@ -73,12 +73,12 @@ public class ProgressionService {
         Integer repsMax = item.getTargetRepsMax();
 
         Double lastWeight = sets.stream()
-            .map(WorkoutLog::getWeight)
+            .map(log -> log.getWeight())
             .filter(Objects::nonNull)
             .max(Double::compareTo)
             .orElse(null);
         Integer lastReps = sets.stream()
-            .max(Comparator.comparing(WorkoutLog::getSetNumber))
+            .max(Comparator.comparingInt(WorkoutLog::getSetNumber))
             .map(WorkoutLog::getReps)
             .orElse(null);
 

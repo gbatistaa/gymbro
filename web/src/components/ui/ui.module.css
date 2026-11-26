@@ -232,6 +232,10 @@
   color: var(--color-text-muted);
 }
 
+.hintInfo {
+  color: var(--color-info);
+}
+
 .input {
   width: 100%;
   min-height: var(--tap-target-min);
@@ -691,6 +695,13 @@
   border-color: color-mix(in srgb, var(--primary) 35%, var(--border));
   background-color: var(--primary-tint);
   color: var(--primary);
+}
+
+/* dupla classe: vence os utilitários globais `bg-surface-2 border-token` aplicados ao badge */
+.badge.badgeInfo {
+  border-color: color-mix(in srgb, var(--info) 35%, var(--border));
+  background-color: var(--info-tint);
+  color: var(--info);
 }
 
 .badgeTextStrong {

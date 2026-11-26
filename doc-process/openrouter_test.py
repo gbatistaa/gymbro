@@ -50,7 +50,9 @@ def extract_bioimpedance(md_bytes: bytes) -> dict:
         + json.dumps((*BIOIMPEDANCE_FIELDS, "missingFields"))
         + ". Valores não identificados devem ser null. "
         "missingFields deve listar as chaves cujo valor é null. "
-        "measuredAt deve estar em ISO-8601 UTC (ex.: 2026-10-01T00:00:00Z)."
+        "Valores numéricos devem ser números JSON com ponto decimal e sem unidade (ex.: 82.4). "
+        "measuredAt é a data e a hora da medição exatamente como aparecem no laudo, sem fuso "
+        "horário, no formato YYYY-MM-DDTHH:MM:SS; se o laudo não tiver horário, use YYYY-MM-DD."
     )
     response = requests.post(
         "https://openrouter.ai/api/v1/chat/completions",

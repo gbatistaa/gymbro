@@ -77,6 +77,35 @@ class BioimpedanceServiceTest {
     }
 
     @Test
+    @DisplayName("createFromImport keeps the IMPORT source and the original file name")
+    void shouldCreateMeasurementFromImport() {
+        CreateBioimpedanceRequest request = request(measuredAt, 18.0, null);
+        Bioimpedance entity = new Bioimpedance();
+
+        when(currentUser.id()).thenReturn(userId);
+        when(repository.existsByUserIdAndMeasuredAtAndDeletedAtIsNull(userId, measuredAt))
+            .thenReturn(false);
+        when(mapper.toEntity(request)).thenReturn(entity);
+        when(repository.save(entity)).thenReturn(entity);
+        when(mapper.toDto(entity)).thenReturn(dto());
+
+        service.createFromImport(request, "inbody.pdf");
+
+        assertEquals("IMPORT", entity.getSource());
+        assertEquals("inbody.pdf", entity.getSourceFileName());
+    }
+
+    @Test
+    @DisplayName("isFileImported checks only the current user's active measurements")
+    void shouldCheckImportedFileForCurrentUser() {
+        when(currentUser.id()).thenReturn(userId);
+        when(repository.existsByUserIdAndSourceFileHashAndDeletedAtIsNull(userId, "hash"))
+            .thenReturn(true);
+
+        assertTrue(service.isFileImported("hash"));
+    }
+
+    @Test
     @DisplayName("create rejects a duplicated measurement timestamp")
     void shouldRejectDuplicateTimestamp() {
         CreateBioimpedanceRequest request = request(measuredAt, 18.0, null);
@@ -266,6 +295,7 @@ class BioimpedanceServiceTest {
 
     private BioimpedanceDto dto() {
         return new BioimpedanceDto(
-            measurementId, measuredAt, 82.0, 178.0, 18.0, 38.0, 36.0, 8.0, 55.0, "MANUAL", null);
+            measurementId, measuredAt, 82.0, 178.0, 18.0, 38.0, 36.0, 8.0, 55.0, "MANUAL", null,
+            null, measuredAt, null);
     }
 }
