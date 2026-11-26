@@ -61,8 +61,10 @@ public class BioimpedanceTrendService {
 
         Double first = points.isEmpty() ? null : points.getFirst().value();
         Double last = points.isEmpty() ? null : points.getLast().value();
-        Double delta = first == null ? null : last - first;
-        Double percentage = first == null || first == 0 ? null : delta / first * 100;
+        Double delta = first == null || last == null ? null : last - first;
+        Double percentage = first == null || delta == null || first.equals(0.0)
+            ? null
+            : delta / first * 100;
 
         return new TrendDto(metric, points, delta, percentage);
     }

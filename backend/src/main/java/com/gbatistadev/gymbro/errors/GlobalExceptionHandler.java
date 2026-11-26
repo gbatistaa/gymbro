@@ -175,7 +175,7 @@ public class GlobalExceptionHandler {
 		MaxUploadSizeExceededException ex,
 		HttpServletRequest request
 	) {
-		return respond(HttpStatus.PAYLOAD_TOO_LARGE, "PAYLOAD_TOO_LARGE", "File is too large", request);
+		return respond(HttpStatus.CONTENT_TOO_LARGE, "PAYLOAD_TOO_LARGE", "File is too large", request);
 	}
 
 	@ExceptionHandler(DataIntegrityViolationException.class)
