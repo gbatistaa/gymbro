@@ -418,30 +418,10 @@
   margin: 0;
 }
 
-.noticeInfo {
-  border-color: color-mix(in srgb, var(--color-info) 35%, transparent);
-  background: var(--color-info-tint);
-  color: var(--color-text-primary);
-}
-
-.noticeInfo svg {
-  color: var(--color-info);
-}
-
 .noticeError {
   border-color: color-mix(in srgb, var(--color-danger) 38%, transparent);
   background: color-mix(in srgb, var(--color-danger) 12%, var(--color-surface));
   color: var(--color-danger);
-}
-
-.noticeSuccess {
-  border-color: color-mix(in srgb, var(--color-accent) 38%, transparent);
-  background: var(--color-accent-tint);
-  color: var(--color-text-primary);
-}
-
-.noticeSuccess svg {
-  color: var(--color-accent);
 }
 
 /* ---------- Modal ---------- */

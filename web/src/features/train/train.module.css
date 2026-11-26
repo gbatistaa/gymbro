@@ -302,6 +302,31 @@
   list-style: none;
 }
 
+.itemSortable {
+  position: relative;
+  cursor: grab;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.itemSortable:active {
+  cursor: grabbing;
+}
+
+.itemDragging {
+  z-index: 1;
+}
+
+.itemCardDragging {
+  border-color: var(--color-accent);
+  box-shadow: 0 10px 28px color-mix(in srgb, var(--bg) 75%, transparent);
+}
+
+.dragHandle {
+  flex: none;
+  cursor: grab;
+}
+
 .itemCard {
   display: flex;
   flex-direction: column;

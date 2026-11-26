@@ -6,7 +6,6 @@ import { useState } from "react";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorState } from "@/components/ui/error-state";
-import { Notice } from "@/components/ui/notice";
 import { PrimaryButton } from "@/components/ui/primary-button";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Completion } from "@/contracts/completion";
@@ -14,7 +13,7 @@ import { playlistSchema, playlistSummarySchema, type PlaylistSummary } from "@/c
 import { formatCount, formatVolume } from "@/lib/format";
 import { z } from "zod";
 import { request, requestMaybe } from "@/lib/http";
-import { notifyApiError } from "@/lib/notify";
+import { notifyApiError, notifySuccess } from "@/lib/notify";
 import { useResource } from "@/lib/use-resource";
 import { sessionAtom } from "@/stores/session";
 import { CreatePlanModal } from "./create-plan-modal";
@@ -37,7 +36,6 @@ export function PlanList() {
   const [logTarget, setLogTarget] = useState<PlaylistSummary | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<PlaylistSummary | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const { data, error, isLoading, reload } = useResource("plans", () =>
     request({ url: "/api/playlists" }, playlistSummarySchema.array()),
@@ -45,14 +43,10 @@ export function PlanList() {
 
   const plans = data ?? [];
 
-  function showSuccess(message: string) {
-    setSuccessMessage(message);
-  }
-
   async function duplicatePlan(plan: PlaylistSummary) {
     try {
       await request({ method: "POST", url: `/api/playlists/${plan.id}/clone` }, playlistSchema);
-      showSuccess(`"${plan.name}" duplicada.`);
+      notifySuccess(`"${plan.name}" duplicada.`);
       reload();
     } catch (failure) {
       notifyApiError(failure);
@@ -65,7 +59,7 @@ export function PlanList() {
     setIsDeleting(true);
     try {
       await requestMaybe({ method: "DELETE", url: `/api/playlists/${deleteTarget.id}` }, z.unknown());
-      showSuccess(`"${deleteTarget.name}" excluída.`);
+      notifySuccess(`"${deleteTarget.name}" excluída.`);
       setDeleteTarget(null);
       reload();
     } catch (failure) {
@@ -78,7 +72,7 @@ export function PlanList() {
 
   function handleLogged(completion: Completion) {
     setLogTarget(null);
-    showSuccess(loggedMessage(completion));
+    notifySuccess(loggedMessage(completion));
     reload();
   }
 
@@ -99,8 +93,6 @@ export function PlanList() {
           Nova ficha
         </PrimaryButton>
       </div>
-
-      {successMessage ? <Notice tone="success">{successMessage}</Notice> : null}
 
       {isLoading ? (
         <Skeleton lines={4} label="Carregando fichas…" />
@@ -136,7 +128,7 @@ export function PlanList() {
         <CreatePlanModal
           onCreated={() => {
             setIsCreating(false);
-            showSuccess("Ficha de treino criada.");
+            notifySuccess("Ficha de treino criada.");
             reload();
           }}
           onClose={() => setIsCreating(false)}

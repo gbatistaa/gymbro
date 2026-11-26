@@ -91,7 +91,7 @@ export function ExerciseSearch({ excludedIds, pendingId = null, onSelect }: Exer
       {results.isLoading ? (
         <Skeleton lines={3} label="Buscando exercícios…" />
       ) : results.error ? (
-        <Notice tone="error">{results.error}</Notice>
+        <Notice>{results.error}</Notice>
       ) : visible.length === 0 ? (
         <p className={styles.emptyHint}>Nenhum exercício encontrado. Crie um novo abaixo.</p>
       ) : (

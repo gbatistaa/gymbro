@@ -1,26 +1,15 @@
 "use client";
 
-import {
-  ArrowLeft,
-  ChevronDown,
-  ChevronUp,
-  ClipboardCheck,
-  Pencil,
-  Plus,
-  Sparkles,
-  Trash2,
-} from "lucide-react";
+import { ArrowLeft, ClipboardCheck, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { z } from "zod";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorState } from "@/components/ui/error-state";
 import { Modal } from "@/components/ui/modal";
-import { Notice } from "@/components/ui/notice";
 import { SectionLabel } from "@/components/ui/section-label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SurfaceCard } from "@/components/ui/surface-card";
@@ -34,14 +23,15 @@ import {
   type PlaylistDetail,
   type PlaylistExercise,
 } from "@/contracts/playlist";
-import { formatCount, formatKg, formatVolume } from "@/lib/format";
+import { formatCount, formatVolume } from "@/lib/format";
 import { request, requestMaybe } from "@/lib/http";
-import { notifyApiError } from "@/lib/notify";
+import { notifyApiError, notifySuccess } from "@/lib/notify";
 import { useResource } from "@/lib/use-resource";
 import { ExerciseSearch } from "./exercise-search";
 import { LogWorkoutModal } from "./log-workout-modal";
 import { PlaylistHeader } from "./playlist-header";
 import { PlaylistItemForm } from "./playlist-item-form";
+import { PlaylistItemList } from "./playlist-item-list";
 import styles from "./train.module.css";
 
 type EditorData = {
@@ -78,25 +68,6 @@ async function loadEditor(playlistId: string): Promise<EditorData> {
   };
 }
 
-function formatRepsRange(item: PlaylistExercise): string {
-  if (item.targetRepsMin != null && item.targetRepsMax != null) {
-    return item.targetRepsMin === item.targetRepsMax
-      ? `${item.targetRepsMin}`
-      : `${item.targetRepsMin}–${item.targetRepsMax}`;
-  }
-  return "—";
-}
-
-function formatLoad(
-  weight: number | null | undefined,
-  reps: number | null | undefined,
-): string | null {
-  if (weight == null && reps == null) return null;
-  if (weight == null) return `${formatCount(reps)} reps`;
-  if (reps == null) return `${formatKg(weight)} kg`;
-  return `${formatKg(weight)} kg × ${formatCount(reps)}`;
-}
-
 function loggedMessage(completion: Completion): string {
   if (completion.loggedSets === 0) {
     return `"${completion.playlistName}" marcado como feito.`;
@@ -121,7 +92,12 @@ export function PlaylistEditor({ playlistId }: { playlistId: string }) {
   const [isRemoving, setIsRemoving] = useState(false);
   const [pendingItems, setPendingItems] = useState<PlaylistExercise[] | null>(null);
   const [isReordering, setIsReordering] = useState(false);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  /** Recarrega do servidor; a ordem otimista deixa de valer porque o servidor passa a ser a fonte. */
+  function refresh() {
+    setPendingItems(null);
+    reload();
+  }
 
   async function addExercise(exercise: Exercise) {
     if (addingId) return;
@@ -144,8 +120,8 @@ export function PlaylistEditor({ playlistId }: { playlistId: string }) {
         playlistExerciseSchema,
       );
       setIsPickerOpen(false);
-      setSuccessMessage(`"${exercise.name}" adicionado à ficha.`);
-      reload();
+      notifySuccess(`"${exercise.name}" adicionado à ficha.`);
+      refresh();
     } catch (failure) {
       notifyApiError(failure);
     } finally {
@@ -153,16 +129,12 @@ export function PlaylistEditor({ playlistId }: { playlistId: string }) {
     }
   }
 
-  async function moveItem(index: number, direction: -1 | 1) {
-    if (!data || isReordering) return;
-
-    const items = pendingItems ?? data.playlist.exercises;
-    const targetIndex = index + direction;
-    if (targetIndex < 0 || targetIndex >= items.length) return;
-
-    const next = [...items];
-    const [moved] = next.splice(index, 1);
-    next.splice(targetIndex, 0, moved);
+  /**
+   * Aplica a nova ordem na tela na hora e a salva no servidor. Em caso de sucesso a ordem
+   * confirmada permanece, sem recarregar a tela (o que faria a lista pular a cada arraste).
+   */
+  async function reorderItems(next: PlaylistExercise[]) {
+    if (isReordering) return;
 
     setPendingItems(next);
     setIsReordering(true);
@@ -181,8 +153,6 @@ export function PlaylistEditor({ playlistId }: { playlistId: string }) {
         },
         playlistDetailSchema,
       );
-      setPendingItems(null);
-      reload();
     } catch (failure) {
       setPendingItems(null);
       notifyApiError(failure);
@@ -219,7 +189,7 @@ export function PlaylistEditor({ playlistId }: { playlistId: string }) {
         z.unknown(),
       );
       setRemoveTarget(null);
-      reload();
+      refresh();
     } catch (failure) {
       setRemoveTarget(null);
       notifyApiError(failure);
@@ -269,7 +239,7 @@ export function PlaylistEditor({ playlistId }: { playlistId: string }) {
       </Link>
 
       <SurfaceCard className={styles.editorHeroCard}>
-        <PlaylistHeader playlist={playlist} onSaved={reload} />
+        <PlaylistHeader playlist={playlist} onSaved={refresh} />
 
         <Button fullWidth onClick={() => setIsLogging(true)}>
           <ClipboardCheck size={17} aria-hidden="true" />
@@ -280,8 +250,6 @@ export function PlaylistEditor({ playlistId }: { playlistId: string }) {
           Excluir ficha
         </Button>
       </SurfaceCard>
-
-      {successMessage ? <Notice tone="success">{successMessage}</Notice> : null}
 
       <div className={styles.itemsHeader}>
         <div className={styles.itemsTitle}>
@@ -307,122 +275,15 @@ export function PlaylistEditor({ playlistId }: { playlistId: string }) {
           }
         />
       ) : (
-        <ul className={styles.itemList}>
-          {items.map((item, index) => {
-            const isExerciseArchived = archivedExerciseIds.has(item.exerciseId);
-            const target = targetsByExercise.get(item.exerciseId);
-            const lastLoad = target ? formatLoad(target.lastWeight, target.lastReps) : null;
-            const suggestedLoad = target
-              ? formatLoad(target.suggestedWeight, target.suggestedReps)
-              : null;
-
-            return (
-              <li key={item.id}>
-                <SurfaceCard as="article" className={styles.itemCard}>
-                  <div className={styles.itemTop}>
-                    <div className={styles.itemInfo}>
-                      <div className={styles.itemTitleRow}>
-                        <span className={styles.itemOrderBadge}>
-                          {String(index + 1).padStart(2, "0")}
-                        </span>
-                        <h3 className={styles.itemName}>{item.exerciseName}</h3>
-                        {isExerciseArchived ? (
-                          <Badge tone="neutral">Arquivado</Badge>
-                        ) : null}
-                      </div>
-                      {item.primaryMuscle ? (
-                        <span className={styles.itemMuscle}>{item.primaryMuscle}</span>
-                      ) : null}
-                    </div>
-
-                    <div className={styles.itemActions}>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        aria-label={`Mover ${item.exerciseName} para cima`}
-                        disabled={index === 0 || isReordering}
-                        onClick={() => moveItem(index, -1)}
-                      >
-                        <ChevronUp size={18} aria-hidden="true" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        aria-label={`Mover ${item.exerciseName} para baixo`}
-                        disabled={index === items.length - 1 || isReordering}
-                        onClick={() => moveItem(index, 1)}
-                      >
-                        <ChevronDown size={18} aria-hidden="true" />
-                      </Button>
-                      <Button
-                        variant="secondary"
-                        size="icon"
-                        aria-label={`Editar alvos de ${item.exerciseName}`}
-                        onClick={() => setEditingItem(item)}
-                      >
-                        <Pencil size={16} aria-hidden="true" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        aria-label={`Remover ${item.exerciseName}`}
-                        disabled={isReordering}
-                        onClick={() => setRemoveTarget(item)}
-                      >
-                        <Trash2 size={16} aria-hidden="true" />
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className={styles.itemMetricsGrid}>
-                    <div className={styles.itemMetricCell}>
-                      <span className={styles.itemMetricLabel}>Carga-alvo</span>
-                      <strong className={styles.itemMetricValue}>
-                        {item.targetWeightKg != null && item.targetWeightKg > 0
-                          ? `${formatKg(item.targetWeightKg)} kg`
-                          : "—"}
-                      </strong>
-                    </div>
-                    <div className={styles.itemMetricCell}>
-                      <span className={styles.itemMetricLabel}>Séries × Reps</span>
-                      <strong className={styles.itemMetricValue}>
-                        {item.targetSets != null ? formatCount(item.targetSets) : "—"} ×{" "}
-                        {formatRepsRange(item)}
-                      </strong>
-                    </div>
-                    <div className={styles.itemMetricCell}>
-                      <span className={styles.itemMetricLabel}>Descanso</span>
-                      <strong className={styles.itemMetricValue}>
-                        {item.restSeconds != null
-                          ? `${formatCount(item.restSeconds)} s`
-                          : "—"}
-                      </strong>
-                    </div>
-                  </div>
-
-                  <div className={styles.itemProgressionBar}>
-                    <div className={styles.itemProgressionItem}>
-                      <span className={styles.itemProgressionLabel}>Última carga:</span>
-                      <span className={styles.itemProgressionVal}>
-                        {lastLoad ?? "Sem histórico"}
-                      </span>
-                    </div>
-                    {suggestedLoad ? (
-                      <div className={styles.itemProgressionSuggestion}>
-                        <Sparkles size={13} aria-hidden="true" />
-                        <span>Sugestão: {suggestedLoad}</span>
-                      </div>
-                    ) : null}
-                  </div>
-
-                  {item.note ? (
-                    <p className={styles.itemNote}>{item.note}</p>
-                  ) : null}
-                </SurfaceCard>
-              </li>
-            );
-          })}
-        </ul>
+        <PlaylistItemList
+          items={items}
+          archivedExerciseIds={archivedExerciseIds}
+          targetsByExercise={targetsByExercise}
+          isLocked={isReordering}
+          onReorder={reorderItems}
+          onEdit={setEditingItem}
+          onRemove={setRemoveTarget}
+        />
       )}
 
       {isPickerOpen ? (
@@ -451,8 +312,8 @@ export function PlaylistEditor({ playlistId }: { playlistId: string }) {
           planName={playlist.name}
           onLogged={(completion) => {
             setIsLogging(false);
-            setSuccessMessage(loggedMessage(completion));
-            reload();
+            notifySuccess(loggedMessage(completion));
+            refresh();
           }}
           onClose={() => setIsLogging(false)}
         />
@@ -464,7 +325,7 @@ export function PlaylistEditor({ playlistId }: { playlistId: string }) {
           item={editingItem}
           onSaved={() => {
             setEditingItem(null);
-            reload();
+            refresh();
           }}
           onCancel={() => setEditingItem(null)}
         />

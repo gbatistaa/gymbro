@@ -18,7 +18,6 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ErrorState } from "@/components/ui/error-state";
-import { Notice } from "@/components/ui/notice";
 import { SectionLabel } from "@/components/ui/section-label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { userSummarySchema, type UserSummary } from "@/contracts/auth";
@@ -27,6 +26,7 @@ import { playlistSummarySchema } from "@/contracts/playlist";
 import { logout } from "@/features/auth/api";
 import { formatCount, formatDate } from "@/lib/format";
 import { request } from "@/lib/http";
+import { notifySuccess } from "@/lib/notify";
 import { timeZoneLabel } from "@/lib/timezones";
 import { useResource } from "@/lib/use-resource";
 import { sessionAtom } from "@/stores/session";
@@ -105,7 +105,6 @@ export function ProfileScreen() {
   const { data, error, isLoading, reload } = useResource("profile", loadProfile);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [savedMessage, setSavedMessage] = useState<string | null>(null);
 
   if (isLoading) {
     return (
@@ -140,7 +139,7 @@ export function ProfileScreen() {
   function handleSaved(saved: UserSummary) {
     setSession((current) => (current ? { ...current, user: saved } : current));
     setIsEditing(false);
-    setSavedMessage("Informações atualizadas.");
+    notifySuccess("Informações atualizadas.");
     reload();
   }
 
@@ -162,8 +161,6 @@ export function ProfileScreen() {
         <span className={styles.pageKicker}>Conta e preferências</span>
         <h1 className={styles.title}>Perfil</h1>
       </header>
-
-      {savedMessage ? <Notice tone="success">{savedMessage}</Notice> : null}
 
       <section className={styles.hero} aria-label="Seu perfil">
         <div className={styles.heroTop}>

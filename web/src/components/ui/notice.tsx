@@ -1,36 +1,12 @@
-import { AlertCircle, CheckCircle2, Info } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import type { ReactNode } from "react";
 import styles from "./ui.module.css";
 
-type NoticeTone = "info" | "error" | "success";
-
-const TONE_CLASS: Record<NoticeTone, string> = {
-  info: styles.noticeInfo,
-  error: styles.noticeError,
-  success: styles.noticeSuccess,
-};
-
-const TONE_ICON = {
-  info: Info,
-  error: AlertCircle,
-  success: CheckCircle2,
-};
-
-export function Notice({
-  tone = "info",
-  children,
-}: {
-  tone?: NoticeTone;
-  children: ReactNode;
-}) {
-  const Icon = TONE_ICON[tone];
-
+/** Aviso de erro fixo na tela, para falhas de carregamento. Confirmações e erros de ação usam toast. */
+export function Notice({ children }: { children: ReactNode }) {
   return (
-    <div
-      className={`${styles.notice} ${TONE_CLASS[tone]}`}
-      role={tone === "error" ? "alert" : "status"}
-    >
-      <Icon size={18} aria-hidden="true" />
+    <div className={`${styles.notice} ${styles.noticeError}`} role="alert">
+      <AlertCircle size={18} aria-hidden="true" />
       <p>{children}</p>
     </div>
   );

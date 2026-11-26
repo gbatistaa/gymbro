@@ -2,6 +2,11 @@ import { toast } from "sonner";
 import type { ZodError } from "zod";
 import { apiErrorMessages } from "./api-error-text";
 
+/** Confirmação de uma ação concluída. */
+export function notifySuccess(message: string) {
+  toast.success(message);
+}
+
 /** Um toast de erro por mensagem distinta. */
 export function notifyErrors(messages: readonly string[]) {
   for (const message of new Set(messages)) {
