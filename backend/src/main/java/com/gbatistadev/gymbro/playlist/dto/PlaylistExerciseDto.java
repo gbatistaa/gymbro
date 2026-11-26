@@ -11,5 +11,7 @@ public record PlaylistExerciseDto(
     Integer targetRepsMin,
     Integer targetRepsMax,
     Integer restSeconds,
-    String note
+    String note,
+    Double targetWeightKg,
+    String primaryMuscle
 ) {}

@@ -32,6 +32,9 @@ public class PlaylistExercise extends BaseEntity {
     @Column(length = 500)
     private String note;
 
+    @Column(name = "target_weight_kg")
+    private Double targetWeightKg;
+
     @ManyToOne(optional = false)
     @JoinColumn(name = "playlist_id", nullable = false)
     private Playlist playlist;

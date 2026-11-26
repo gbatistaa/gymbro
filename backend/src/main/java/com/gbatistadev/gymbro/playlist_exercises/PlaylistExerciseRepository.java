@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -31,4 +32,12 @@ public interface PlaylistExerciseRepository
         ORDER BY pe.orderIndex
     """)
     List<PlaylistExercise> findDetailByPlaylistId(@Param("playlistId") UUID playlistId);
+
+    @Query("""
+        SELECT pe FROM PlaylistExercise pe
+        JOIN FETCH pe.exercise
+        WHERE pe.playlist.id IN :playlistIds
+        ORDER BY pe.orderIndex
+    """)
+    List<PlaylistExercise> findDetailByPlaylistIdIn(@Param("playlistIds") Collection<UUID> playlistIds);
 }

@@ -1,6 +1,7 @@
 package com.gbatistadev.gymbro.playlist.dto;
 
 import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -27,5 +28,9 @@ public record AddPlaylistExerciseRequest(
     Integer restSeconds,
 
     @Size(max = 500, message = "note must have at most 500 characters")
-    String note
+    String note,
+
+    @PositiveOrZero(message = "targetWeightKg cannot be negative")
+    @Max(value = 1000, message = "targetWeightKg must be at most 1000")
+    Double targetWeightKg
 ) {}

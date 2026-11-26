@@ -1,6 +1,5 @@
 package com.gbatistadev.gymbro.playlist;
 
-import com.gbatistadev.gymbro.playlist.dto.PlaylistSummaryDto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -17,7 +16,7 @@ public interface PlaylistRepository extends JpaRepository<Playlist, UUID>, JpaSp
     List<Playlist> findByUserIdAndArchivedAtIsNullOrderByName(UUID userId);
 
     @Query("""
-        SELECT new com.gbatistadev.gymbro.playlist.dto.PlaylistSummaryDto(
+        SELECT new com.gbatistadev.gymbro.playlist.PlaylistSummaryRow(
             p.id, p.name, p.description, p.archivedAt,
             COUNT(DISTINCT item.id), MAX(completion.completedAt))
         FROM Playlist p
@@ -28,7 +27,7 @@ public interface PlaylistRepository extends JpaRepository<Playlist, UUID>, JpaSp
         GROUP BY p.id, p.name, p.description, p.archivedAt
         ORDER BY p.name
         """)
-    List<PlaylistSummaryDto> findSummariesByUserId(
+    List<PlaylistSummaryRow> findSummariesByUserId(
         @Param("userId") UUID userId,
         @Param("includeArchived") boolean includeArchived);
 }

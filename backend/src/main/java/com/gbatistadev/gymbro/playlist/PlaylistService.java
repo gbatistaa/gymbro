@@ -27,14 +27,41 @@ public class PlaylistService {
 
     @Transactional(readOnly = true)
     public List<PlaylistSummaryDto> list(boolean includeArchived) {
-        return playlists.findSummariesByUserId(currentUser.id(), includeArchived);
+        List<PlaylistSummaryRow> rows = playlists.findSummariesByUserId(currentUser.id(), includeArchived);
+        if (rows.isEmpty()) {
+            return List.of();
+        }
+
+        Map<UUID, List<PlaylistExerciseDto>> itemsByPlaylist = items
+            .findDetailByPlaylistIdIn(rows.stream().map(PlaylistSummaryRow::id).toList())
+            .stream()
+            .collect(Collectors.groupingBy(
+                item -> item.getPlaylist().getId(),
+                Collectors.mapping(mapper::toDto, Collectors.toList())));
+
+        return rows.stream()
+            .map(row -> new PlaylistSummaryDto(
+                row.id(),
+                row.name(),
+                row.description(),
+                row.archivedAt(),
+                row.exerciseCount(),
+                row.lastPerformedAt(),
+                itemsByPlaylist.getOrDefault(row.id(), List.of())))
+            .toList();
     }
 
     @Transactional
     public PlaylistDto create(CreatePlaylistRequest request) {
         Playlist playlist = mapper.toEntity(request);
         playlist.setUserId(currentUser.id());
-        return mapper.toDto(playlists.save(playlist));
+        Playlist saved = playlists.save(playlist);
+
+        if (request.exercises() != null) {
+            request.exercises().forEach(exercise -> appendExercise(saved, exercise));
+        }
+
+        return mapper.toDto(saved);
     }
 
     @Transactional(readOnly = true)
@@ -81,7 +108,10 @@ public class PlaylistService {
 
     @Transactional
     public PlaylistExerciseDto addExercise(UUID id, AddPlaylistExerciseRequest request) {
-        Playlist playlist = loadActive(id);
+        return mapper.toDto(appendExercise(loadActive(id), request));
+    }
+
+    private PlaylistExercise appendExercise(Playlist playlist, AddPlaylistExerciseRequest request) {
         Exercise exercise = exercises.findByIdForUser(request.exerciseId(), currentUser.id())
             .orElseThrow(() -> new NotFoundException("Exercise not found: " + request.exerciseId()));
 
@@ -93,9 +123,9 @@ public class PlaylistService {
         PlaylistExercise item = mapper.toEntity(request);
         item.setPlaylist(playlist);
         item.setExercise(exercise);
-        item.setOrderIndex(items.maxOrderIndex(id) + 1);
+        item.setOrderIndex(items.maxOrderIndex(playlist.getId()) + 1);
 
-        return mapper.toDto(items.save(item));
+        return items.saveAndFlush(item);
     }
 
     @Transactional

@@ -17,6 +17,7 @@ public interface PlaylistMapper {
 
     @Mapping(target = "exerciseId", source = "exercise.id")
     @Mapping(target = "exerciseName", source = "exercise.name")
+    @Mapping(target = "primaryMuscle", source = "exercise.primaryMuscle")
     PlaylistExerciseDto toDto(PlaylistExercise playlistExercise);
 
     default PlaylistDetailDto toDetail(Playlist playlist, List<PlaylistExerciseDto> exercises) {
