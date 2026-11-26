@@ -1,17 +1,15 @@
 "use client";
 
-import axios from "axios";
 import { type FormEvent, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Modal } from "@/components/ui/modal";
-import { Notice } from "@/components/ui/notice";
 import { SelectField } from "@/components/ui/select-field";
-import { apiErrorSchema } from "@/contracts/api-error";
 import { userSummarySchema, type UserSummary } from "@/contracts/auth";
 import { profileFormSchema, type ProfileFormInput } from "@/contracts/user";
-import { describeApiError } from "@/lib/api-error-text";
+import { apiFieldMessages } from "@/lib/api-error-text";
 import { request } from "@/lib/http";
+import { notifyApiError, notifyValidation } from "@/lib/notify";
 import { timeZoneOptionsWithCurrent } from "@/lib/timezones";
 import styles from "./profile.module.css";
 
@@ -26,23 +24,11 @@ function isProfileField(value: PropertyKey | undefined): value is ProfileField {
   return PROFILE_FIELDS.some((field) => field === value);
 }
 
-/** `409` de e-mail em uso vem com `errors[].field`; cada mensagem vai para o campo certo. */
-function apiFieldErrors(failure: unknown): FieldErrors {
-  if (!axios.isAxiosError(failure)) return {};
-
-  const parsed = apiErrorSchema.safeParse(failure.response?.data);
-  if (!parsed.success) return {};
-
-  const isConflict = parsed.data.code === "RESOURCE_ALREADY_EXISTS";
+/** Cada campo recebe a mensagem exata que o backend enviou para ele. */
+function serverFieldErrors(failure: unknown): FieldErrors {
   const result: FieldErrors = {};
-  for (const fieldError of parsed.data.errors) {
-    const field = fieldError.field;
-    if (isProfileField(field)) {
-      result[field] =
-        isConflict && field === "email"
-          ? "Este e-mail já está em uso."
-          : fieldError.message;
-    }
+  for (const { field, message } of apiFieldMessages(failure)) {
+    if (isProfileField(field)) result[field] ??= message;
   }
   return result;
 }
@@ -58,7 +44,6 @@ export function EditProfileDialog({ user, onSaved, onClose }: EditProfileDialogP
   const [email, setEmail] = useState(user.email);
   const [timezone, setTimezone] = useState(user.timezone);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
-  const [formError, setFormError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const timezoneOptions = timeZoneOptionsWithCurrent(user.timezone);
 
@@ -75,13 +60,12 @@ export function EditProfileDialog({ user, onSaved, onClose }: EditProfileDialogP
           localErrors[field] = issue.message;
         }
       }
-      setFormError(null);
       setFieldErrors(localErrors);
+      notifyValidation(parsed.error);
       return;
     }
 
     setFieldErrors({});
-    setFormError(null);
     setIsSaving(true);
 
     try {
@@ -91,12 +75,8 @@ export function EditProfileDialog({ user, onSaved, onClose }: EditProfileDialogP
       );
       onSaved(saved);
     } catch (failure) {
-      const serverErrors = apiFieldErrors(failure);
-      if (Object.keys(serverErrors).length > 0) {
-        setFieldErrors(serverErrors);
-      } else {
-        setFormError(describeApiError(failure));
-      }
+      setFieldErrors(serverFieldErrors(failure));
+      notifyApiError(failure);
     } finally {
       setIsSaving(false);
     }
@@ -118,8 +98,6 @@ export function EditProfileDialog({ user, onSaved, onClose }: EditProfileDialogP
         </>
       }
     >
-      {formError ? <Notice tone="error">{formError}</Notice> : null}
-
       <form id={FORM_ID} className={styles.form} onSubmit={handleSubmit} noValidate>
         <Field
           id="profile-name"

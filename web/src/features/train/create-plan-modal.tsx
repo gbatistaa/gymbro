@@ -4,12 +4,11 @@ import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Modal } from "@/components/ui/modal";
-import { Notice } from "@/components/ui/notice";
 import { planFormSchema } from "@/contracts/exercise-entry";
 import { playlistSchema } from "@/contracts/playlist";
-import { describeApiError } from "@/lib/api-error-text";
 import { request } from "@/lib/http";
-import { validateEntries } from "./exercise-entries";
+import { notifyApiError, notifyErrors } from "@/lib/notify";
+import { entryErrorMessages, validateEntries } from "./exercise-entries";
 import { ExerciseEntryList } from "./exercise-entry-list";
 import { ExerciseSearch } from "./exercise-search";
 import styles from "./plans.module.css";
@@ -28,7 +27,6 @@ export function CreatePlanModal({ onCreated, onClose }: CreatePlanModalProps) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [fieldErrors, setFieldErrors] = useState<PlanFieldErrors>({});
-  const [formError, setFormError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const exercises = useExerciseEntries();
 
@@ -55,9 +53,16 @@ export function CreatePlanModal({ onCreated, onClose }: CreatePlanModalProps) {
     setFieldErrors(nextFieldErrors);
     exercises.setErrors(validatedEntries.ok ? {} : validatedEntries.errors);
 
-    if (!parsed.success || !validatedEntries.ok) return;
+    if (!parsed.success || !validatedEntries.ok) {
+      notifyErrors([
+        ...(parsed.success ? [] : parsed.error.issues.map((issue) => issue.message)),
+        ...(validatedEntries.ok
+          ? []
+          : entryErrorMessages(exercises.entries, validatedEntries.errors)),
+      ]);
+      return;
+    }
 
-    setFormError(null);
     setIsSaving(true);
 
     try {
@@ -81,7 +86,7 @@ export function CreatePlanModal({ onCreated, onClose }: CreatePlanModalProps) {
       );
       onCreated(plan.id);
     } catch (failure) {
-      setFormError(describeApiError(failure));
+      notifyApiError(failure);
     } finally {
       setIsSaving(false);
     }
@@ -104,8 +109,6 @@ export function CreatePlanModal({ onCreated, onClose }: CreatePlanModalProps) {
         </>
       }
     >
-      {formError ? <Notice tone="error">{formError}</Notice> : null}
-
       <form id={FORM_ID} className={styles.formStack} onSubmit={handleSubmit} noValidate>
         <Field
           id="plan-name"

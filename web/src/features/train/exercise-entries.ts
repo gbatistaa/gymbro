@@ -84,6 +84,18 @@ export function validateEntries(entries: readonly ExerciseEntry[]): ValidatedEnt
   return Object.keys(errors).length > 0 ? { ok: false, errors } : { ok: true, values };
 }
 
+/** Uma mensagem por problema, com o nome do exercício para distinguir linhas com o mesmo erro. */
+export function entryErrorMessages(
+  entries: readonly ExerciseEntry[],
+  errors: EntryErrorMap,
+): string[] {
+  return entries.flatMap((entry) =>
+    Object.values(errors[entry.key] ?? {})
+      .filter((message): message is string => message !== undefined)
+      .map((message) => `${entry.exerciseName}: ${message}`),
+  );
+}
+
 /** `4 × 10 · 55 kg`, `3 × 8–12`, `3 × 10`. */
 export function formatPrescription(item: PlaylistExercise, formatWeight: (kg: number) => string): string {
   const sets = item.targetSets ?? 3;

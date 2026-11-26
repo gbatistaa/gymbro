@@ -4,15 +4,15 @@ import { useSetAtom } from "jotai";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { signUpSchema, type SignUpInput } from "@/contracts/auth";
+import { notifyApiError, notifyValidation } from "@/lib/notify";
 import { sessionAtom } from "@/stores/session";
 import { register } from "./api";
 import styles from "./components/auth.module.css";
 import { AuthField } from "./components/auth-field";
 import { AuthHeader } from "./components/auth-header";
-import { AuthNotice } from "./components/auth-notice";
 import { AuthSubmit } from "./components/auth-submit";
 import { AuthSwitch } from "./components/auth-switch";
-import { describeAuthError, toFieldErrors, type FieldErrors } from "./errors";
+import { toFieldErrors, toServerFieldErrors, type FieldErrors } from "./errors";
 import { safeNextPath } from "./next-path";
 
 type SignUpFormProps = {
@@ -30,7 +30,6 @@ export function SignUpForm({ next }: SignUpFormProps) {
     password: "",
   });
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
-  const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const signInHref =
@@ -43,7 +42,6 @@ export function SignUpForm({ next }: SignUpFormProps) {
     setFieldErrors((current) =>
       current[field] ? { ...current, [field]: undefined } : current,
     );
-    if (formError) setFormError(null);
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -53,12 +51,11 @@ export function SignUpForm({ next }: SignUpFormProps) {
     const parsed = signUpSchema.safeParse(values);
     if (!parsed.success) {
       setFieldErrors(toFieldErrors(parsed.error));
-      setFormError(null);
+      notifyValidation(parsed.error);
       return;
     }
 
     setFieldErrors({});
-    setFormError(null);
     setIsSubmitting(true);
 
     try {
@@ -66,9 +63,8 @@ export function SignUpForm({ next }: SignUpFormProps) {
       setSession({ user });
       router.replace(destination);
     } catch (error) {
-      const described = describeAuthError(error);
-      setFieldErrors(described.fields);
-      setFormError(described.message);
+      setFieldErrors(toServerFieldErrors(error));
+      notifyApiError(error);
     } finally {
       setIsSubmitting(false);
     }
@@ -81,8 +77,6 @@ export function SignUpForm({ next }: SignUpFormProps) {
         title="Comece seu caderno"
         description="Um cadastro curto para registrar o treino de hoje."
       />
-
-      {formError ? <AuthNotice>{formError}</AuthNotice> : null}
 
       <form className={styles.form} onSubmit={handleSubmit} noValidate>
         <AuthField

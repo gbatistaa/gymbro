@@ -11,10 +11,10 @@ import { PrimaryButton } from "@/components/ui/primary-button";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Completion } from "@/contracts/completion";
 import { playlistSchema, playlistSummarySchema, type PlaylistSummary } from "@/contracts/playlist";
-import { describeApiError } from "@/lib/api-error-text";
 import { formatCount, formatVolume } from "@/lib/format";
 import { z } from "zod";
 import { request, requestMaybe } from "@/lib/http";
+import { notifyApiError } from "@/lib/notify";
 import { useResource } from "@/lib/use-resource";
 import { sessionAtom } from "@/stores/session";
 import { CreatePlanModal } from "./create-plan-modal";
@@ -38,7 +38,6 @@ export function PlanList() {
   const [deleteTarget, setDeleteTarget] = useState<PlaylistSummary | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [actionError, setActionError] = useState<string | null>(null);
 
   const { data, error, isLoading, reload } = useResource("plans", () =>
     request({ url: "/api/playlists" }, playlistSummarySchema.array()),
@@ -47,7 +46,6 @@ export function PlanList() {
   const plans = data ?? [];
 
   function showSuccess(message: string) {
-    setActionError(null);
     setSuccessMessage(message);
   }
 
@@ -57,7 +55,7 @@ export function PlanList() {
       showSuccess(`"${plan.name}" duplicada.`);
       reload();
     } catch (failure) {
-      setActionError(describeApiError(failure));
+      notifyApiError(failure);
     }
   }
 
@@ -72,7 +70,7 @@ export function PlanList() {
       reload();
     } catch (failure) {
       setDeleteTarget(null);
-      setActionError(describeApiError(failure));
+      notifyApiError(failure);
     } finally {
       setIsDeleting(false);
     }
@@ -103,7 +101,6 @@ export function PlanList() {
       </div>
 
       {successMessage ? <Notice tone="success">{successMessage}</Notice> : null}
-      {actionError ? <Notice tone="error">{actionError}</Notice> : null}
 
       {isLoading ? (
         <Skeleton lines={4} label="Carregando fichas…" />

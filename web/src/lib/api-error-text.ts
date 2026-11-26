@@ -1,38 +1,37 @@
 import axios from "axios";
-import { apiErrorSchema } from "@/contracts/api-error";
+import { apiErrorSchema, type ApiError } from "@/contracts/api-error";
+
+const UNKNOWN_ERROR = "Algo deu errado. Tente novamente.";
+const NETWORK_ERROR = "Não foi possível conectar. Verifique sua conexão e tente novamente.";
+const UNREADABLE_ERROR = "Não foi possível concluir. Tente novamente.";
 
 /**
- * Actionable messages for API failures. The client decides by the stable `code`, never by the
- * `message` text.
+ * Mensagens exatamente como o backend as enviou: cada `errors[].message` quando há erros por
+ * campo (validação), senão o `message` geral. Só falhas sem resposta legível do backend (rede,
+ * proxy, erro inesperado do cliente) usam texto local.
  */
-const CODE_MESSAGES: Record<string, string> = {
-  UNAUTHENTICATED: "Sua sessão expirou. Entre novamente.",
-  FORBIDDEN: "Você não tem permissão para esta ação.",
-  NOT_FOUND: "Não encontramos este conteúdo.",
-  VALIDATION_FAILED: "Verifique os campos destacados.",
-  RESOURCE_ALREADY_EXISTS: "Já existe um registro com estes dados.",
-  CONFLICT: "A ação não pôde ser concluída no estado atual.",
-  DATA_CONFLICT: "Os dados mudaram enquanto você editava. Recarregue e tente de novo.",
-  TOO_MANY_ATTEMPTS: "Muitas tentativas. Aguarde alguns minutos e tente novamente.",
-  PAYLOAD_TOO_LARGE: "O arquivo é grande demais.",
-};
-
-const GENERIC_ERROR = "Não foi possível concluir. Tente novamente.";
-const NETWORK_ERROR = "Não foi possível conectar. Verifique sua conexão e tente novamente.";
-
-export function describeApiError(error: unknown): string {
-  if (!axios.isAxiosError(error)) {
-    return "Algo deu errado. Tente novamente.";
-  }
-
-  if (!error.response) {
-    return NETWORK_ERROR;
-  }
+export function apiErrorMessages(error: unknown): string[] {
+  if (!axios.isAxiosError(error)) return [UNKNOWN_ERROR];
+  if (!error.response) return [NETWORK_ERROR];
 
   const parsed = apiErrorSchema.safeParse(error.response.data);
-  if (!parsed.success) {
-    return GENERIC_ERROR;
-  }
+  if (!parsed.success) return [UNREADABLE_ERROR];
 
-  return CODE_MESSAGES[parsed.data.code] ?? GENERIC_ERROR;
+  const { errors, message } = parsed.data;
+  const messages = errors.length > 0 ? errors.map((item) => item.message) : [message];
+
+  return [...new Set(messages)];
+}
+
+/** Erros por campo (`errors[]`) como o backend os enviou; vazio se não houver resposta legível. */
+export function apiFieldMessages(error: unknown): ApiError["errors"] {
+  if (!axios.isAxiosError(error)) return [];
+
+  const parsed = apiErrorSchema.safeParse(error.response?.data);
+  return parsed.success ? parsed.data.errors : [];
+}
+
+/** Todas as mensagens do backend em uma só linha, para estados de tela (`ErrorState`). */
+export function describeApiError(error: unknown): string {
+  return apiErrorMessages(error).join("; ");
 }

@@ -1,17 +1,8 @@
-import axios from "axios";
 import type { ZodError } from "zod";
-import { apiErrorSchema } from "@/contracts/api-error";
+import { apiFieldMessages } from "@/lib/api-error-text";
 
 export type AuthField = "name" | "username" | "email" | "identifier" | "password";
 export type FieldErrors = Partial<Record<AuthField, string>>;
-
-const FIELD_MESSAGES: Record<AuthField, string> = {
-  name: "Verifique o nome informado.",
-  username: "Verifique o usuário informado.",
-  email: "Verifique o e-mail informado.",
-  identifier: "Verifique o e-mail ou usuário informado.",
-  password: "Verifique a senha informada.",
-};
 
 const AUTH_FIELDS: readonly string[] = [
   "name",
@@ -24,21 +15,6 @@ const AUTH_FIELDS: readonly string[] = [
 function isAuthField(value: string): value is AuthField {
   return AUTH_FIELDS.includes(value);
 }
-
-const CODE_MESSAGES: Record<string, string> = {
-  UNAUTHENTICATED: "E-mail ou senha inválidos.",
-  TOO_MANY_ATTEMPTS: "Muitas tentativas. Aguarde alguns minutos e tente novamente.",
-  RESOURCE_ALREADY_EXISTS: "Já existe uma conta com estes dados.",
-  VALIDATION_FAILED: "Verifique os campos destacados.",
-  MALFORMED_BODY: "Dados inválidos. Verifique os campos.",
-  BAD_REQUEST: "Dados inválidos. Verifique os campos.",
-};
-
-/** No conflito, o campo precisa dizer o que já está em uso — não só "verifique". */
-const CONFLICT_FIELD_MESSAGES: Partial<Record<AuthField, string>> = {
-  username: "Este usuário já está em uso.",
-  email: "Este e-mail já está cadastrado.",
-};
 
 export function toFieldErrors(error: ZodError): FieldErrors {
   const fields: FieldErrors = {};
@@ -53,39 +29,15 @@ export function toFieldErrors(error: ZodError): FieldErrors {
   return fields;
 }
 
-export function describeAuthError(error: unknown): {
-  message: string;
-  fields: FieldErrors;
-} {
-  if (!axios.isAxiosError(error)) {
-    return { message: "Algo deu errado. Tente novamente.", fields: {} };
-  }
-
-  if (!error.response) {
-    return {
-      message: "Não foi possível conectar. Verifique sua conexão e tente novamente.",
-      fields: {},
-    };
-  }
-
-  const parsed = apiErrorSchema.safeParse(error.response.data);
-  if (!parsed.success) {
-    return { message: "Não foi possível concluir. Tente novamente.", fields: {} };
-  }
-
+/** Marca cada campo com a mensagem exata que o backend enviou para ele. */
+export function toServerFieldErrors(error: unknown): FieldErrors {
   const fields: FieldErrors = {};
-  const isConflict = parsed.data.code === "RESOURCE_ALREADY_EXISTS";
 
-  for (const item of parsed.data.errors) {
+  for (const item of apiFieldMessages(error)) {
     if (isAuthField(item.field)) {
-      fields[item.field] = isConflict
-        ? (CONFLICT_FIELD_MESSAGES[item.field] ?? FIELD_MESSAGES[item.field])
-        : FIELD_MESSAGES[item.field];
+      fields[item.field] ??= item.message;
     }
   }
 
-  return {
-    message: CODE_MESSAGES[parsed.data.code] ?? "Não foi possível concluir. Tente novamente.",
-    fields,
-  };
+  return fields;
 }

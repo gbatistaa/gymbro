@@ -3,6 +3,7 @@
 import { Provider, useSetAtom } from "jotai";
 import { useRouter } from "next/navigation";
 import { useEffect, type ReactNode } from "react";
+import { Toaster } from "@/components/ui/toaster";
 import { setUnauthorizedHandler } from "@/lib/http";
 import { sessionAtom } from "@/stores/session";
 
@@ -27,6 +28,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
     <Provider>
       <UnauthorizedHandler />
       {children}
+      <Toaster />
     </Provider>
   );
 }

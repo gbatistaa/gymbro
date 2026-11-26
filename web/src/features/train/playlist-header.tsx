@@ -6,11 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Modal } from "@/components/ui/modal";
-import { Notice } from "@/components/ui/notice";
 import { playlistSchema, type PlaylistDetail } from "@/contracts/playlist";
-import { describeApiError } from "@/lib/api-error-text";
 import { formatCount } from "@/lib/format";
 import { request } from "@/lib/http";
+import { notifyApiError, notifyErrors } from "@/lib/notify";
 import styles from "./train.module.css";
 
 type PlaylistHeaderProps = {
@@ -24,7 +23,6 @@ export function PlaylistHeader({ playlist, onSaved }: PlaylistHeaderProps) {
   const [description, setDescription] = useState(playlist.description ?? "");
   const [nameError, setNameError] = useState<string | null>(null);
   const [descriptionError, setDescriptionError] = useState<string | null>(null);
-  const [formError, setFormError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   const count = playlist.exercises.length;
@@ -34,7 +32,6 @@ export function PlaylistHeader({ playlist, onSaved }: PlaylistHeaderProps) {
     setDescription(playlist.description ?? "");
     setNameError(null);
     setDescriptionError(null);
-    setFormError(null);
     setIsEditing(true);
   }
 
@@ -44,26 +41,31 @@ export function PlaylistHeader({ playlist, onSaved }: PlaylistHeaderProps) {
 
     const trimmedName = name.trim();
     const trimmedDescription = description.trim();
-    let hasError = false;
+    const messages: string[] = [];
 
     if (!trimmedName) {
-      setNameError("Informe o nome da rotina.");
-      hasError = true;
+      const message = "Informe o nome da rotina.";
+      setNameError(message);
+      messages.push(message);
     } else if (trimmedName.length > 120) {
-      setNameError("Use no máximo 120 caracteres.");
-      hasError = true;
+      const message = "Use no máximo 120 caracteres.";
+      setNameError(message);
+      messages.push(message);
     }
 
     if (trimmedDescription.length > 500) {
-      setDescriptionError("Use no máximo 500 caracteres.");
-      hasError = true;
+      const message = "Use no máximo 500 caracteres.";
+      setDescriptionError(message);
+      messages.push(message);
     }
 
-    if (hasError) return;
+    if (messages.length > 0) {
+      notifyErrors(messages);
+      return;
+    }
 
     setNameError(null);
     setDescriptionError(null);
-    setFormError(null);
     setIsSaving(true);
 
     try {
@@ -78,7 +80,7 @@ export function PlaylistHeader({ playlist, onSaved }: PlaylistHeaderProps) {
       setIsEditing(false);
       onSaved();
     } catch (failure) {
-      setFormError(describeApiError(failure));
+      notifyApiError(failure);
     } finally {
       setIsSaving(false);
     }
@@ -137,8 +139,6 @@ export function PlaylistHeader({ playlist, onSaved }: PlaylistHeaderProps) {
             onSubmit={handleSubmit}
             noValidate
           >
-            {formError ? <Notice tone="error">{formError}</Notice> : null}
-
             <Field
               id="playlist-edit-name"
               label="Nome da rotina"

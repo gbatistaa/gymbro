@@ -34,9 +34,9 @@ import {
   type PlaylistDetail,
   type PlaylistExercise,
 } from "@/contracts/playlist";
-import { describeApiError } from "@/lib/api-error-text";
 import { formatCount, formatKg, formatVolume } from "@/lib/format";
 import { request, requestMaybe } from "@/lib/http";
+import { notifyApiError } from "@/lib/notify";
 import { useResource } from "@/lib/use-resource";
 import { ExerciseSearch } from "./exercise-search";
 import { LogWorkoutModal } from "./log-workout-modal";
@@ -121,13 +121,11 @@ export function PlaylistEditor({ playlistId }: { playlistId: string }) {
   const [isRemoving, setIsRemoving] = useState(false);
   const [pendingItems, setPendingItems] = useState<PlaylistExercise[] | null>(null);
   const [isReordering, setIsReordering] = useState(false);
-  const [actionError, setActionError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   async function addExercise(exercise: Exercise) {
     if (addingId) return;
 
-    setActionError(null);
     setAddingId(exercise.id);
 
     try {
@@ -149,7 +147,7 @@ export function PlaylistEditor({ playlistId }: { playlistId: string }) {
       setSuccessMessage(`"${exercise.name}" adicionado à ficha.`);
       reload();
     } catch (failure) {
-      setActionError(describeApiError(failure));
+      notifyApiError(failure);
     } finally {
       setAddingId(null);
     }
@@ -167,7 +165,6 @@ export function PlaylistEditor({ playlistId }: { playlistId: string }) {
     next.splice(targetIndex, 0, moved);
 
     setPendingItems(next);
-    setActionError(null);
     setIsReordering(true);
 
     try {
@@ -188,7 +185,7 @@ export function PlaylistEditor({ playlistId }: { playlistId: string }) {
       reload();
     } catch (failure) {
       setPendingItems(null);
-      setActionError(describeApiError(failure));
+      notifyApiError(failure);
     } finally {
       setIsReordering(false);
     }
@@ -203,7 +200,7 @@ export function PlaylistEditor({ playlistId }: { playlistId: string }) {
       router.push("/treinar");
     } catch (failure) {
       setIsDeleting(false);
-      setActionError(describeApiError(failure));
+      notifyApiError(failure);
       setIsDeletingPlan(false);
     }
   }
@@ -211,7 +208,6 @@ export function PlaylistEditor({ playlistId }: { playlistId: string }) {
   async function removeItem() {
     if (!removeTarget || isRemoving) return;
 
-    setActionError(null);
     setIsRemoving(true);
 
     try {
@@ -226,7 +222,7 @@ export function PlaylistEditor({ playlistId }: { playlistId: string }) {
       reload();
     } catch (failure) {
       setRemoveTarget(null);
-      setActionError(describeApiError(failure));
+      notifyApiError(failure);
     } finally {
       setIsRemoving(false);
     }
@@ -286,8 +282,6 @@ export function PlaylistEditor({ playlistId }: { playlistId: string }) {
       </SurfaceCard>
 
       {successMessage ? <Notice tone="success">{successMessage}</Notice> : null}
-
-      {actionError ? <Notice tone="error">{actionError}</Notice> : null}
 
       <div className={styles.itemsHeader}>
         <div className={styles.itemsTitle}>

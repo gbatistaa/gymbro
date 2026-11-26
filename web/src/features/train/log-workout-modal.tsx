@@ -5,14 +5,13 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ErrorState } from "@/components/ui/error-state";
 import { Modal } from "@/components/ui/modal";
-import { Notice } from "@/components/ui/notice";
 import { Skeleton } from "@/components/ui/skeleton";
 import { completionSchema, type Completion } from "@/contracts/completion";
 import { playlistDetailSchema, type PlaylistDetail } from "@/contracts/playlist";
-import { describeApiError } from "@/lib/api-error-text";
 import { request } from "@/lib/http";
+import { notifyApiError, notifyErrors } from "@/lib/notify";
 import { useResource } from "@/lib/use-resource";
-import { entryFromPlanItem, validateEntries } from "./exercise-entries";
+import { entryErrorMessages, entryFromPlanItem, validateEntries } from "./exercise-entries";
 import { ExerciseEntryList } from "./exercise-entry-list";
 import { ExerciseSearch } from "./exercise-search";
 import styles from "./plans.module.css";
@@ -61,7 +60,6 @@ type LogWorkoutFormProps = {
 function LogWorkoutForm({ plan, onLogged, onClose }: LogWorkoutFormProps) {
   const exercises = useExerciseEntries(plan.exercises.map(entryFromPlanItem));
   const [isAdding, setIsAdding] = useState(false);
-  const [formError, setFormError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   async function save() {
@@ -70,11 +68,11 @@ function LogWorkoutForm({ plan, onLogged, onClose }: LogWorkoutFormProps) {
     const validated = validateEntries(exercises.entries);
     if (!validated.ok) {
       exercises.setErrors(validated.errors);
+      notifyErrors(entryErrorMessages(exercises.entries, validated.errors));
       return;
     }
 
     exercises.setErrors({});
-    setFormError(null);
     setIsSaving(true);
 
     try {
@@ -88,7 +86,7 @@ function LogWorkoutForm({ plan, onLogged, onClose }: LogWorkoutFormProps) {
       );
       onLogged(completion);
     } catch (failure) {
-      setFormError(describeApiError(failure));
+      notifyApiError(failure);
     } finally {
       setIsSaving(false);
     }
@@ -98,8 +96,6 @@ function LogWorkoutForm({ plan, onLogged, onClose }: LogWorkoutFormProps) {
 
   return (
     <>
-      {formError ? <Notice tone="error">{formError}</Notice> : null}
-
       <p className={styles.sectionTitle}>Exercícios executados · {exercises.entries.length}</p>
       <ExerciseEntryList
         entries={exercises.entries}

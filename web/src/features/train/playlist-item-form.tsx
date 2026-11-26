@@ -4,13 +4,12 @@ import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Modal } from "@/components/ui/modal";
-import { Notice } from "@/components/ui/notice";
 import {
   playlistExerciseSchema,
   type PlaylistExercise,
 } from "@/contracts/playlist";
-import { describeApiError } from "@/lib/api-error-text";
 import { request } from "@/lib/http";
+import { notifyApiError, notifyErrors } from "@/lib/notify";
 import styles from "./train.module.css";
 
 type PlaylistItemFormProps = {
@@ -97,7 +96,6 @@ export function PlaylistItemForm({
     note: item.note ?? "",
   });
   const [errors, setErrors] = useState<FieldErrors>({});
-  const [formError, setFormError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   function setField(field: keyof FormValues, value: string) {
@@ -114,11 +112,11 @@ export function PlaylistItemForm({
     const nextErrors = validate(values);
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
+      notifyErrors(Object.values(nextErrors));
       return;
     }
 
     setErrors({});
-    setFormError(null);
     setIsSaving(true);
 
     try {
@@ -139,7 +137,7 @@ export function PlaylistItemForm({
       );
       onSaved();
     } catch (failure) {
-      setFormError(describeApiError(failure));
+      notifyApiError(failure);
     } finally {
       setIsSaving(false);
     }
@@ -176,8 +174,6 @@ export function PlaylistItemForm({
         onSubmit={handleSubmit}
         noValidate
       >
-        {formError ? <Notice tone="error">{formError}</Notice> : null}
-
         <div className={styles.itemFormGrid}>
           <Field
             id={`weight-${item.id}`}

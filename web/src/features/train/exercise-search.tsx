@@ -11,8 +11,8 @@ import { SelectField } from "@/components/ui/select-field";
 import { Skeleton } from "@/components/ui/skeleton";
 import { exerciseSchema, type Exercise } from "@/contracts/exercise";
 import { pageSchema } from "@/contracts/page";
-import { describeApiError } from "@/lib/api-error-text";
 import { request } from "@/lib/http";
+import { notifyApiError, notifyValidation } from "@/lib/notify";
 import { useResource } from "@/lib/use-resource";
 import styles from "./plans.module.css";
 
@@ -151,7 +151,6 @@ function NewExerciseForm({ initialName, onCreated, onCancel }: NewExerciseFormPr
   const [name, setName] = useState(initialName);
   const [muscle, setMuscle] = useState("");
   const [errors, setErrors] = useState<NewExerciseErrors>({});
-  const [formError, setFormError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -168,11 +167,11 @@ function NewExerciseForm({ initialName, onCreated, onCancel }: NewExerciseFormPr
         }
       }
       setErrors(nextErrors);
+      notifyValidation(parsed.error);
       return;
     }
 
     setErrors({});
-    setFormError(null);
     setIsSaving(true);
 
     try {
@@ -182,7 +181,7 @@ function NewExerciseForm({ initialName, onCreated, onCancel }: NewExerciseFormPr
       );
       onCreated(created);
     } catch (failure) {
-      setFormError(describeApiError(failure));
+      notifyApiError(failure);
     } finally {
       setIsSaving(false);
     }
@@ -193,8 +192,6 @@ function NewExerciseForm({ initialName, onCreated, onCancel }: NewExerciseFormPr
   return (
     <form className={styles.createExercise} onSubmit={handleSubmit} noValidate>
       <p className={styles.sectionTitle}>Novo exercício</p>
-      {formError ? <Notice tone="error">{formError}</Notice> : null}
-
       <Field
         id="new-exercise-name"
         label="Nome do exercício"
