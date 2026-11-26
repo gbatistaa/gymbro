@@ -30,19 +30,20 @@ export function formatCount(value: number | null | undefined): string {
   return isFiniteNumber(value) ? integer.format(normalize(value)) : EMPTY;
 }
 
-/** Data no fuso do usuário, `dd/mm/aaaa`. */
+/** Data no fuso do usuário, ex.: `26 de nov. de 2026`. */
 export function formatDate(iso: string, timeZone: string): string {
   return new Intl.DateTimeFormat("pt-BR", {
     timeZone,
     day: "2-digit",
-    month: "2-digit",
+    month: "short",
     year: "numeric",
   }).format(new Date(iso));
 }
 
-/** Data e hora no fuso do usuário, `dd/mm/aaaa hh:mm`. */
+/** Data e hora no fuso do usuário, ex.: `26 de nov. de 2026 14:05`. */
 export function formatDateTime(iso: string, timeZone: string): string {
   const time = new Intl.DateTimeFormat("pt-BR", {
+    hourCycle: "h23",
     timeZone,
     hour: "2-digit",
     minute: "2-digit",
@@ -103,4 +104,23 @@ export function formatRelative(
   if (days < 60) return `há ${Math.floor(days / 7)} sem`;
   if (days < 365) return `há ${Math.floor(days / 30)} m`;
   return `há ${Math.floor(days / 365)} a`;
+}
+
+const compact = new Intl.NumberFormat("en-US", {
+  notation: "compact",
+  maximumFractionDigits: 1,
+});
+
+/** Compact number for chart tags, e.g. `18.5K`. */
+export function formatCompact(value: number | null | undefined): string {
+  return isFiniteNumber(value) ? compact.format(normalize(value)) : EMPTY;
+}
+
+/** Short date in the user's time zone, e.g. `Nov 3`. */
+export function formatShortDate(iso: string, timeZone: string): string {
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    day: "numeric",
+    month: "short",
+  }).format(new Date(iso));
 }

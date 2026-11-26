@@ -5,9 +5,7 @@ import { isKnownTimeZone } from "@/lib/timezones";
 export const profileFormSchema = z.object({
   name: z.string().trim().min(1, "Informe o nome."),
   email: z.email("Informe um e-mail válido."),
-  timezone: z
-    .string()
-    .refine(isKnownTimeZone, "Escolha um fuso horário válido."),
+  timezone: z.string().refine(isKnownTimeZone, "Escolha um fuso horário válido."),
 });
 
 export type ProfileFormInput = z.infer<typeof profileFormSchema>;

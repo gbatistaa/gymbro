@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { PlaylistList } from "@/features/train/playlist-list";
+import { PlanList } from "@/features/train/plan-list";
 
 export const metadata: Metadata = {
-  title: "Treinar",
+  title: "Workout plans",
 };
 
-export default function TreinarPage() {
-  return <PlaylistList />;
+export default function TrainPage() {
+  return <PlanList />;
 }

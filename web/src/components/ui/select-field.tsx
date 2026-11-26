@@ -1,3 +1,6 @@
+"use client";
+
+import { ChevronDown } from "lucide-react";
 import type { ComponentPropsWithRef, ReactNode } from "react";
 import styles from "./ui.module.css";
 
@@ -27,15 +30,23 @@ export function SelectField({
         </label>
       </div>
 
-      <select
-        {...rest}
-        id={id}
-        className={[styles.input, className].filter(Boolean).join(" ")}
-        aria-invalid={error ? true : undefined}
-        aria-describedby={errorId}
-      >
-        {children}
-      </select>
+      <div className={styles.selectShell}>
+        <select
+          {...rest}
+          id={id}
+          className={[styles.input, styles.selectInput, className].filter(Boolean).join(" ")}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={errorId}
+        >
+          {children}
+        </select>
+        <ChevronDown
+          size={18}
+          strokeWidth={1.75}
+          className={styles.selectChevron}
+          aria-hidden="true"
+        />
+      </div>
 
       {error ? (
         <p id={errorId} className={styles.error} role="alert">

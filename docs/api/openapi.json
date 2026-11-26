@@ -422,6 +422,15 @@
             "format" : "uuid"
           }
         } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CompleteWorkoutRequest"
+              }
+            }
+          }
+        },
         "responses" : {
           "200" : {
             "description" : "OK",
@@ -1655,6 +1664,13 @@
           },
           "note" : {
             "type" : "string"
+          },
+          "targetWeightKg" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "primaryMuscle" : {
+            "type" : "string"
           }
         }
       },
@@ -1856,42 +1872,6 @@
           }
         }
       },
-      "CreatePlaylistRequest" : {
-        "type" : "object",
-        "properties" : {
-          "name" : {
-            "type" : "string",
-            "maxLength" : 120,
-            "minLength" : 0
-          },
-          "description" : {
-            "type" : "string",
-            "maxLength" : 500,
-            "minLength" : 0
-          }
-        },
-        "required" : [ "name" ]
-      },
-      "CompletionDto" : {
-        "type" : "object",
-        "properties" : {
-          "id" : {
-            "type" : "string",
-            "format" : "uuid"
-          },
-          "playlistId" : {
-            "type" : "string",
-            "format" : "uuid"
-          },
-          "playlistName" : {
-            "type" : "string"
-          },
-          "completedAt" : {
-            "type" : "string",
-            "format" : "date-time"
-          }
-        }
-      },
       "AddPlaylistExerciseRequest" : {
         "type" : "object",
         "properties" : {
@@ -1925,9 +1905,108 @@
             "type" : "string",
             "maxLength" : 500,
             "minLength" : 0
+          },
+          "targetWeightKg" : {
+            "type" : "number",
+            "format" : "double",
+            "maximum" : 1000,
+            "minimum" : 0
           }
         },
         "required" : [ "exerciseId", "targetSets" ]
+      },
+      "CreatePlaylistRequest" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "maxLength" : 120,
+            "minLength" : 0
+          },
+          "description" : {
+            "type" : "string",
+            "maxLength" : 500,
+            "minLength" : 0
+          },
+          "exercises" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/AddPlaylistExerciseRequest"
+            },
+            "maxItems" : 50,
+            "minItems" : 0
+          }
+        },
+        "required" : [ "name" ]
+      },
+      "CompleteWorkoutRequest" : {
+        "type" : "object",
+        "properties" : {
+          "exercises" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/LoggedExerciseRequest"
+            },
+            "maxItems" : 50,
+            "minItems" : 0
+          }
+        }
+      },
+      "LoggedExerciseRequest" : {
+        "type" : "object",
+        "properties" : {
+          "exerciseId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "sets" : {
+            "type" : "integer",
+            "format" : "int32",
+            "maximum" : 20,
+            "minimum" : 1
+          },
+          "reps" : {
+            "type" : "integer",
+            "format" : "int32",
+            "maximum" : 100,
+            "minimum" : 1
+          },
+          "weightKg" : {
+            "type" : "number",
+            "format" : "double",
+            "maximum" : 1000,
+            "minimum" : 0
+          }
+        },
+        "required" : [ "exerciseId", "reps", "sets", "weightKg" ]
+      },
+      "CompletionDto" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "playlistId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "playlistName" : {
+            "type" : "string"
+          },
+          "completedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "loggedSets" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalVolume" : {
+            "type" : "number",
+            "format" : "double"
+          }
+        }
       },
       "CreateExerciseDto" : {
         "type" : "object",
@@ -2319,6 +2398,12 @@
             "type" : "string",
             "maxLength" : 500,
             "minLength" : 0
+          },
+          "targetWeightKg" : {
+            "type" : "number",
+            "format" : "double",
+            "maximum" : 1000,
+            "minimum" : 0
           }
         }
       },
@@ -2513,6 +2598,12 @@
           "lastPerformedAt" : {
             "type" : "string",
             "format" : "date-time"
+          },
+          "exercises" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/PlaylistExerciseDto"
+            }
           }
         }
       },

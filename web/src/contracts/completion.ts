@@ -1,12 +1,14 @@
 import { z } from "zod";
 import { isoDateTime } from "./primitives";
 
-/** Um "fiz o treino" registrado para uma ficha. Não há início, fim nem duração. */
+/** A logged workout for a plan. No start, end or duration: only when it was done and what was lifted. */
 export const completionSchema = z.object({
   id: z.uuid(),
   playlistId: z.uuid(),
   playlistName: z.string(),
   completedAt: isoDateTime,
+  loggedSets: z.number().int(),
+  totalVolume: z.number(),
 });
 
 export const completionSummarySchema = z.object({

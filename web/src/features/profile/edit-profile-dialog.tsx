@@ -15,6 +15,8 @@ import { request } from "@/lib/http";
 import { timeZoneOptionsWithCurrent } from "@/lib/timezones";
 import styles from "./profile.module.css";
 
+const FORM_ID = "edit-profile-form";
+
 type ProfileField = keyof ProfileFormInput;
 type FieldErrors = Partial<Record<ProfileField, string>>;
 
@@ -24,18 +26,20 @@ function isProfileField(value: PropertyKey | undefined): value is ProfileField {
   return PROFILE_FIELDS.some((field) => field === value);
 }
 
-/** `409` de e-mail já usado chega com `errors[].field`; cada mensagem vai para o campo certo. */
+/** A `409` for an email in use comes with `errors[].field`; each message goes to its field. */
 function apiFieldErrors(failure: unknown): FieldErrors {
   if (!axios.isAxiosError(failure)) return {};
 
   const parsed = apiErrorSchema.safeParse(failure.response?.data);
   if (!parsed.success) return {};
 
+  const isConflict = parsed.data.code === "RESOURCE_ALREADY_EXISTS";
   const result: FieldErrors = {};
   for (const fieldError of parsed.data.errors) {
     const field = fieldError.field;
     if (isProfileField(field)) {
-      result[field] = fieldError.message;
+      result[field] =
+        isConflict && field === "email" ? "This email is already in use." : fieldError.message;
     }
   }
   return result;
@@ -98,15 +102,28 @@ export function EditProfileDialog({ user, onSaved, onClose }: EditProfileDialogP
 
   return (
     <Modal
-      title="Editar informações"
-      description="Nome, e-mail e fuso horário. Usuário e senha têm fluxos próprios."
+      title="Edit profile"
+      description="Update your name, email and time zone."
       onClose={onClose}
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose} disabled={isSaving}>
+            Cancel
+          </Button>
+          <Button type="submit" form={FORM_ID} isLoading={isSaving}>
+            Save changes
+          </Button>
+        </>
+      }
     >
-      <form className={styles.form} onSubmit={handleSubmit} noValidate>
+      {formError ? <Notice tone="error">{formError}</Notice> : null}
+
+      <form id={FORM_ID} className={styles.form} onSubmit={handleSubmit} noValidate>
         <Field
           id="profile-name"
-          label="Nome"
+          label="Full name"
           autoComplete="name"
+          autoFocus
           value={name}
           onChange={(event) => setName(event.target.value)}
           error={fieldErrors.name}
@@ -114,7 +131,7 @@ export function EditProfileDialog({ user, onSaved, onClose }: EditProfileDialogP
 
         <Field
           id="profile-email"
-          label="E-mail"
+          label="Email"
           type="email"
           autoComplete="email"
           value={email}
@@ -124,7 +141,7 @@ export function EditProfileDialog({ user, onSaved, onClose }: EditProfileDialogP
 
         <SelectField
           id="profile-timezone"
-          label="Fuso horário"
+          label="Time zone"
           value={timezone}
           onChange={(event) => setTimezone(event.target.value)}
           error={fieldErrors.timezone}
@@ -135,17 +152,6 @@ export function EditProfileDialog({ user, onSaved, onClose }: EditProfileDialogP
             </option>
           ))}
         </SelectField>
-
-        {formError ? <Notice tone="error">{formError}</Notice> : null}
-
-        <div className={styles.actions}>
-          <Button variant="secondary" onClick={onClose} disabled={isSaving}>
-            Cancelar
-          </Button>
-          <Button type="submit" isLoading={isSaving}>
-            Salvar
-          </Button>
-        </div>
       </form>
     </Modal>
   );

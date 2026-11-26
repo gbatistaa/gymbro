@@ -2,6 +2,8 @@ package com.gbatistadev.gymbro.completion;
 
 import com.gbatistadev.gymbro.TestcontainersConfiguration;
 import com.gbatistadev.gymbro.config.jwt.JwtService;
+import com.gbatistadev.gymbro.exercise.Exercise;
+import com.gbatistadev.gymbro.exercise.ExerciseRepository;
 import com.gbatistadev.gymbro.user.UserService;
 import com.gbatistadev.gymbro.user.dto.CreateUserDto;
 import com.gbatistadev.gymbro.user.dto.UserDto;
@@ -37,6 +39,87 @@ class CompletionFlowIT {
 
     @Autowired
     private JwtService jwtService;
+
+    @Autowired
+    private ExerciseRepository exerciseRepository;
+
+    @Test
+    @DisplayName("logs the exercises done with a plan and feeds volume and PRs on the dashboard")
+    void shouldLogExercisesAndFeedDashboard() throws Exception {
+        String auth = bearer(createUser());
+        Exercise bench = createExercise("Bench");
+        String playlistId = createPlaylist(auth, "Upper");
+
+        String body = """
+            {"exercises":[{"exerciseId":"%s","sets":2,"reps":8,"weightKg":40}]}
+            """.formatted(bench.getId());
+
+        MvcResult result = mockMvc.perform(post("/api/playlists/{id}/completions", playlistId)
+                .header(HttpHeaders.AUTHORIZATION, auth)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.loggedSets").value(2))
+            .andExpect(jsonPath("$.totalVolume").value(640.0))
+            .andReturn();
+        String completionId = JsonPath.read(result.getResponse().getContentAsString(), "$.id");
+
+        mockMvc.perform(get("/api/dashboard").param("weeks", "1").header(HttpHeaders.AUTHORIZATION, auth))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.weeks[0].sessions").value(1))
+            .andExpect(jsonPath("$.weeks[0].volume").value(640.0))
+            .andExpect(jsonPath("$.recentPrs.length()").value(1));
+
+        mockMvc.perform(delete("/api/completions/{id}", completionId).header(HttpHeaders.AUTHORIZATION, auth))
+            .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/api/dashboard").param("weeks", "1").header(HttpHeaders.AUTHORIZATION, auth))
+            .andExpect(jsonPath("$.weeks[0].sessions").value(0))
+            .andExpect(jsonPath("$.weeks[0].volume").value(0.0));
+    }
+
+    @Test
+    @DisplayName("rejects a logged exercise with invalid sets")
+    void shouldValidateLoggedExercises() throws Exception {
+        String auth = bearer(createUser());
+        Exercise squat = createExercise("Squat");
+        String playlistId = createPlaylist(auth, "Legs");
+
+        mockMvc.perform(post("/api/playlists/{id}/completions", playlistId)
+                .header(HttpHeaders.AUTHORIZATION, auth)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"exercises":[{"exerciseId":"%s","sets":0,"reps":8,"weightKg":40}]}
+                    """.formatted(squat.getId())))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"));
+    }
+
+    @Test
+    @DisplayName("creates a plan already listing exercises with weight, sets, reps and muscle")
+    void shouldCreatePlanWithExercises() throws Exception {
+        String auth = bearer(createUser());
+        Exercise row = createExercise("Row");
+
+        MvcResult created = mockMvc.perform(post("/api/playlists")
+                .header(HttpHeaders.AUTHORIZATION, auth)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"name":"Pull","exercises":[
+                      {"exerciseId":"%s","targetSets":4,"targetRepsMin":10,"targetRepsMax":10,"targetWeightKg":55}
+                    ]}
+                    """.formatted(row.getId())))
+            .andExpect(status().isCreated())
+            .andReturn();
+        String playlistId = JsonPath.read(created.getResponse().getContentAsString(), "$.id");
+
+        mockMvc.perform(get("/api/playlists").header(HttpHeaders.AUTHORIZATION, auth))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].id").value(playlistId))
+            .andExpect(jsonPath("$[0].exercises[0].targetSets").value(4))
+            .andExpect(jsonPath("$[0].exercises[0].targetWeightKg").value(55.0))
+            .andExpect(jsonPath("$[0].exercises[0].primaryMuscle").value("Costas"));
+    }
 
     @Test
     @DisplayName("marks a routine as done, counts it in the summary and undoes a mistake")
@@ -112,6 +195,13 @@ class CompletionFlowIT {
             .andExpect(jsonPath("$.playlistId").value(playlistId))
             .andReturn();
         return JsonPath.read(result.getResponse().getContentAsString(), "$.id");
+    }
+
+    private Exercise createExercise(String prefix) {
+        Exercise exercise = new Exercise();
+        exercise.setName(prefix + "-" + UUID.randomUUID());
+        exercise.setPrimaryMuscle("Costas");
+        return exerciseRepository.save(exercise);
     }
 
     private String bearer(UserDto user) {

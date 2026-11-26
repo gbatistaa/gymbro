@@ -11,7 +11,7 @@ import java.util.UUID;
 
 public interface WorkoutCompletionRepository extends JpaRepository<WorkoutCompletion, UUID> {
 
-    @EntityGraph(attributePaths = "playlist")
+    @EntityGraph(attributePaths = {"playlist", "workoutSession"})
     List<WorkoutCompletion> findByUserIdOrderByCompletedAtDesc(UUID userId, Pageable pageable);
 
     Optional<WorkoutCompletion> findByIdAndUserId(UUID id, UUID userId);

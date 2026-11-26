@@ -53,7 +53,7 @@ class PlaylistServiceTest {
     @Test
     @DisplayName("create assigns the current user as owner")
     void shouldCreatePlaylist() {
-        CreatePlaylistRequest request = new CreatePlaylistRequest("Push", "Chest day");
+        CreatePlaylistRequest request = new CreatePlaylistRequest("Push", "Chest day", null);
         Playlist entity = new Playlist();
         PlaylistDto expected = playlistDto();
 
@@ -73,7 +73,7 @@ class PlaylistServiceTest {
 
         when(currentUser.id()).thenReturn(userId);
         when(playlists.findSummariesByUserId(userId, false))
-            .thenReturn(List.of(expected));
+            .thenReturn(List.of(playlistRow(playlistId, 2, null)));
 
         assertEquals(List.of(expected), service.list(false));
     }
@@ -85,7 +85,7 @@ class PlaylistServiceTest {
 
         when(currentUser.id()).thenReturn(userId);
         when(playlists.findSummariesByUserId(userId, true))
-            .thenReturn(List.of(expected));
+            .thenReturn(List.of(playlistRow(playlistId, 0, null)));
 
         assertEquals(List.of(expected), service.list(true));
     }
@@ -171,7 +171,7 @@ class PlaylistServiceTest {
         Playlist playlist = playlist(playlistId, null);
         Exercise exercise = exercise(false);
         AddPlaylistExerciseRequest request = new AddPlaylistExerciseRequest(
-            exercise.getId(), 3, 8, 12, 90, "controlled");
+            exercise.getId(), 3, 8, 12, 90, "controlled", 40.0);
         PlaylistExerciseDto expected = itemDto(UUID.randomUUID());
 
         when(currentUser.id()).thenReturn(userId);
@@ -179,14 +179,14 @@ class PlaylistServiceTest {
         when(exercises.findByIdForUser(exercise.getId(), userId)).thenReturn(Optional.of(exercise));
         when(items.maxOrderIndex(playlistId)).thenReturn(1);
         when(mapper.toEntity(request)).thenReturn(new PlaylistExercise());
-        when(items.save(any(PlaylistExercise.class)))
+        when(items.saveAndFlush(any(PlaylistExercise.class)))
             .thenAnswer(invocation -> invocation.getArgument(0));
         when(mapper.toDto(any(PlaylistExercise.class))).thenReturn(expected);
 
         assertSame(expected, service.addExercise(playlistId, request));
 
         ArgumentCaptor<PlaylistExercise> captor = ArgumentCaptor.forClass(PlaylistExercise.class);
-        verify(items).save(captor.capture());
+        verify(items).saveAndFlush(captor.capture());
         assertEquals(playlist, captor.getValue().getPlaylist());
         assertEquals(exercise, captor.getValue().getExercise());
         assertEquals(2, captor.getValue().getOrderIndex());
@@ -198,14 +198,14 @@ class PlaylistServiceTest {
         Playlist playlist = playlist(playlistId, null);
         Exercise exercise = exercise(true);
         AddPlaylistExerciseRequest request = new AddPlaylistExerciseRequest(
-            exercise.getId(), 3, null, null, null, null);
+            exercise.getId(), 3, null, null, null, null, null);
 
         when(currentUser.id()).thenReturn(userId);
         when(playlists.findByIdAndUserId(playlistId, userId)).thenReturn(Optional.of(playlist));
         when(exercises.findByIdForUser(exercise.getId(), userId)).thenReturn(Optional.of(exercise));
 
         assertThrows(ConflictException.class, () -> service.addExercise(playlistId, request));
-        verify(items, never()).save(any());
+        verify(items, never()).saveAndFlush(any());
     }
 
     @Test
@@ -214,14 +214,14 @@ class PlaylistServiceTest {
         Playlist playlist = playlist(playlistId, null);
         Exercise exercise = exercise(false);
         AddPlaylistExerciseRequest request = new AddPlaylistExerciseRequest(
-            exercise.getId(), 3, 12, 8, null, null);
+            exercise.getId(), 3, 12, 8, null, null, null);
 
         when(currentUser.id()).thenReturn(userId);
         when(playlists.findByIdAndUserId(playlistId, userId)).thenReturn(Optional.of(playlist));
         when(exercises.findByIdForUser(exercise.getId(), userId)).thenReturn(Optional.of(exercise));
 
         assertThrows(ConflictException.class, () -> service.addExercise(playlistId, request));
-        verify(items, never()).save(any());
+        verify(items, never()).saveAndFlush(any());
     }
 
     @Test
@@ -351,11 +351,15 @@ class PlaylistServiceTest {
     }
 
     private PlaylistSummaryDto playlistSummary(UUID id, long exerciseCount, Instant lastPerformedAt) {
-        return new PlaylistSummaryDto(id, "Push", null, null, exerciseCount, lastPerformedAt);
+        return new PlaylistSummaryDto(id, "Push", null, null, exerciseCount, lastPerformedAt, List.of());
+    }
+
+    private PlaylistSummaryRow playlistRow(UUID id, long exerciseCount, Instant lastPerformedAt) {
+        return new PlaylistSummaryRow(id, "Push", null, null, exerciseCount, lastPerformedAt);
     }
 
     private PlaylistExerciseDto itemDto(UUID id) {
         return new PlaylistExerciseDto(
-            id, UUID.randomUUID(), "Supino", 0, 3, 8, 12, 90, null);
+            id, UUID.randomUUID(), "Supino", 0, 3, 8, 12, 90, null, 40.0, "Peito");
     }
 }

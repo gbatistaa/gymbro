@@ -1,0 +1,446 @@
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* ---------- Screen header ---------- */
+
+.topRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.titleGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.screenTitle {
+  margin: 0;
+  font-size: var(--space-4);
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.screenSubtitle {
+  margin: 0;
+  font-size: var(--space-3);
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+
+.segmentedControl {
+  min-height: var(--tap-min);
+  padding: var(--space-1);
+  border-radius: var(--radius-card);
+  border: 1px solid var(--border);
+  background-color: var(--surface);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-1);
+}
+
+.segmentButton {
+  min-height: calc(var(--tap-min) - var(--space-2));
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-btn);
+  border: 1px solid transparent;
+  background-color: transparent;
+  color: var(--muted);
+  font-size: var(--space-3);
+  font-weight: 500;
+  text-align: center;
+  cursor: pointer;
+}
+
+.segmentButtonActive {
+  background-color: var(--surface-2);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+
+/* ---------- Plan cards ---------- */
+
+.routineList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.routineCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.routineTopRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.routineHeaderLeft {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.routineBadgeRow {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+}
+
+.lastPerformed {
+  margin: 0;
+  font-size: var(--space-3);
+  color: var(--muted);
+}
+
+.routineTitle {
+  margin: 0;
+  font-size: var(--space-4);
+  font-weight: 600;
+  color: var(--text);
+}
+
+.optionsButton {
+  min-width: var(--tap-min);
+  min-height: var(--tap-min);
+  border-radius: var(--radius-btn);
+  border: 1px solid transparent;
+  background-color: transparent;
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.optionsButton:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.ledgerRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--space-3);
+  color: var(--muted);
+}
+
+.ledgerDot {
+  color: var(--border);
+}
+
+.exerciseRowsBox {
+  background-color: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-btn);
+  padding: 0 var(--space-3);
+  margin: 0;
+  list-style: none;
+}
+
+.exerciseRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-3) 0;
+  font-size: var(--space-3);
+}
+
+.exerciseRow + .exerciseRow {
+  border-top: 1px solid var(--border);
+}
+
+.exerciseName {
+  color: var(--text);
+  font-weight: 400;
+}
+
+.exercisePrescription {
+  font-family: var(--font-mono);
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.routineActionsRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.editRoutineButton {
+  min-width: var(--tap-min);
+  min-height: var(--tap-min);
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-btn);
+  border: 1px solid var(--border);
+  background-color: var(--surface-2);
+  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.editRoutineButton:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+
+.routineTopRow {
+  position: relative;
+}
+
+.archivedTag {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.exerciseMeta {
+  display: block;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+.moreExercises {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* ---------- Options menu ---------- */
+
+.menu {
+  position: absolute;
+  top: calc(100% + var(--space-1));
+  right: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  min-width: 160px;
+  padding: var(--space-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-btn);
+  background: var(--surface-2);
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.45);
+}
+
+.menuItem {
+  min-height: var(--tap-min);
+  padding: 0 var(--space-3);
+  border: 0;
+  border-radius: calc(var(--radius-btn) - 4px);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.menuItem:hover,
+.menuItem:focus-visible {
+  background: var(--surface);
+  outline: none;
+}
+
+.menuItemDanger {
+  color: var(--danger);
+}
+
+/* ---------- Exercise entry editor (new plan / log workout) ---------- */
+
+.entryList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.entryCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-btn);
+  background: var(--surface-2);
+}
+
+.entryTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.entryTitle {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.entryName {
+  font-size: 15px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.entryRemove {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: var(--tap-min);
+  height: var(--tap-min);
+  border: 0;
+  border-radius: var(--radius-btn);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.entryRemove:hover {
+  color: var(--danger);
+}
+
+.entryRemove:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.entryFields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.emptyHint {
+  margin: 0;
+  padding: var(--space-4);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-btn);
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: center;
+  color: var(--muted);
+}
+
+/* ---------- Exercise search ---------- */
+
+.search {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.searchForm {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-2);
+}
+
+.searchForm > :first-child {
+  flex: 1 1 auto;
+}
+
+.resultList {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  max-height: 260px;
+  overflow-y: auto;
+  list-style: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-btn);
+}
+
+.resultRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+}
+
+.resultRow + .resultRow {
+  border-top: 1px solid var(--border);
+}
+
+.resultName {
+  display: block;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.createExercise {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-btn);
+}
+
+.inlineActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.textButton {
+  align-self: flex-start;
+  min-height: var(--tap-min);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--primary);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.textButton:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.formStack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}

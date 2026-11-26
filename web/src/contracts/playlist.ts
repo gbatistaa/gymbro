@@ -8,12 +8,6 @@ export const playlistSchema = z.object({
   archivedAt: isoDateTime.nullish(),
 });
 
-/** Linha da lista de rotinas: o básico mais contagem de exercícios e última execução. */
-export const playlistSummarySchema = playlistSchema.extend({
-  exerciseCount: z.number().int(),
-  lastPerformedAt: isoDateTime.nullish(),
-});
-
 export const playlistExerciseSchema = z.object({
   id: z.uuid(),
   exerciseId: z.uuid(),
@@ -24,6 +18,15 @@ export const playlistExerciseSchema = z.object({
   targetRepsMax: z.number().int().nullish(),
   restSeconds: z.number().int().nullish(),
   note: z.string().nullish(),
+  targetWeightKg: z.number().nullish(),
+  primaryMuscle: z.string().nullish(),
+});
+
+/** Workout plan list row: basics, exercise count, last time it was done and an exercise preview. */
+export const playlistSummarySchema = playlistSchema.extend({
+  exerciseCount: z.number().int(),
+  lastPerformedAt: isoDateTime.nullish(),
+  exercises: z.array(playlistExerciseSchema),
 });
 
 export const playlistDetailSchema = playlistSchema.extend({

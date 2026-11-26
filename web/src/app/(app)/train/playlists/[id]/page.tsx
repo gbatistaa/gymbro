@@ -4,7 +4,7 @@ import { z } from "zod";
 import { PlaylistEditor } from "@/features/train/playlist-editor";
 
 export const metadata: Metadata = {
-  title: "Rotina",
+  title: "Workout plan",
 };
 
 export const instant = false;

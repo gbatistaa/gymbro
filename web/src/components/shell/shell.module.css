@@ -14,7 +14,7 @@
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-btn);
   background-color: var(--primary);
-  color: var(--bg);
+  color: var(--on-accent);
   font-weight: 600;
   text-decoration: none;
   transform: translateY(-200%);
@@ -34,7 +34,9 @@
   left: 0;
   right: 0;
   z-index: 30;
-  background-color: var(--surface);
+  background-color: color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--border);
   padding-top: env(safe-area-inset-top);
 }
@@ -42,7 +44,7 @@
 .topBarInner {
   max-width: var(--content-max);
   margin: 0 auto;
-  min-height: calc(var(--tap-min) + var(--space-3));
+  min-height: 60px;
   padding: var(--space-2) var(--page-gutter);
   display: flex;
   align-items: center;
@@ -52,18 +54,24 @@
 .brandGroup {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: 10px;
   text-decoration: none;
   color: var(--text);
   min-height: var(--tap-min);
 }
 
-.brandMark {
-  width: var(--space-6);
-  height: var(--space-6);
+.brandGroup:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
   border-radius: var(--radius-btn);
-  background-color: var(--surface-2);
-  border: 1px solid var(--border);
+}
+
+.brandMark {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background-color: var(--primary-tint);
+  border: 1px solid color-mix(in srgb, var(--primary) 35%, var(--border));
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -72,7 +80,7 @@
 
 .brandWordmark {
   font-family: var(--font-sans);
-  font-size: var(--space-4);
+  font-size: 16px;
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--text);
@@ -84,44 +92,55 @@
   gap: var(--space-2);
 }
 
-.iconButton {
-  min-width: var(--tap-min);
-  min-height: var(--tap-min);
-  border-radius: var(--radius-btn);
-  border: 1px solid transparent;
-  background-color: transparent;
-  color: var(--muted);
+.avatarBadge {
+  min-height: 40px;
+  padding: 4px 6px 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background-color: var(--surface-2);
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  cursor: pointer;
+  gap: 8px;
+  text-decoration: none;
+  transition: border-color 140ms ease-out, background-color 140ms ease-out;
 }
 
-.iconButton:focus-visible {
+.avatarBadge:hover {
+  border-color: var(--border-strong);
+}
+
+.avatarBadge:focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
 
-.avatarBadge {
-  min-width: var(--tap-min);
-  min-height: var(--tap-min);
-  padding: var(--space-1);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  text-decoration: none;
+.topUserHandle {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 380px) {
+  .topUserHandle {
+    display: none;
+  }
+
+  .avatarBadge {
+    padding: 4px;
+  }
 }
 
 .avatarCircle {
-  width: var(--space-6);
-  height: var(--space-6);
-  border-radius: var(--radius-card);
-  background-color: var(--surface-2);
-  border: 1px solid var(--border);
-  color: var(--text);
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  background-color: var(--primary-tint);
+  border: 1px solid color-mix(in srgb, var(--primary) 35%, var(--border));
+  color: var(--primary);
   font-family: var(--font-mono);
-  font-size: var(--space-3);
-  font-weight: 500;
+  font-size: 12px;
+  font-weight: 600;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -134,9 +153,9 @@
   width: 100%;
   max-width: var(--content-max);
   margin: 0 auto;
-  padding-top: calc(var(--tap-min) + var(--space-5) + env(safe-area-inset-top));
+  padding-top: calc(60px + 24px + env(safe-area-inset-top));
   padding-right: var(--page-gutter);
-  padding-bottom: calc(var(--tap-min) + var(--space-6) + var(--space-5) + env(safe-area-inset-bottom));
+  padding-bottom: calc(68px + 28px + env(safe-area-inset-bottom));
   padding-left: var(--page-gutter);
 }
 
@@ -148,7 +167,9 @@
   right: 0;
   bottom: 0;
   z-index: 30;
-  background-color: var(--surface);
+  background-color: color-mix(in srgb, var(--surface) 90%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border-top: 1px solid var(--border);
   padding-bottom: env(safe-area-inset-bottom);
 }
@@ -156,27 +177,35 @@
 .bottomNavList {
   max-width: var(--content-max);
   margin: 0 auto;
-  padding: var(--space-1) var(--space-2);
+  padding: 6px 12px;
   list-style: none;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
 }
 
 .bottomNavItem {
-  min-height: calc(var(--tap-min) + var(--space-3));
-  padding: var(--space-1) var(--space-1);
-  border-radius: var(--radius-btn);
+  min-height: 54px;
+  padding: 6px 4px;
+  border-radius: 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--space-1);
+  gap: 4px;
   color: var(--muted);
   text-decoration: none;
   font-family: var(--font-sans);
-  font-size: var(--space-3);
-  font-weight: 400;
-  line-height: 1.33;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.25;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 140ms ease-out;
+}
+
+.bottomNavItem:hover {
+  color: var(--text);
 }
 
 .bottomNavItem:focus-visible {
@@ -184,7 +213,22 @@
   outline-offset: -2px;
 }
 
+.bottomNavIconWrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 28px;
+  border-radius: 999px;
+  transition: background-color 140ms ease-out, color 140ms ease-out;
+}
+
 .bottomNavItemActive {
   color: var(--primary);
-  font-weight: 500;
+  font-weight: 600;
+}
+
+.bottomNavItemActive .bottomNavIconWrap {
+  background-color: var(--primary-tint);
+  color: var(--primary);
 }

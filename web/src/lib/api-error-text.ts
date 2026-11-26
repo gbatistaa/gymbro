@@ -2,8 +2,8 @@ import axios from "axios";
 import { apiErrorSchema } from "@/contracts/api-error";
 
 /**
- * Mensagens PT-BR acionáveis para falhas de API. O cliente decide pelo `code` estável, nunca pelo
- * texto de `message`.
+ * Actionable messages for API failures. The client decides by the stable `code`, never by the
+ * `message` text.
  */
 const CODE_MESSAGES: Record<string, string> = {
   UNAUTHENTICATED: "Sua sessão expirou. Entre novamente.",
@@ -18,8 +18,7 @@ const CODE_MESSAGES: Record<string, string> = {
 };
 
 const GENERIC_ERROR = "Não foi possível concluir. Tente novamente.";
-const NETWORK_ERROR =
-  "Não foi possível conectar. Verifique sua conexão e tente novamente.";
+const NETWORK_ERROR = "Não foi possível conectar. Verifique sua conexão e tente novamente.";
 
 export function describeApiError(error: unknown): string {
   if (!axios.isAxiosError(error)) {

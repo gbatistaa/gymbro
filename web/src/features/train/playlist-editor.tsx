@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, ClipboardCheck } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { z } from "zod";
@@ -9,25 +9,29 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorState } from "@/components/ui/error-state";
 import { Notice } from "@/components/ui/notice";
+import { PrimaryButton } from "@/components/ui/primary-button";
 import { SectionLabel } from "@/components/ui/section-label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { nextTargetSchema, type NextTarget } from "@/contracts/analytics";
-import { exerciseSchema } from "@/contracts/exercise";
+import type { Completion } from "@/contracts/completion";
+import { exerciseSchema, type Exercise } from "@/contracts/exercise";
 import { pageSchema } from "@/contracts/page";
 import {
   playlistDetailSchema,
+  playlistExerciseSchema,
   type PlaylistDetail,
   type PlaylistExercise,
 } from "@/contracts/playlist";
 import { describeApiError } from "@/lib/api-error-text";
-import { formatCount, formatKg } from "@/lib/format";
+import { formatCount, formatKg, formatVolume } from "@/lib/format";
 import { request, requestMaybe } from "@/lib/http";
 import { useResource } from "@/lib/use-resource";
-import { ExercisePicker } from "./exercise-picker";
+import { formatPrescription } from "./exercise-entries";
+import { ExerciseSearch } from "./exercise-search";
+import { LogWorkoutModal } from "./log-workout-modal";
 import { PlaylistHeader } from "./playlist-header";
 import { PlaylistItemForm } from "./playlist-item-form";
 import styles from "./train.module.css";
-import { useCompleteRoutine } from "./use-complete-routine";
 
 type EditorData = {
   playlist: PlaylistDetail;
@@ -42,7 +46,7 @@ async function loadEditor(playlistId: string): Promise<EditorData> {
       { url: `/api/playlists/${playlistId}/next-targets` },
       nextTargetSchema.array(),
     ),
-    // shortcut: marcação de exercício arquivado usa os primeiros 100; buscar por id quando a API expuser
+    // shortcut: archived-exercise flags use the first 100 exercises; fetch by id once the API exposes it
     request(
       {
         url: "/api/exercises",
@@ -62,17 +66,17 @@ async function loadEditor(playlistId: string): Promise<EditorData> {
 }
 
 function formatItemTargets(item: PlaylistExercise): string {
-  const reps =
-    item.targetRepsMin != null && item.targetRepsMax != null
-      ? item.targetRepsMin === item.targetRepsMax
-        ? `${item.targetRepsMin}`
-        : `${item.targetRepsMin}–${item.targetRepsMax}`
-      : "—";
-  const sets = item.targetSets ?? "—";
-  const rest =
-    item.restSeconds != null ? `${formatCount(item.restSeconds)} s` : null;
+  const rest = item.restSeconds != null ? `${formatCount(item.restSeconds)} s rest` : null;
 
-  return [`${sets} × ${reps}`, rest].filter(Boolean).join(" · ");
+  return [formatPrescription(item, formatKg), item.primaryMuscle, rest]
+    .filter((part): part is string => Boolean(part))
+    .join(" · ");
+}
+
+function loggedMessage(completion: Completion): string {
+  return completion.loggedSets === 0
+    ? "Workout marked as done."
+    : `Workout logged: ${formatCount(completion.loggedSets)} sets, ${formatVolume(completion.totalVolume)}.`;
 }
 
 function formatLoad(
@@ -86,14 +90,14 @@ function formatLoad(
 }
 
 function formatSuggestion(target: NextTarget | undefined): string {
-  if (!target) return "Sem histórico";
+  if (!target) return "No history yet";
 
   const last = formatLoad(target.lastWeight, target.lastReps);
   const suggested = formatLoad(target.suggestedWeight, target.suggestedReps);
 
   return [
-    last ? `Última ${last}` : "Sem histórico",
-    suggested ? `Sugestão ${suggested}` : null,
+    last ? `Last ${last}` : "No history yet",
+    suggested ? `Next ${suggested}` : null,
   ]
     .filter(Boolean)
     .join(" · ");
@@ -112,7 +116,39 @@ export function PlaylistEditor({ playlistId }: { playlistId: string }) {
   const [pendingItems, setPendingItems] = useState<PlaylistExercise[] | null>(null);
   const [isReordering, setIsReordering] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
-  const completion = useCompleteRoutine();
+  const [isLogging, setIsLogging] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [addingId, setAddingId] = useState<string | null>(null);
+
+  async function addExercise(exercise: Exercise) {
+    if (addingId) return;
+
+    setActionError(null);
+    setAddingId(exercise.id);
+
+    try {
+      await request(
+        {
+          method: "POST",
+          url: `/api/playlists/${playlistId}/exercises`,
+          data: {
+            exerciseId: exercise.id,
+            targetSets: 3,
+            targetRepsMin: 10,
+            targetRepsMax: 10,
+            restSeconds: 90,
+          },
+        },
+        playlistExerciseSchema,
+      );
+      setSuccessMessage(`${exercise.name} added. Set its weight, sets and reps with Edit.`);
+      reload();
+    } catch (failure) {
+      setActionError(describeApiError(failure));
+    } finally {
+      setAddingId(null);
+    }
+  }
 
   async function moveItem(index: number, direction: -1 | 1) {
     if (!data || isReordering) return;
@@ -181,9 +217,9 @@ export function PlaylistEditor({ playlistId }: { playlistId: string }) {
     return (
       <div className={styles.editorScreen}>
         <Link className={styles.backLink} href="/train">
-          Voltar para rotinas
+          Back to workout plans
         </Link>
-        <Skeleton lines={5} label="Carregando rotina…" />
+        <Skeleton lines={5} label="Loading workout plan…" />
       </div>
     );
   }
@@ -192,10 +228,10 @@ export function PlaylistEditor({ playlistId }: { playlistId: string }) {
     return (
       <div className={styles.editorScreen}>
         <Link className={styles.backLink} href="/train">
-          Voltar para rotinas
+          Back to workout plans
         </Link>
         <ErrorState
-          message={error ?? "Não foi possível carregar a rotina."}
+          message={error ?? "Could not load the workout plan."}
           onRetry={reload}
         />
       </div>
@@ -212,64 +248,62 @@ export function PlaylistEditor({ playlistId }: { playlistId: string }) {
   return (
     <div className={styles.editorScreen}>
       <Link className={styles.backLink} href="/train">
-        Voltar para rotinas
+        Back to workout plans
       </Link>
 
       <PlaylistHeader playlist={playlist} onSaved={reload} />
 
       {isArchived ? null : (
-        <Button
+        <PrimaryButton
           fullWidth
-          isLoading={completion.pendingId === playlistId}
-          disabled={completion.pendingId !== null}
-          onClick={() => completion.complete(playlistId)}
+          icon={<ClipboardCheck size={16} strokeWidth={1.75} />}
+          onClick={() => setIsLogging(true)}
         >
-          Fiz o treino
-        </Button>
+          Log workout
+        </PrimaryButton>
       )}
-      {completion.success ? <Notice tone="success">{completion.success}</Notice> : null}
-      {completion.error ? <Notice tone="error">{completion.error}</Notice> : null}
+      {successMessage ? <Notice tone="success">{successMessage}</Notice> : null}
 
       {isArchived ? (
-        <Notice tone="info">
-          Esta rotina está arquivada e não pode ser editada.
-        </Notice>
+        <Notice tone="info">This plan is archived and cannot be edited.</Notice>
       ) : null}
 
       {actionError ? <Notice tone="error">{actionError}</Notice> : null}
 
       {!isArchived && isPickerOpen ? (
-        <ExercisePicker
-          playlistId={playlistId}
-          onAdded={() => {
-            setIsPickerOpen(false);
-            reload();
-          }}
-          onCancel={() => setIsPickerOpen(false)}
-        />
+        <section className={styles.picker}>
+          <ExerciseSearch
+            excludedIds={new Set(items.map((item) => item.exerciseId))}
+            pendingId={addingId}
+            onSelect={addExercise}
+          />
+          <Button variant="ghost" onClick={() => setIsPickerOpen(false)}>
+            Done adding
+          </Button>
+        </section>
       ) : null}
 
       <div className={styles.itemsHeader}>
         <div className={styles.itemsTitle}>
-          <SectionLabel>Exercícios</SectionLabel>
+          <SectionLabel>Exercises</SectionLabel>
         </div>
         {isArchived || isPickerOpen || items.length === 0 ? null : (
-          <Button onClick={() => setIsPickerOpen(true)}>Adicionar exercício</Button>
+          <Button onClick={() => setIsPickerOpen(true)}>Add exercise</Button>
         )}
       </div>
 
       {items.length === 0 ? (
         <EmptyState
-          title="Rotina sem exercícios"
+          title="No exercises yet"
           description={
             isArchived
-              ? "Esta rotina arquivada não tem exercícios."
-              : "Adicione o primeiro exercício para montar o treino."
+              ? "This archived plan has no exercises."
+              : "Add the first exercise to build this plan."
           }
           action={
             isArchived || isPickerOpen ? undefined : (
               <Button onClick={() => setIsPickerOpen(true)}>
-                Adicionar exercício
+                Add exercise
               </Button>
             )
           }
@@ -289,7 +323,7 @@ export function PlaylistEditor({ playlistId }: { playlistId: string }) {
                       {item.exerciseName}
                       {isExerciseArchived ? (
                         <span className={styles.archivedTag}>
-                          Exercício arquivado
+                          Archived exercise
                         </span>
                       ) : null}
                     </span>
@@ -305,7 +339,7 @@ export function PlaylistEditor({ playlistId }: { playlistId: string }) {
                     <div className={styles.itemActions}>
                       <Button
                         variant="ghost"
-                        aria-label={`Mover ${item.exerciseName} para cima`}
+                        aria-label={`Move ${item.exerciseName} up`}
                         disabled={index === 0 || isReordering}
                         onClick={() => moveItem(index, -1)}
                       >
@@ -313,7 +347,7 @@ export function PlaylistEditor({ playlistId }: { playlistId: string }) {
                       </Button>
                       <Button
                         variant="ghost"
-                        aria-label={`Mover ${item.exerciseName} para baixo`}
+                        aria-label={`Move ${item.exerciseName} down`}
                         disabled={index === items.length - 1 || isReordering}
                         onClick={() => moveItem(index, 1)}
                       >
@@ -321,18 +355,18 @@ export function PlaylistEditor({ playlistId }: { playlistId: string }) {
                       </Button>
                       <Button
                         variant="ghost"
-                        aria-label={`Editar alvos de ${item.exerciseName}`}
+                        aria-label={`Edit targets for ${item.exerciseName}`}
                         onClick={() => setEditingItemId(item.id)}
                       >
-                        Editar
+                        Edit
                       </Button>
                       <Button
                         variant="ghost"
-                        aria-label={`Remover ${item.exerciseName}`}
+                        aria-label={`Remove ${item.exerciseName}`}
                         disabled={isReordering}
                         onClick={() => setRemoveTarget(item)}
                       >
-                        Remover
+                        Remove
                       </Button>
                     </div>
                   )}
@@ -355,11 +389,23 @@ export function PlaylistEditor({ playlistId }: { playlistId: string }) {
         </ul>
       )}
 
+      {isLogging ? (
+        <LogWorkoutModal
+          planId={playlist.id}
+          planName={playlist.name}
+          onLogged={(completion) => {
+            setIsLogging(false);
+            setSuccessMessage(loggedMessage(completion));
+          }}
+          onClose={() => setIsLogging(false)}
+        />
+      ) : null}
+
       {removeTarget ? (
         <ConfirmDialog
-          title="Remover exercício?"
-          description={`"${removeTarget.exerciseName}" sai desta rotina.`}
-          confirmLabel="Remover"
+          title="Remove this exercise?"
+          description={`"${removeTarget.exerciseName}" will be removed from this plan.`}
+          confirmLabel="Remove"
           isConfirming={isRemoving}
           onConfirm={removeItem}
           onCancel={() => setRemoveTarget(null)}

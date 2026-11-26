@@ -39,7 +39,7 @@ export function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className={`${styles.bottomNav} bg-surface border-token`} aria-label="Navegação principal">
+    <nav className={styles.bottomNav} aria-label="Navegação principal">
       <ul className={styles.bottomNavList}>
         {DESTINATIONS.map(({ href, label, icon: Icon, matchPrefixes }) => {
           const active = isCurrentRoute(pathname, matchPrefixes);
@@ -50,11 +50,15 @@ export function BottomNav() {
                 href={href}
                 className={[
                   styles.bottomNavItem,
-                  active ? `${styles.bottomNavItemActive} text-primary` : "text-muted",
-                ].join(" ")}
+                  active ? styles.bottomNavItemActive : null,
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
                 aria-current={active ? "page" : undefined}
               >
-                <Icon size={22} strokeWidth={1.75} aria-hidden="true" />
+                <span className={styles.bottomNavIconWrap}>
+                  <Icon size={20} strokeWidth={active ? 2.25 : 1.75} aria-hidden="true" />
+                </span>
                 <span>{label}</span>
               </Link>
             </li>

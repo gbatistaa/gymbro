@@ -1,7 +1,9 @@
 package com.gbatistadev.gymbro.completion;
 
+import com.gbatistadev.gymbro.completion.dto.CompleteWorkoutRequest;
 import com.gbatistadev.gymbro.completion.dto.CompletionDto;
 import com.gbatistadev.gymbro.completion.dto.CompletionSummaryDto;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,8 +21,11 @@ public class CompletionController {
     private final CompletionService service;
 
     @PostMapping("/api/playlists/{playlistId}/completions")
-    public ResponseEntity<CompletionDto> complete(@PathVariable UUID playlistId) {
-        CompletionDto completion = service.complete(playlistId);
+    public ResponseEntity<CompletionDto> complete(
+        @PathVariable UUID playlistId,
+        @Valid @RequestBody(required = false) CompleteWorkoutRequest request
+    ) {
+        CompletionDto completion = service.complete(playlistId, request);
 
         URI location = ServletUriComponentsBuilder
             .fromCurrentContextPath()

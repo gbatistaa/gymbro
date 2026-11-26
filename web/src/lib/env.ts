@@ -12,7 +12,7 @@ const parsed = publicEnvSchema.safeParse({
 });
 
 if (!parsed.success) {
-  throw new Error(`Variáveis públicas inválidas:\n${z.prettifyError(parsed.error)}`);
+  throw new Error(`Invalid public environment variables:\n${z.prettifyError(parsed.error)}`);
 }
 
 export const env = parsed.data;

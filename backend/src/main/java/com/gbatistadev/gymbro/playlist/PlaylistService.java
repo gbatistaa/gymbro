@@ -111,6 +111,7 @@ public class PlaylistService {
         return mapper.toDto(appendExercise(loadActive(id), request));
     }
 
+
     private PlaylistExercise appendExercise(Playlist playlist, AddPlaylistExerciseRequest request) {
         Exercise exercise = exercises.findByIdForUser(request.exerciseId(), currentUser.id())
             .orElseThrow(() -> new NotFoundException("Exercise not found: " + request.exerciseId()));

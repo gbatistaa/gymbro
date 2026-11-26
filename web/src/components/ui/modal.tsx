@@ -1,20 +1,35 @@
 "use client";
 
-import { useEffect, useId, useRef, type ReactNode } from "react";
+import { X } from "lucide-react";
+import { useEffect, useId, useRef, type MouseEvent, type ReactNode } from "react";
 import styles from "./ui.module.css";
+
+type ModalSize = "default" | "large";
 
 type ModalProps = {
   title: string;
   description?: string;
+  size?: ModalSize;
   onClose: () => void;
+  /** Scrollable content. */
   children: ReactNode;
+  /** Fixed action bar. Submit buttons can target a form in the body with `form="<id>"`. */
+  footer?: ReactNode;
 };
 
 /**
- * Diálogo modal genérico, aberto com `showModal()` (foco preso, `Esc` fecha). Único por montagem:
- * renderize apenas quando aberto; o pai controla o estado com `onClose`.
+ * A real modal: opened with `showModal()` in the top layer, over a dimmed and blurred page. It
+ * becomes a bottom sheet on small screens. `Esc`, the close button and a click outside close it,
+ * and the page behind stops scrolling. Render it only while open; the parent owns the state.
  */
-export function Modal({ title, description, onClose, children }: ModalProps) {
+export function Modal({
+  title,
+  description,
+  size = "default",
+  onClose,
+  children,
+  footer,
+}: ModalProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   const descriptionId = useId();
@@ -24,25 +39,61 @@ export function Modal({ title, description, onClose, children }: ModalProps) {
     if (dialog && !dialog.open) {
       dialog.showModal();
     }
+
+    const root = document.documentElement;
+    const previousOverflow = root.style.overflow;
+    root.style.overflow = "hidden";
+
+    return () => {
+      root.style.overflow = previousOverflow;
+    };
   }, []);
+
+  function handleBackdropClick(event: MouseEvent<HTMLDialogElement>) {
+    if (event.target === event.currentTarget) {
+      onClose();
+    }
+  }
 
   return (
     <dialog
       ref={dialogRef}
-      className={styles.dialog}
+      className={[styles.modal, size === "large" ? styles.modalLarge : null]
+        .filter(Boolean)
+        .join(" ")}
       aria-labelledby={titleId}
       aria-describedby={description ? descriptionId : undefined}
       onClose={onClose}
+      onClick={handleBackdropClick}
     >
-      <h2 id={titleId} className={styles.dialogTitle}>
-        {title}
-      </h2>
-      {description ? (
-        <p id={descriptionId} className={styles.dialogText}>
-          {description}
-        </p>
-      ) : null}
-      {children}
+      <div className={styles.modalSheetGrip} aria-hidden="true">
+        <span className={styles.modalSheetBar} />
+      </div>
+
+      <header className={styles.modalHeader}>
+        <div>
+          <h2 id={titleId} className={styles.modalTitle}>
+            {title}
+          </h2>
+          {description ? (
+            <p id={descriptionId} className={styles.modalDescription}>
+              {description}
+            </p>
+          ) : null}
+        </div>
+        <button
+          type="button"
+          className={styles.modalClose}
+          aria-label="Fechar"
+          onClick={onClose}
+        >
+          <X size={18} strokeWidth={1.75} aria-hidden="true" />
+        </button>
+      </header>
+
+      <div className={styles.modalBody}>{children}</div>
+
+      {footer ? <footer className={styles.modalFooter}>{footer}</footer> : null}
     </dialog>
   );
 }

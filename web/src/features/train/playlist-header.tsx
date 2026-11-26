@@ -45,15 +45,15 @@ export function PlaylistHeader({ playlist, onSaved }: PlaylistHeaderProps) {
     let hasError = false;
 
     if (!trimmedName) {
-      setNameError("Informe o nome da rotina.");
+      setNameError("Give the plan a name.");
       hasError = true;
     } else if (trimmedName.length > 120) {
-      setNameError("Use no máximo 120 caracteres.");
+      setNameError("Use at most 120 characters.");
       hasError = true;
     }
 
     if (trimmedDescription.length > 500) {
-      setDescriptionError("Use no máximo 500 caracteres.");
+      setDescriptionError("Use at most 500 characters.");
       hasError = true;
     }
 
@@ -89,8 +89,8 @@ export function PlaylistHeader({ playlist, onSaved }: PlaylistHeaderProps) {
 
         <Field
           id="playlist-edit-name"
-          label="Nome da rotina"
-          hint="Até 120 caracteres"
+          label="Plan name"
+          hint="Up to 120 characters"
           maxLength={120}
           autoFocus
           required
@@ -104,8 +104,8 @@ export function PlaylistHeader({ playlist, onSaved }: PlaylistHeaderProps) {
 
         <Field
           id="playlist-edit-description"
-          label="Descrição"
-          hint="Opcional, até 500 caracteres"
+          label="Description"
+          hint="Optional, up to 500 characters"
           maxLength={500}
           value={description}
           error={descriptionError ?? undefined}
@@ -117,7 +117,7 @@ export function PlaylistHeader({ playlist, onSaved }: PlaylistHeaderProps) {
 
         <div className={styles.formActions}>
           <Button type="submit" isLoading={isSaving}>
-            Salvar
+            Save
           </Button>
           <Button
             type="button"
@@ -125,7 +125,7 @@ export function PlaylistHeader({ playlist, onSaved }: PlaylistHeaderProps) {
             onClick={() => setIsEditing(false)}
             disabled={isSaving}
           >
-            Cancelar
+            Cancel
           </Button>
         </div>
       </form>
@@ -138,7 +138,7 @@ export function PlaylistHeader({ playlist, onSaved }: PlaylistHeaderProps) {
         <h1 className={styles.headerName}>{playlist.name}</h1>
         {isArchived ? null : (
           <Button variant="ghost" onClick={openEditor}>
-            Editar rotina
+            Edit plan
           </Button>
         )}
       </div>
@@ -148,8 +148,8 @@ export function PlaylistHeader({ playlist, onSaved }: PlaylistHeaderProps) {
       ) : null}
 
       <p className={styles.headerMeta}>
-        {formatCount(count)} {count === 1 ? "exercício" : "exercícios"}
-        {isArchived ? " · arquivada" : ""}
+        {formatCount(count)} {count === 1 ? "exercise" : "exercises"}
+        {isArchived ? " · archived" : ""}
       </p>
     </header>
   );

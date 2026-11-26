@@ -11,7 +11,7 @@ type ErrorStateProps = {
 export function ErrorState({
   message,
   onRetry,
-  retryLabel = "Tentar de novo",
+  retryLabel = "Tentar novamente",
 }: ErrorStateProps) {
   return (
     <div className={`${styles.state} ${styles.stateError}`} role="alert">

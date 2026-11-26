@@ -2,6 +2,7 @@ package com.gbatistadev.gymbro.completion;
 
 import com.gbatistadev.gymbro.common.BaseEntity;
 import com.gbatistadev.gymbro.playlist.Playlist;
+import com.gbatistadev.gymbro.workout_session.WorkoutSession;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,4 +26,9 @@ public class WorkoutCompletion extends BaseEntity {
 
     @Column(name = "completed_at", nullable = false)
     private Instant completedAt;
+
+    /** Sessão finalizada que guarda as séries registradas; nula em marcações antigas. */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "workout_session_id")
+    private WorkoutSession workoutSession;
 }

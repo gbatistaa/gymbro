@@ -3,7 +3,7 @@ export type TimeZoneOption = {
   label: string;
 };
 
-/** Fusos comuns no Brasil e a referência em Portugal. Qualquer IANA válido continua aceito pela API. */
+/** Common Brazilian zones plus a few references. Any valid IANA zone is still accepted by the API. */
 export const TIME_ZONE_OPTIONS: readonly TimeZoneOption[] = [
   { value: "America/Sao_Paulo", label: "Brasília (São Paulo)" },
   { value: "America/Cuiaba", label: "Cuiabá" },
@@ -13,20 +13,21 @@ export const TIME_ZONE_OPTIONS: readonly TimeZoneOption[] = [
   { value: "America/Recife", label: "Recife" },
   { value: "America/Belem", label: "Belém" },
   { value: "America/Noronha", label: "Fernando de Noronha" },
-  { value: "Europe/Lisbon", label: "Lisboa" },
+  { value: "America/New_York", label: "New York" },
+  { value: "Europe/Lisbon", label: "Lisbon" },
   { value: "UTC", label: "UTC" },
 ];
 
 export function isKnownTimeZone(value: string): boolean {
   try {
-    Intl.DateTimeFormat("pt-BR", { timeZone: value }).format(0);
+    Intl.DateTimeFormat("en-US", { timeZone: value }).format(0);
     return true;
   } catch {
     return false;
   }
 }
 
-/** Opções do seletor, com o fuso atual do usuário incluído mesmo que esteja fora da lista. */
+/** Selector options, including the user's current zone even when it is not in the list. */
 export function timeZoneOptionsWithCurrent(current: string): readonly TimeZoneOption[] {
   return TIME_ZONE_OPTIONS.some((option) => option.value === current)
     ? TIME_ZONE_OPTIONS

@@ -1,19 +1,27 @@
 :root {
   color-scheme: dark;
 
-  /* Tokens do design system (Figma — Refined System) */
-  --bg: #0b0d0c;
-  --surface: #141816;
-  --surface-2: #1c221f;
-  --border: #262e2a;
-  --text: #f2f5f3;
-  --muted: #8a958f;
-  --primary: #3ddc6e;
+  /* Brand Identity Tokens (docs/brand-identity.md) */
+  --bg: #080b0a;
+  --surface: #101715;
+  --surface-2: #18221d;
+  --border: #29352e;
+  --rule: #35443b;
+  --border-strong: #8aa99a;
+  --text: #f1f7f3;
+  --text-secondary: #c6d2cc;
+  --muted: #a6b5ac;
+  --primary: #4ade80;
+  --primary-pressed: #22c55e;
+  --primary-tint: #10271a;
+  --info: #60a5fa;
+  --info-tint: #101f32;
   --warning: #e8b04a;
-  --danger: #e5604f;
+  --danger: #f87171;
+  --on-accent: #07110a;
 
   --radius-card: 16px;
-  --radius-btn: 12px;
+  --radius-btn: 10px;
 
   --page-gutter: 20px;
   --space-1: 4px;
@@ -22,31 +30,31 @@
   --space-4: 16px;
   --space-5: 24px;
   --space-6: 32px;
-  --tap-min: 44px;
+  --tap-min: 48px;
 
-  /* Aliases legados para compatibilidade com demais telas do projeto */
+  /* Semantic tokens */
   --color-canvas: var(--bg);
   --color-surface: var(--surface);
   --color-raised: var(--surface-2);
   --color-border: var(--border);
-  --color-rule: var(--border);
-  --color-border-strong: var(--muted);
+  --color-rule: var(--rule);
+  --color-border-strong: var(--border-strong);
   --color-text-muted: var(--muted);
-  --color-text-secondary: var(--muted);
+  --color-text-secondary: var(--text-secondary);
   --color-text-primary: var(--text);
   --color-accent: var(--primary);
-  --color-accent-pressed: var(--primary);
-  --color-accent-tint: var(--surface-2);
-  --color-info: var(--primary);
-  --color-info-tint: var(--surface-2);
+  --color-accent-pressed: var(--primary-pressed);
+  --color-accent-tint: var(--primary-tint);
+  --color-info: var(--info);
+  --color-info-tint: var(--info-tint);
   --color-danger: var(--danger);
-  --color-on-accent: var(--bg);
+  --color-on-accent: var(--on-accent);
 
-  --radius-chip: 4px;
+  --radius-chip: 6px;
   --radius-control: var(--radius-btn);
-  --radius-panel: var(--radius-card);
-  --radius-modal: var(--radius-card);
-  --content-max: 576px;
+  --radius-panel: 14px;
+  --radius-modal: 20px;
+  --content-max: 640px;
   --tap-target-min: 48px;
 
   --safe-area-top: env(safe-area-inset-top, 0px);
@@ -128,7 +136,9 @@ body {
 }
 
 button,
-input {
+input,
+select,
+textarea {
   font: inherit;
 }
 

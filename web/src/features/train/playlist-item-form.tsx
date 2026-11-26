@@ -20,6 +20,7 @@ type PlaylistItemFormProps = {
 };
 
 type FormValues = {
+  targetWeightKg: string;
   targetSets: string;
   targetRepsMin: string;
   targetRepsMax: string;
@@ -35,21 +36,31 @@ function toInteger(value: string): number | null {
   return Number.isInteger(parsed) ? parsed : null;
 }
 
+function toWeight(value: string): number | null {
+  if (value.trim() === "") return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : Number.NaN;
+}
+
 function validate(values: FormValues): FieldErrors {
   const errors: FieldErrors = {};
+  const weight = toWeight(values.targetWeightKg);
   const sets = toInteger(values.targetSets);
   const repsMin = toInteger(values.targetRepsMin);
   const repsMax = toInteger(values.targetRepsMax);
   const rest = toInteger(values.restSeconds);
 
+  if (weight !== null && (Number.isNaN(weight) || weight < 0 || weight > 1000)) {
+    errors.targetWeightKg = "Use 0 to 1000 kg.";
+  }
   if (sets === null || sets < 1 || sets > 20) {
-    errors.targetSets = "Use de 1 a 20 séries.";
+    errors.targetSets = "Use 1 to 20 sets.";
   }
   if (repsMin === null || repsMin < 1) {
-    errors.targetRepsMin = "Use ao menos 1 repetição.";
+    errors.targetRepsMin = "Use at least 1 rep.";
   }
   if (repsMax === null || repsMax < 1) {
-    errors.targetRepsMax = "Use ao menos 1 repetição.";
+    errors.targetRepsMax = "Use at least 1 rep.";
   }
   if (
     repsMin !== null &&
@@ -58,13 +69,13 @@ function validate(values: FormValues): FieldErrors {
     repsMax >= 1 &&
     repsMin > repsMax
   ) {
-    errors.targetRepsMax = "O máximo deve ser maior ou igual ao mínimo.";
+    errors.targetRepsMax = "Max reps must be greater than or equal to min reps.";
   }
   if (rest === null || rest < 0 || rest > 600) {
-    errors.restSeconds = "Use de 0 a 600 segundos.";
+    errors.restSeconds = "Use 0 to 600 seconds.";
   }
   if (values.note.trim().length > 500) {
-    errors.note = "Use no máximo 500 caracteres.";
+    errors.note = "Use at most 500 characters.";
   }
 
   return errors;
@@ -77,6 +88,7 @@ export function PlaylistItemForm({
   onCancel,
 }: PlaylistItemFormProps) {
   const [values, setValues] = useState<FormValues>({
+    targetWeightKg: item.targetWeightKg == null ? "" : String(item.targetWeightKg),
     targetSets: String(item.targetSets ?? 3),
     targetRepsMin: String(item.targetRepsMin ?? 8),
     targetRepsMax: String(item.targetRepsMax ?? 12),
@@ -114,6 +126,7 @@ export function PlaylistItemForm({
           method: "PATCH",
           url: `/api/playlists/${playlistId}/exercises/${item.id}`,
           data: {
+            targetWeightKg: toWeight(values.targetWeightKg),
             targetSets: toInteger(values.targetSets),
             targetRepsMin: toInteger(values.targetRepsMin),
             targetRepsMax: toInteger(values.targetRepsMax),
@@ -137,20 +150,31 @@ export function PlaylistItemForm({
 
       <div className={styles.itemFormGrid}>
         <Field
+          id={`weight-${item.id}`}
+          label="Weight (kg)"
+          type="number"
+          inputMode="decimal"
+          min={0}
+          step="0.5"
+          autoFocus
+          value={values.targetWeightKg}
+          error={errors.targetWeightKg}
+          onChange={(event) => setField("targetWeightKg", event.target.value)}
+        />
+        <Field
           id={`sets-${item.id}`}
-          label="Séries"
+          label="Sets"
           type="number"
           inputMode="numeric"
           min={1}
           max={20}
-          autoFocus
           value={values.targetSets}
           error={errors.targetSets}
           onChange={(event) => setField("targetSets", event.target.value)}
         />
         <Field
           id={`reps-min-${item.id}`}
-          label="Reps mín."
+          label="Min reps"
           type="number"
           inputMode="numeric"
           min={1}
@@ -160,7 +184,7 @@ export function PlaylistItemForm({
         />
         <Field
           id={`reps-max-${item.id}`}
-          label="Reps máx."
+          label="Max reps"
           type="number"
           inputMode="numeric"
           min={1}
@@ -170,7 +194,7 @@ export function PlaylistItemForm({
         />
         <Field
           id={`rest-${item.id}`}
-          label="Descanso (s)"
+          label="Rest (s)"
           type="number"
           inputMode="numeric"
           min={0}
@@ -182,8 +206,8 @@ export function PlaylistItemForm({
         <div className={styles.itemFormWide}>
           <Field
             id={`note-${item.id}`}
-            label="Nota"
-            hint="Opcional, até 500 caracteres"
+            label="Note"
+            hint="Optional, up to 500 characters"
             maxLength={500}
             value={values.note}
             error={errors.note}
@@ -194,7 +218,7 @@ export function PlaylistItemForm({
 
       <div className={styles.formActions}>
         <Button type="submit" isLoading={isSaving}>
-          Salvar alvos
+          Save targets
         </Button>
         <Button
           type="button"
@@ -202,7 +226,7 @@ export function PlaylistItemForm({
           onClick={onCancel}
           disabled={isSaving}
         >
-          Cancelar
+          Cancel
         </Button>
       </div>
     </form>

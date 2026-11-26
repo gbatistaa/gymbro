@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Dumbbell } from "lucide-react";
+import { Dumbbell } from "lucide-react";
 import { useAtomValue } from "jotai";
 import Link from "next/link";
 import { sessionAtom } from "@/stores/session";
@@ -20,33 +20,29 @@ function initialsOf(name: string | undefined): string {
 }
 
 export function TopBar() {
-  const userInitials = initialsOf(useAtomValue(sessionAtom)?.user.name);
+  const user = useAtomValue(sessionAtom)?.user;
+  const userInitials = initialsOf(user?.name);
 
   return (
-    <header className={`${styles.topBar} bg-surface border-token`}>
+    <header className={styles.topBar}>
       <div className={styles.topBarInner}>
-        <Link href="/" className={`${styles.brandGroup} text-text`}>
-          <span className={`${styles.brandMark} bg-surface-2 border-token text-primary`} aria-hidden="true">
-            <Dumbbell size={18} strokeWidth={1.75} />
+        <Link href="/" className={styles.brandGroup}>
+          <span className={styles.brandMark} aria-hidden="true">
+            <Dumbbell size={18} strokeWidth={2} />
           </span>
           <span className={styles.brandWordmark}>GYMBRO</span>
         </Link>
 
         <div className={styles.topActions}>
-          <button
-            type="button"
-            className={`${styles.iconButton} text-muted`}
-            aria-label="Notificações"
-          >
-            <Bell size={20} strokeWidth={1.75} aria-hidden="true" />
-          </button>
-
           <Link
             href="/profile"
             className={styles.avatarBadge}
-            aria-label="Perfil"
+            aria-label="Abrir perfil"
           >
-            <span className={`${styles.avatarCircle} bg-surface-2 border-token text-text`}>
+            {user?.username ? (
+              <span className={styles.topUserHandle}>@{user.username}</span>
+            ) : null}
+            <span className={styles.avatarCircle}>
               {userInitials}
             </span>
           </Link>
