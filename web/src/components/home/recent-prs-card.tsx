@@ -26,7 +26,7 @@ export function RecentPrsCard({ sectionLabel, items }: RecentPrsCardProps) {
       <SurfaceCard as="div" className={styles.prsCard}>
         {items.length === 0 ? (
           <p className={styles.emptyText}>
-            Log a workout with weights to start tracking your personal records.
+            Registre um treino com carga para acompanhar seus recordes pessoais.
           </p>
         ) : (
           <ul className={styles.prsList}>

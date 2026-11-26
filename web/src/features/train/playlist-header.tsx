@@ -1,8 +1,11 @@
 "use client";
 
+import { Pencil } from "lucide-react";
 import { useState, type FormEvent } from "react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
+import { Modal } from "@/components/ui/modal";
 import { Notice } from "@/components/ui/notice";
 import { playlistSchema, type PlaylistDetail } from "@/contracts/playlist";
 import { describeApiError } from "@/lib/api-error-text";
@@ -45,15 +48,15 @@ export function PlaylistHeader({ playlist, onSaved }: PlaylistHeaderProps) {
     let hasError = false;
 
     if (!trimmedName) {
-      setNameError("Give the plan a name.");
+      setNameError("Informe o nome da rotina.");
       hasError = true;
     } else if (trimmedName.length > 120) {
-      setNameError("Use at most 120 characters.");
+      setNameError("Use no máximo 120 caracteres.");
       hasError = true;
     }
 
     if (trimmedDescription.length > 500) {
-      setDescriptionError("Use at most 500 characters.");
+      setDescriptionError("Use no máximo 500 caracteres.");
       hasError = true;
     }
 
@@ -82,63 +85,23 @@ export function PlaylistHeader({ playlist, onSaved }: PlaylistHeaderProps) {
     }
   }
 
-  if (isEditing) {
-    return (
-      <form className={styles.newForm} onSubmit={handleSubmit} noValidate>
-        {formError ? <Notice tone="error">{formError}</Notice> : null}
-
-        <Field
-          id="playlist-edit-name"
-          label="Plan name"
-          hint="Up to 120 characters"
-          maxLength={120}
-          autoFocus
-          required
-          value={name}
-          error={nameError ?? undefined}
-          onChange={(event) => {
-            setName(event.target.value);
-            if (nameError) setNameError(null);
-          }}
-        />
-
-        <Field
-          id="playlist-edit-description"
-          label="Description"
-          hint="Optional, up to 500 characters"
-          maxLength={500}
-          value={description}
-          error={descriptionError ?? undefined}
-          onChange={(event) => {
-            setDescription(event.target.value);
-            if (descriptionError) setDescriptionError(null);
-          }}
-        />
-
-        <div className={styles.formActions}>
-          <Button type="submit" isLoading={isSaving}>
-            Save
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={() => setIsEditing(false)}
-            disabled={isSaving}
-          >
-            Cancel
-          </Button>
-        </div>
-      </form>
-    );
-  }
-
   return (
     <header className={styles.headerBlock}>
       <div className={styles.headerTop}>
-        <h1 className={styles.headerName}>{playlist.name}</h1>
+        <div className={styles.headerMain}>
+          <div className={styles.headerBadges}>
+            <Badge tone={isArchived ? "neutral" : "primary"}>
+              {formatCount(count)} {count === 1 ? "exercício" : "exercícios"}
+            </Badge>
+            {isArchived ? <Badge tone="neutral">Arquivada</Badge> : null}
+          </div>
+          <h1 className={styles.headerName}>{playlist.name}</h1>
+        </div>
+
         {isArchived ? null : (
-          <Button variant="ghost" onClick={openEditor}>
-            Edit plan
+          <Button variant="secondary" size="sm" onClick={openEditor}>
+            <Pencil size={14} aria-hidden="true" />
+            Editar
           </Button>
         )}
       </div>
@@ -147,10 +110,69 @@ export function PlaylistHeader({ playlist, onSaved }: PlaylistHeaderProps) {
         <p className={styles.headerDescription}>{playlist.description}</p>
       ) : null}
 
-      <p className={styles.headerMeta}>
-        {formatCount(count)} {count === 1 ? "exercise" : "exercises"}
-        {isArchived ? " · archived" : ""}
-      </p>
+      {isEditing ? (
+        <Modal
+          title="Editar rotina"
+          description="Altere o nome ou a descrição desta rotina de treino."
+          onClose={() => setIsEditing(false)}
+          footer={
+            <>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setIsEditing(false)}
+                disabled={isSaving}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                form="playlist-edit-form"
+                isLoading={isSaving}
+              >
+                Salvar alterações
+              </Button>
+            </>
+          }
+        >
+          <form
+            id="playlist-edit-form"
+            className={styles.modalForm}
+            onSubmit={handleSubmit}
+            noValidate
+          >
+            {formError ? <Notice tone="error">{formError}</Notice> : null}
+
+            <Field
+              id="playlist-edit-name"
+              label="Nome da rotina"
+              hint="Até 120 caracteres"
+              maxLength={120}
+              autoFocus
+              required
+              value={name}
+              error={nameError ?? undefined}
+              onChange={(event) => {
+                setName(event.target.value);
+                if (nameError) setNameError(null);
+              }}
+            />
+
+            <Field
+              id="playlist-edit-description"
+              label="Descrição"
+              hint="Opcional, até 500 caracteres"
+              maxLength={500}
+              value={description}
+              error={descriptionError ?? undefined}
+              onChange={(event) => {
+                setDescription(event.target.value);
+                if (descriptionError) setDescriptionError(null);
+              }}
+            />
+          </form>
+        </Modal>
+      ) : null}
     </header>
   );
 }

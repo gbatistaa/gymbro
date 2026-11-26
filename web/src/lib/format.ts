@@ -106,19 +106,19 @@ export function formatRelative(
   return `há ${Math.floor(days / 365)} a`;
 }
 
-const compact = new Intl.NumberFormat("en-US", {
+const compact = new Intl.NumberFormat("pt-BR", {
   notation: "compact",
   maximumFractionDigits: 1,
 });
 
-/** Compact number for chart tags, e.g. `18.5K`. */
+/** Número compacto para tags de gráfico, ex.: `18,5 mil`. */
 export function formatCompact(value: number | null | undefined): string {
   return isFiniteNumber(value) ? compact.format(normalize(value)) : EMPTY;
 }
 
-/** Short date in the user's time zone, e.g. `Nov 3`. */
+/** Data curta no fuso do usuário, ex.: `3 de nov.`. */
 export function formatShortDate(iso: string, timeZone: string): string {
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat("pt-BR", {
     timeZone,
     day: "numeric",
     month: "short",

@@ -1,12 +1,10 @@
-import shell from "@/features/shell/shell.module.css";
+import type { Metadata } from "next";
+import { ProgressScreen } from "@/features/progress/progress-screen";
+
+export const metadata: Metadata = {
+  title: "Progresso",
+};
 
 export default function ProgressPage() {
-  return (
-    <section>
-      <h1 className={shell.pageTitle}>Progress</h1>
-      <p className={shell.pageText}>
-        History, volume and progress per exercise.
-      </p>
-    </section>
-  );
+  return <ProgressScreen />;
 }

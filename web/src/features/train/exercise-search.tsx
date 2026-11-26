@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { z } from "zod";
 import { Badge } from "@/components/ui/badge";
@@ -20,15 +20,15 @@ const newExerciseSchema = z.object({
   name: z
     .string()
     .trim()
-    .min(3, "Use at least 3 characters.")
-    .max(225, "Use at most 225 characters."),
-  primaryMuscle: z.string().trim().min(1, "Choose the target muscle."),
+    .min(3, "Use ao menos 3 caracteres.")
+    .max(225, "Use no máximo 225 caracteres."),
+  primaryMuscle: z.string().trim().min(1, "Escolha o grupo muscular principal."),
 });
 
 type ExerciseSearchProps = {
-  /** Exercises already chosen; they are hidden from the results. */
+  /** Exercícios já escolhidos; ficam ocultos dos resultados. */
   excludedIds: ReadonlySet<string>;
-  /** Id of the exercise being added, when adding is asynchronous. */
+  /** Id do exercício sendo adicionado, quando assíncrono. */
   pendingId?: string | null;
   onSelect: (exercise: Exercise) => void;
 };
@@ -49,7 +49,7 @@ function loadExercises(query: string): Promise<Exercise[]> {
   ).then((page) => page.content);
 }
 
-/** Search the exercise library, or create a new exercise with its target muscle. */
+/** Busca na biblioteca de exercícios ou cria um novo exercício com seu músculo-alvo. */
 export function ExerciseSearch({ excludedIds, pendingId = null, onSelect }: ExerciseSearchProps) {
   const [query, setQuery] = useState("");
   const [submittedQuery, setSubmittedQuery] = useState("");
@@ -76,28 +76,29 @@ export function ExerciseSearch({ excludedIds, pendingId = null, onSelect }: Exer
       <form className={styles.searchForm} role="search" onSubmit={handleSearch} noValidate>
         <Field
           id="exercise-search"
-          label="Find an exercise"
+          label="Buscar exercício"
           type="search"
-          placeholder="e.g. bench press"
+          placeholder="Ex.: supino reto, agachamento"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
         />
         <Button type="submit" variant="secondary">
-          Search
+          <Search size={16} aria-hidden="true" />
+          Buscar
         </Button>
       </form>
 
       {results.isLoading ? (
-        <Skeleton lines={3} label="Searching exercises…" />
+        <Skeleton lines={3} label="Buscando exercícios…" />
       ) : results.error ? (
         <Notice tone="error">{results.error}</Notice>
       ) : visible.length === 0 ? (
-        <p className={styles.emptyHint}>No exercises found. Create a new one below.</p>
+        <p className={styles.emptyHint}>Nenhum exercício encontrado. Crie um novo abaixo.</p>
       ) : (
         <ul className={styles.resultList}>
           {visible.map((exercise) => (
             <li key={exercise.id} className={styles.resultRow}>
-              <span>
+              <span className={styles.resultInfo}>
                 <span className={styles.resultName}>{exercise.name}</span>
                 <span className={styles.exerciseMeta}>
                   {exercise.primaryMuscle}
@@ -105,14 +106,15 @@ export function ExerciseSearch({ excludedIds, pendingId = null, onSelect }: Exer
                 </span>
               </span>
               <Button
-                variant="ghost"
-                aria-label={`Add ${exercise.name}`}
+                variant="secondary"
+                size="sm"
+                aria-label={`Adicionar ${exercise.name}`}
                 isLoading={pendingId === exercise.id}
                 disabled={pendingId !== null && pendingId !== exercise.id}
                 onClick={() => onSelect(exercise)}
               >
-                <Plus size={16} strokeWidth={1.75} aria-hidden="true" />
-                Add
+                <Plus size={15} strokeWidth={2} aria-hidden="true" />
+                Adicionar
               </Button>
             </li>
           ))}
@@ -127,7 +129,7 @@ export function ExerciseSearch({ excludedIds, pendingId = null, onSelect }: Exer
         />
       ) : (
         <button type="button" className={styles.textButton} onClick={() => setIsCreating(true)}>
-          + Create a new exercise
+          + Criar novo exercício na biblioteca
         </button>
       )}
     </div>
@@ -190,12 +192,13 @@ function NewExerciseForm({ initialName, onCreated, onCancel }: NewExerciseFormPr
 
   return (
     <form className={styles.createExercise} onSubmit={handleSubmit} noValidate>
-      <p className={styles.sectionTitle}>New exercise</p>
+      <p className={styles.sectionTitle}>Novo exercício</p>
       {formError ? <Notice tone="error">{formError}</Notice> : null}
 
       <Field
         id="new-exercise-name"
-        label="Name"
+        label="Nome do exercício"
+        placeholder="Ex.: Supino Inclinado com Halteres"
         value={name}
         error={errors.name}
         onChange={(event) => setName(event.target.value)}
@@ -204,12 +207,12 @@ function NewExerciseForm({ initialName, onCreated, onCancel }: NewExerciseFormPr
       {muscleOptions.length > 0 ? (
         <SelectField
           id="new-exercise-muscle"
-          label="Target muscle"
+          label="Grupo muscular principal"
           value={muscle}
           error={errors.primaryMuscle}
           onChange={(event) => setMuscle(event.target.value)}
         >
-          <option value="">Choose a muscle</option>
+          <option value="">Escolha um músculo</option>
           {muscleOptions.map((option) => (
             <option key={option} value={option}>
               {option}
@@ -219,8 +222,8 @@ function NewExerciseForm({ initialName, onCreated, onCancel }: NewExerciseFormPr
       ) : (
         <Field
           id="new-exercise-muscle"
-          label="Target muscle"
-          placeholder="e.g. Chest"
+          label="Grupo muscular principal"
+          placeholder="Ex.: Peitoral"
           value={muscle}
           error={errors.primaryMuscle}
           onChange={(event) => setMuscle(event.target.value)}
@@ -234,11 +237,11 @@ function NewExerciseForm({ initialName, onCreated, onCancel }: NewExerciseFormPr
       ) : null}
 
       <div className={styles.inlineActions}>
-        <Button type="submit" isLoading={isSaving}>
-          Create and add
+        <Button type="submit" size="sm" isLoading={isSaving}>
+          Criar e adicionar
         </Button>
-        <Button variant="ghost" onClick={onCancel} disabled={isSaving}>
-          Cancel
+        <Button variant="ghost" size="sm" onClick={onCancel} disabled={isSaving}>
+          Cancelar
         </Button>
       </div>
     </form>

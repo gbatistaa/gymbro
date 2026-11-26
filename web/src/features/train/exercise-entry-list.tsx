@@ -14,7 +14,7 @@ type ExerciseEntryListProps = {
   onRemove: (key: string) => void;
 };
 
-/** Editable weight, sets and reps for each exercise, with the target muscle as a badge. */
+/** Carga, séries e repetições editáveis para cada exercício, com o grupo muscular em badge. */
 export function ExerciseEntryList({
   entries,
   errors,
@@ -41,7 +41,7 @@ export function ExerciseEntryList({
               <button
                 type="button"
                 className={styles.entryRemove}
-                aria-label={`Remove ${entry.exerciseName}`}
+                aria-label={`Remover ${entry.exerciseName}`}
                 onClick={() => onRemove(entry.key)}
               >
                 <Trash2 size={16} strokeWidth={1.75} aria-hidden="true" />
@@ -51,7 +51,7 @@ export function ExerciseEntryList({
             <div className={styles.entryFields}>
               <Field
                 id={`weight-${entry.key}`}
-                label="Weight (kg)"
+                label="Carga (kg)"
                 type="number"
                 inputMode="decimal"
                 min={0}
@@ -63,7 +63,7 @@ export function ExerciseEntryList({
               />
               <Field
                 id={`sets-${entry.key}`}
-                label="Sets"
+                label="Séries"
                 type="number"
                 inputMode="numeric"
                 min={1}

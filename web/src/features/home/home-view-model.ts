@@ -12,7 +12,7 @@ import {
   formatVolume,
 } from "@/lib/format";
 
-/** Bars stop below the top so the current-week tag fits above the tallest bar. */
+/** As barras param abaixo do topo para caber a etiqueta da semana atual. */
 const BAR_CEILING = 85;
 const PR_LIMIT = 5;
 
@@ -29,21 +29,21 @@ function volumeMetric(dashboard: Dashboard): WeeklyMetric {
   if (previous <= 0) {
     return {
       id: "volume",
-      label: "Weekly volume",
+      label: "Volume semanal",
       value: formatKg(current),
       unit: "kg",
-      footer: current > 0 ? "No volume last week" : "No volume logged this week",
+      footer: current > 0 ? "Sem volume na semana anterior" : "Sem volume nesta semana",
     };
   }
 
   const change = Math.round(((current - previous) / previous) * 100);
   return {
     id: "volume",
-    label: "Weekly volume",
+    label: "Volume semanal",
     value: formatKg(current),
     unit: "kg",
     trend: { text: `${change > 0 ? "+" : ""}${change}%`, direction: change >= 0 ? "up" : "down" },
-    footer: `${signed(current - previous)} kg vs last week`,
+    footer: `${signed(current - previous)} kg vs sem. anterior`,
   };
 }
 
@@ -55,25 +55,25 @@ export function weeklyMetrics(dashboard: Dashboard, summary: CompletionSummary):
   return [
     {
       id: "workouts",
-      label: "Workouts",
+      label: "Treinos",
       value: formatCount(workouts),
-      footer: `${formatCount(summary.totalCount)} logged in total`,
+      footer: `${formatCount(summary.totalCount)} registrados no total`,
     },
     volumeMetric(dashboard),
     {
       id: "streak",
-      label: "Active streak",
+      label: "Sequência",
       value: formatCount(streak),
-      unit: streak === 1 ? "week" : "weeks",
+      unit: streak === 1 ? "sem." : "sem.",
       hasFlameIcon: streak > 0,
-      footer: streak > 0 ? "Weeks in a row with a workout" : "Log a workout to start one",
+      footer: streak > 0 ? "Semanas seguidas treinando" : "Registre um treino para iniciar",
     },
     {
       id: "weight",
-      label: "Body weight",
+      label: "Peso corporal",
       value: weightDelta == null ? "—" : signed(weightDelta),
       unit: weightDelta == null ? undefined : "kg",
-      footer: weightDelta == null ? "No body measurements yet" : "Change across your measurements",
+      footer: weightDelta == null ? "Sem medições registradas" : "Variação nas medições",
     },
   ];
 }
@@ -89,11 +89,11 @@ export function volumeChart(dashboard: Dashboard): VolumeChart {
   const lastIndex = weeks.length - 1;
 
   return {
-    sectionLabel: `VOLUME · ${weeks.length} WEEKS`,
-    title: "Total training volume",
-    averageLabel: "Average:",
+    sectionLabel: `VOLUME · ${weeks.length} SEMANAS`,
+    title: "Volume total de treino",
+    averageLabel: "Média:",
     averageValue: formatKg(average),
-    averageUnit: "kg/week",
+    averageUnit: "kg/sem",
     averagePosition: max > 0 ? (average / max) * (BAR_CEILING / 100) : 0,
     benchmarkTag: formatCompact(average),
     bars: weeks.map((week, index) => ({
@@ -105,7 +105,7 @@ export function volumeChart(dashboard: Dashboard): VolumeChart {
       topTag: index === lastIndex && week.volume > 0 ? formatCompact(week.volume) : undefined,
     })),
     startLabel: weeks[0] ? formatShortDate(weeks[0].weekStart, timezone) : "",
-    currentLabel: "This week",
+    currentLabel: "Esta semana",
   };
 }
 

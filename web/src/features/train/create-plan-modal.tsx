@@ -89,17 +89,17 @@ export function CreatePlanModal({ onCreated, onClose }: CreatePlanModalProps) {
 
   return (
     <Modal
-      title="New workout plan"
-      description="Name the plan and list its exercises with weight, sets, reps and muscle."
+      title="Nova rotina de treino"
+      description="Defina o nome da rotina e liste os exercícios com carga, séries e repetições."
       size="large"
       onClose={onClose}
       footer={
         <>
           <Button variant="secondary" onClick={onClose} disabled={isSaving}>
-            Cancel
+            Cancelar
           </Button>
           <Button type="submit" form={FORM_ID} isLoading={isSaving}>
-            Create plan
+            Criar rotina
           </Button>
         </>
       }
@@ -109,8 +109,8 @@ export function CreatePlanModal({ onCreated, onClose }: CreatePlanModalProps) {
       <form id={FORM_ID} className={styles.formStack} onSubmit={handleSubmit} noValidate>
         <Field
           id="plan-name"
-          label="Plan name"
-          placeholder="e.g. Upper A"
+          label="Nome da rotina"
+          placeholder="Ex.: Treino A — Superiores"
           maxLength={120}
           autoFocus
           value={name}
@@ -119,8 +119,9 @@ export function CreatePlanModal({ onCreated, onClose }: CreatePlanModalProps) {
         />
         <Field
           id="plan-description"
-          label="Description"
-          hint="Optional"
+          label="Descrição"
+          hint="Opcional"
+          placeholder="Ex.: Foco em peitoral, costas e ombros"
           maxLength={500}
           value={description}
           error={fieldErrors.description}
@@ -128,16 +129,16 @@ export function CreatePlanModal({ onCreated, onClose }: CreatePlanModalProps) {
         />
       </form>
 
-      <p className={styles.sectionTitle}>Exercises · {exercises.entries.length}</p>
+      <p className={styles.sectionTitle}>Exercícios na rotina · {exercises.entries.length}</p>
       <ExerciseEntryList
         entries={exercises.entries}
         errors={exercises.errors}
-        emptyText="No exercises yet. Add them from the library below."
+        emptyText="Nenhum exercício ainda. Adicione-os pela busca abaixo."
         onChange={exercises.update}
         onRemove={exercises.remove}
       />
 
-      <p className={styles.sectionTitle}>Add exercises</p>
+      <p className={styles.sectionTitle}>Adicionar exercícios</p>
       <ExerciseSearch excludedIds={exercises.excludedIds} onSelect={exercises.add} />
     </Modal>
   );

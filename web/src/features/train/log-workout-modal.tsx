@@ -1,5 +1,6 @@
 "use client";
 
+import { Plus } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ErrorState } from "@/components/ui/error-state";
@@ -24,7 +25,7 @@ type LogWorkoutModalProps = {
   onClose: () => void;
 };
 
-/** Logs what was actually lifted for a plan. No timer: only weight, sets and reps per exercise. */
+/** Registra o que foi executado para uma rotina: carga, séries e repetições por exercício. */
 export function LogWorkoutModal({ planId, planName, onLogged, onClose }: LogWorkoutModalProps) {
   const plan = useResource(`plan:${planId}`, () =>
     request({ url: `/api/playlists/${planId}` }, playlistDetailSchema),
@@ -32,15 +33,18 @@ export function LogWorkoutModal({ planId, planName, onLogged, onClose }: LogWork
 
   return (
     <Modal
-      title={`Log workout · ${planName}`}
-      description="Adjust what you actually did. Each set counts toward your volume and records."
+      title={`Registrar treino · ${planName}`}
+      description="Ajuste o que você realmente executou hoje. Cada série soma no seu volume e recordes."
       size="large"
       onClose={onClose}
     >
       {plan.isLoading ? (
-        <Skeleton lines={4} label="Loading plan…" />
+        <Skeleton lines={4} label="Carregando rotina…" />
       ) : plan.error || !plan.data ? (
-        <ErrorState message={plan.error ?? "Could not load the plan."} onRetry={plan.reload} />
+        <ErrorState
+          message={plan.error ?? "Não foi possível carregar a rotina."}
+          onRetry={plan.reload}
+        />
       ) : (
         <LogWorkoutForm plan={plan.data} onLogged={onLogged} onClose={onClose} />
       )}
@@ -96,11 +100,11 @@ function LogWorkoutForm({ plan, onLogged, onClose }: LogWorkoutFormProps) {
     <>
       {formError ? <Notice tone="error">{formError}</Notice> : null}
 
-      <p className={styles.sectionTitle}>Exercises · {exercises.entries.length}</p>
+      <p className={styles.sectionTitle}>Exercícios executados · {exercises.entries.length}</p>
       <ExerciseEntryList
         entries={exercises.entries}
         errors={exercises.errors}
-        emptyText="This plan has no exercises. Add what you did, or just mark it as done."
+        emptyText="Esta rotina não tem exercícios. Adicione o que você fez ou apenas marque como concluída."
         onChange={exercises.update}
         onRemove={exercises.remove}
       />
@@ -114,17 +118,23 @@ function LogWorkoutForm({ plan, onLogged, onClose }: LogWorkoutFormProps) {
           }}
         />
       ) : (
-        <button type="button" className={styles.textButton} onClick={() => setIsAdding(true)}>
-          + Add another exercise
-        </button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => setIsAdding(true)}
+        >
+          <Plus size={15} aria-hidden="true" />
+          Adicionar outro exercício
+        </Button>
       )}
 
-      <div className={styles.inlineActions}>
-        <Button onClick={save} isLoading={isSaving}>
-          {hasExercises ? "Save workout" : "Mark as done"}
-        </Button>
+      <div className={styles.modalBottomActions}>
         <Button variant="secondary" onClick={onClose} disabled={isSaving}>
-          Cancel
+          Cancelar
+        </Button>
+        <Button onClick={save} isLoading={isSaving}>
+          {hasExercises ? "Salvar treino" : "Marcar como feito"}
         </Button>
       </div>
     </>

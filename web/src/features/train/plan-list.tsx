@@ -25,9 +25,9 @@ type Filter = "active" | "archived";
 
 function loggedMessage(completion: Completion): string {
   if (completion.loggedSets === 0) {
-    return `"${completion.playlistName}" marked as done.`;
+    return `"${completion.playlistName}" marcado como feito.`;
   }
-  return `"${completion.playlistName}" logged: ${formatCount(completion.loggedSets)} sets, ${formatVolume(completion.totalVolume)}.`;
+  return `"${completion.playlistName}" registrado: ${formatCount(completion.loggedSets)} séries · ${formatVolume(completion.totalVolume)}.`;
 }
 
 export function PlanList() {
@@ -61,7 +61,7 @@ export function PlanList() {
   async function duplicatePlan(plan: PlaylistSummary) {
     try {
       await request({ method: "POST", url: `/api/playlists/${plan.id}/clone` }, playlistSchema);
-      showSuccess(`"${plan.name}" duplicated.`);
+      showSuccess(`"${plan.name}" duplicada.`);
       reload();
     } catch (failure) {
       setActionError(describeApiError(failure));
@@ -77,7 +77,7 @@ export function PlanList() {
         { method: "POST", url: `/api/playlists/${archiveTarget.id}/archive` },
         playlistSchema,
       );
-      showSuccess(`"${archiveTarget.name}" archived.`);
+      showSuccess(`"${archiveTarget.name}" arquivada.`);
       setArchiveTarget(null);
       reload();
     } catch (failure) {
@@ -98,23 +98,32 @@ export function PlanList() {
     <div className={styles.screen}>
       <div className={styles.topRow}>
         <div className={styles.titleGroup}>
-          <h1 className={`${styles.screenTitle} text-text`}>Workout plans</h1>
-          <p className={`${styles.screenSubtitle} tabular-nums text-muted`}>
+          <span className={styles.pageKicker}>Planos de treino</span>
+          <h1 className={styles.screenTitle}>Treinar</h1>
+          <p className={`${styles.screenSubtitle} tabular-nums`}>
             {data
-              ? `${formatCount(plans.length)} ${filter === "active" ? "active" : "archived"} ${plans.length === 1 ? "plan" : "plans"}`
-              : "Your training sheets"}
+              ? `${formatCount(plans.length)} ${
+                  filter === "active"
+                    ? plans.length === 1
+                      ? "rotina ativa"
+                      : "rotinas ativas"
+                    : plans.length === 1
+                      ? "rotina arquivada"
+                      : "rotinas arquivadas"
+                }`
+              : "Suas fichas de treino"}
           </p>
         </div>
 
-        <PrimaryButton icon={<Plus size={16} strokeWidth={1.75} />} onClick={() => setIsCreating(true)}>
-          New plan
+        <PrimaryButton icon={<Plus size={16} strokeWidth={2} />} onClick={() => setIsCreating(true)}>
+          Nova rotina
         </PrimaryButton>
       </div>
 
       <div
-        className={`${styles.segmentedControl} bg-surface border-token radius-card`}
+        className={styles.segmentedControl}
         role="group"
-        aria-label="Filter plans"
+        aria-label="Filtrar rotinas"
       >
         {(["active", "archived"] as const).map((option) => (
           <button
@@ -124,12 +133,12 @@ export function PlanList() {
             onClick={() => setFilter(option)}
             className={[
               styles.segmentButton,
-              filter === option
-                ? `${styles.segmentButtonActive} bg-surface-2 border-token text-text`
-                : "text-muted",
-            ].join(" ")}
+              filter === option ? styles.segmentButtonActive : null,
+            ]
+              .filter(Boolean)
+              .join(" ")}
           >
-            {option === "active" ? "Active" : "Archived"}
+            {option === "active" ? "Rotinas ativas" : "Arquivadas"}
           </button>
         ))}
       </div>
@@ -138,21 +147,21 @@ export function PlanList() {
       {actionError ? <Notice tone="error">{actionError}</Notice> : null}
 
       {isLoading ? (
-        <Skeleton lines={5} label="Loading workout plans…" />
+        <Skeleton lines={4} label="Carregando rotinas…" />
       ) : error || !data ? (
-        <ErrorState message={error ?? "Could not load your workout plans."} onRetry={reload} />
+        <ErrorState message={error ?? "Não foi possível carregar suas rotinas."} onRetry={reload} />
       ) : plans.length === 0 ? (
         <EmptyState
-          title={filter === "archived" ? "No archived plans" : "No workout plans yet"}
+          title={filter === "archived" ? "Nenhuma rotina arquivada" : "Nenhuma rotina criada ainda"}
           description={
             filter === "archived"
-              ? "Plans you archive show up here."
-              : "Create a plan with your exercises, weights, sets and reps."
+              ? "As rotinas que você arquivar aparecem aqui."
+              : "Crie uma rotina com seus exercícios, cargas, séries e repetições."
           }
           action={
             filter === "active" ? (
-              <PrimaryButton icon={<Plus size={16} strokeWidth={1.75} />} onClick={() => setIsCreating(true)}>
-                Create your first plan
+              <PrimaryButton icon={<Plus size={16} strokeWidth={2} />} onClick={() => setIsCreating(true)}>
+                Criar primeira rotina
               </PrimaryButton>
             ) : undefined
           }
@@ -178,7 +187,7 @@ export function PlanList() {
           onCreated={() => {
             setIsCreating(false);
             setFilter("active");
-            showSuccess("Workout plan created.");
+            showSuccess("Rotina de treino criada.");
             reload();
           }}
           onClose={() => setIsCreating(false)}
@@ -196,9 +205,9 @@ export function PlanList() {
 
       {archiveTarget ? (
         <ConfirmDialog
-          title="Archive this plan?"
-          description={`"${archiveTarget.name}" leaves your active list. You can still find it under Archived.`}
-          confirmLabel="Archive"
+          title="Arquivar esta rotina?"
+          description={`"${archiveTarget.name}" sairá da sua lista ativa. Você poderá consultá-la na aba Arquivadas.`}
+          confirmLabel="Arquivar"
           isConfirming={isArchiving}
           onConfirm={archivePlan}
           onCancel={() => setArchiveTarget(null)}

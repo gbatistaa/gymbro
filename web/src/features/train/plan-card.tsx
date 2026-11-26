@@ -1,6 +1,6 @@
 "use client";
 
-import { ClipboardCheck, MoreHorizontal, SquarePen } from "lucide-react";
+import { ClipboardCheck, Dumbbell, MoreHorizontal, SquarePen } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
@@ -34,7 +34,9 @@ function muscleSummary(plan: PlaylistSummary): string | null {
     ),
   ];
   if (muscles.length === 0) return null;
-  return muscles.length > 3 ? `${muscles.slice(0, 3).join(", ")} +${muscles.length - 3}` : muscles.join(", ");
+  return muscles.length > 3
+    ? `${muscles.slice(0, 3).join(", ")} +${muscles.length - 3}`
+    : muscles.join(", ");
 }
 
 export function PlanCard({ plan, timezone, onLog, onDuplicate, onArchive }: PlanCardProps) {
@@ -48,15 +50,29 @@ export function PlanCard({ plan, timezone, onLog, onDuplicate, onArchive }: Plan
       <div className={styles.routineTopRow}>
         <div className={styles.routineHeaderLeft}>
           <div className={styles.routineBadgeRow}>
-            {isArchived ? <Badge>Archived</Badge> : null}
-            <p className={`${styles.lastPerformed} tabular-nums text-muted`}>
+            <Badge tone={isArchived ? "neutral" : "primary"}>
+              <Dumbbell size={12} aria-hidden="true" />
+              {formatCount(plan.exerciseCount)}{" "}
+              {plan.exerciseCount === 1 ? "exercício" : "exercícios"}
+            </Badge>
+            {isArchived ? <Badge>Arquivada</Badge> : null}
+            <p className={`${styles.lastPerformed} tabular-nums`}>
               {plan.lastPerformedAt
-                ? `Last done ${formatRelative(plan.lastPerformedAt, timezone)}`
-                : "Not done yet"}
+                ? `Último: ${formatRelative(plan.lastPerformedAt, timezone)}`
+                : "Nunca feito"}
             </p>
           </div>
 
-          <h2 className={`${styles.routineTitle} text-text`}>{plan.name}</h2>
+          <Link
+            href={`/train/playlists/${plan.id}`}
+            className={styles.routineTitleLink}
+          >
+            <h2 className={styles.routineTitle}>{plan.name}</h2>
+          </Link>
+
+          {plan.description ? (
+            <p className={styles.routineDescription}>{plan.description}</p>
+          ) : null}
         </div>
 
         <PlanMenu
@@ -67,14 +83,8 @@ export function PlanCard({ plan, timezone, onLog, onDuplicate, onArchive }: Plan
         />
       </div>
 
-      <div className={`${styles.ledgerRow} tabular-nums text-muted`}>
-        <span>
-          {formatCount(plan.exerciseCount)} {plan.exerciseCount === 1 ? "exercise" : "exercises"}
-        </span>
-        <span className={styles.ledgerDot} aria-hidden="true">
-          •
-        </span>
-        <span>{formatCount(totalSets(plan))} sets</span>
+      <div className={`${styles.ledgerRow} tabular-nums`}>
+        <span>{formatCount(totalSets(plan))} séries totais</span>
         {muscles ? (
           <>
             <span className={styles.ledgerDot} aria-hidden="true">
@@ -86,46 +96,56 @@ export function PlanCard({ plan, timezone, onLog, onDuplicate, onArchive }: Plan
       </div>
 
       {preview.length > 0 ? (
-        <ul className={`${styles.exerciseRowsBox} bg-surface-2 border-token radius-btn`}>
+        <ul className={styles.exerciseRowsBox}>
           {preview.map((item) => (
             <li key={item.id} className={styles.exerciseRow}>
-              <span className={`${styles.exerciseName} text-text`}>
+              <span className={styles.exerciseName}>
                 {item.exerciseName}
                 {item.primaryMuscle ? (
                   <span className={styles.exerciseMeta}>{item.primaryMuscle}</span>
                 ) : null}
               </span>
-              <span className={`${styles.exercisePrescription} tabular-nums text-muted`}>
+              <span className={`${styles.exercisePrescription} tabular-nums`}>
                 {formatPrescription(item, formatKg)}
               </span>
             </li>
           ))}
           {hidden > 0 ? (
             <li className={`${styles.exerciseRow} ${styles.moreExercises}`}>
-              +{hidden} more
+              +{hidden} {hidden === 1 ? "exercício" : "exercícios"}
             </li>
           ) : null}
         </ul>
       ) : (
-        <p className={styles.emptyHint}>No exercises in this plan yet.</p>
+        <p className={styles.emptyHint}>Nenhum exercício adicionado a esta rotina ainda.</p>
       )}
 
-      {isArchived ? null : (
+      {isArchived ? (
+        <div className={styles.routineActionsArchived}>
+          <Link
+            href={`/train/playlists/${plan.id}`}
+            className={styles.editRoutineButtonFull}
+          >
+            <SquarePen size={16} strokeWidth={1.75} aria-hidden="true" />
+            <span>Ver ficha completa</span>
+          </Link>
+        </div>
+      ) : (
         <div className={styles.routineActionsRow}>
           <PrimaryButton
             fullWidth
-            icon={<ClipboardCheck size={16} strokeWidth={1.75} />}
+            icon={<ClipboardCheck size={16} strokeWidth={2} />}
             onClick={() => onLog(plan)}
           >
-            Log workout
+            Registrar treino
           </PrimaryButton>
 
           <Link
             href={`/train/playlists/${plan.id}`}
-            className={`${styles.editRoutineButton} bg-surface-2 border-token text-text radius-btn`}
-            aria-label={`Edit ${plan.name}`}
+            className={styles.editRoutineButton}
+            aria-label={`Editar ${plan.name}`}
           >
-            <SquarePen size={16} strokeWidth={1.75} aria-hidden="true" />
+            <SquarePen size={17} strokeWidth={1.75} aria-hidden="true" />
           </Link>
         </div>
       )}
@@ -173,19 +193,24 @@ function PlanMenu({ planName, isArchived, onDuplicate, onArchive }: PlanMenuProp
     <div ref={containerRef}>
       <button
         type="button"
-        className={`${styles.optionsButton} text-muted`}
-        aria-label={`Options for ${planName}`}
+        className={styles.optionsButton}
+        aria-label={`Opções de ${planName}`}
         aria-haspopup="menu"
         aria-expanded={isOpen}
         onClick={() => setIsOpen((current) => !current)}
       >
-        <MoreHorizontal size={16} strokeWidth={1.75} aria-hidden="true" />
+        <MoreHorizontal size={18} strokeWidth={1.75} aria-hidden="true" />
       </button>
 
       {isOpen ? (
         <div className={styles.menu} role="menu">
-          <button type="button" role="menuitem" className={styles.menuItem} onClick={() => choose(onDuplicate)}>
-            Duplicate
+          <button
+            type="button"
+            role="menuitem"
+            className={styles.menuItem}
+            onClick={() => choose(onDuplicate)}
+          >
+            Duplicar rotina
           </button>
           {isArchived ? null : (
             <button
@@ -194,7 +219,7 @@ function PlanMenu({ planName, isArchived, onDuplicate, onArchive }: PlanMenuProp
               className={`${styles.menuItem} ${styles.menuItemDanger}`}
               onClick={() => choose(onArchive)}
             >
-              Archive
+              Arquivar rotina
             </button>
           )}
         </div>

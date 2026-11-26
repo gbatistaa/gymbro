@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
+import { Modal } from "@/components/ui/modal";
 import { Notice } from "@/components/ui/notice";
 import {
   playlistExerciseSchema,
@@ -51,16 +52,16 @@ function validate(values: FormValues): FieldErrors {
   const rest = toInteger(values.restSeconds);
 
   if (weight !== null && (Number.isNaN(weight) || weight < 0 || weight > 1000)) {
-    errors.targetWeightKg = "Use 0 to 1000 kg.";
+    errors.targetWeightKg = "Use de 0 a 1000 kg.";
   }
   if (sets === null || sets < 1 || sets > 20) {
-    errors.targetSets = "Use 1 to 20 sets.";
+    errors.targetSets = "Use de 1 a 20 séries.";
   }
   if (repsMin === null || repsMin < 1) {
-    errors.targetRepsMin = "Use at least 1 rep.";
+    errors.targetRepsMin = "Use ao menos 1 repetição.";
   }
   if (repsMax === null || repsMax < 1) {
-    errors.targetRepsMax = "Use at least 1 rep.";
+    errors.targetRepsMax = "Use ao menos 1 repetição.";
   }
   if (
     repsMin !== null &&
@@ -69,13 +70,13 @@ function validate(values: FormValues): FieldErrors {
     repsMax >= 1 &&
     repsMin > repsMax
   ) {
-    errors.targetRepsMax = "Max reps must be greater than or equal to min reps.";
+    errors.targetRepsMax = "O máximo deve ser maior ou igual ao mínimo.";
   }
   if (rest === null || rest < 0 || rest > 600) {
-    errors.restSeconds = "Use 0 to 600 seconds.";
+    errors.restSeconds = "Use de 0 a 600 segundos.";
   }
   if (values.note.trim().length > 500) {
-    errors.note = "Use at most 500 characters.";
+    errors.note = "Use no máximo 500 caracteres.";
   }
 
   return errors;
@@ -145,90 +146,110 @@ export function PlaylistItemForm({
   }
 
   return (
-    <form className={styles.itemForm} onSubmit={handleSubmit} noValidate>
-      {formError ? <Notice tone="error">{formError}</Notice> : null}
+    <Modal
+      title={`Alvos — ${item.exerciseName}`}
+      description="Ajuste carga-alvo, séries, faixa de repetições, descanso e observações."
+      onClose={onCancel}
+      footer={
+        <>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={onCancel}
+            disabled={isSaving}
+          >
+            Cancelar
+          </Button>
+          <Button
+            type="submit"
+            form={`item-form-${item.id}`}
+            isLoading={isSaving}
+          >
+            Salvar alvos
+          </Button>
+        </>
+      }
+    >
+      <form
+        id={`item-form-${item.id}`}
+        className={styles.modalForm}
+        onSubmit={handleSubmit}
+        noValidate
+      >
+        {formError ? <Notice tone="error">{formError}</Notice> : null}
 
-      <div className={styles.itemFormGrid}>
-        <Field
-          id={`weight-${item.id}`}
-          label="Weight (kg)"
-          type="number"
-          inputMode="decimal"
-          min={0}
-          step="0.5"
-          autoFocus
-          value={values.targetWeightKg}
-          error={errors.targetWeightKg}
-          onChange={(event) => setField("targetWeightKg", event.target.value)}
-        />
-        <Field
-          id={`sets-${item.id}`}
-          label="Sets"
-          type="number"
-          inputMode="numeric"
-          min={1}
-          max={20}
-          value={values.targetSets}
-          error={errors.targetSets}
-          onChange={(event) => setField("targetSets", event.target.value)}
-        />
-        <Field
-          id={`reps-min-${item.id}`}
-          label="Min reps"
-          type="number"
-          inputMode="numeric"
-          min={1}
-          value={values.targetRepsMin}
-          error={errors.targetRepsMin}
-          onChange={(event) => setField("targetRepsMin", event.target.value)}
-        />
-        <Field
-          id={`reps-max-${item.id}`}
-          label="Max reps"
-          type="number"
-          inputMode="numeric"
-          min={1}
-          value={values.targetRepsMax}
-          error={errors.targetRepsMax}
-          onChange={(event) => setField("targetRepsMax", event.target.value)}
-        />
-        <Field
-          id={`rest-${item.id}`}
-          label="Rest (s)"
-          type="number"
-          inputMode="numeric"
-          min={0}
-          max={600}
-          value={values.restSeconds}
-          error={errors.restSeconds}
-          onChange={(event) => setField("restSeconds", event.target.value)}
-        />
-        <div className={styles.itemFormWide}>
+        <div className={styles.itemFormGrid}>
           <Field
-            id={`note-${item.id}`}
-            label="Note"
-            hint="Optional, up to 500 characters"
-            maxLength={500}
-            value={values.note}
-            error={errors.note}
-            onChange={(event) => setField("note", event.target.value)}
+            id={`weight-${item.id}`}
+            label="Carga (kg)"
+            type="number"
+            inputMode="decimal"
+            min={0}
+            step="0.5"
+            placeholder="0"
+            autoFocus
+            value={values.targetWeightKg}
+            error={errors.targetWeightKg}
+            onChange={(event) => setField("targetWeightKg", event.target.value)}
           />
+          <Field
+            id={`sets-${item.id}`}
+            label="Séries"
+            type="number"
+            inputMode="numeric"
+            min={1}
+            max={20}
+            value={values.targetSets}
+            error={errors.targetSets}
+            onChange={(event) => setField("targetSets", event.target.value)}
+          />
+          <Field
+            id={`reps-min-${item.id}`}
+            label="Reps mín."
+            type="number"
+            inputMode="numeric"
+            min={1}
+            value={values.targetRepsMin}
+            error={errors.targetRepsMin}
+            onChange={(event) => setField("targetRepsMin", event.target.value)}
+          />
+          <Field
+            id={`reps-max-${item.id}`}
+            label="Reps máx."
+            type="number"
+            inputMode="numeric"
+            min={1}
+            value={values.targetRepsMax}
+            error={errors.targetRepsMax}
+            onChange={(event) => setField("targetRepsMax", event.target.value)}
+          />
+          <div className={styles.itemFormWide}>
+            <Field
+              id={`rest-${item.id}`}
+              label="Descanso (s)"
+              type="number"
+              inputMode="numeric"
+              min={0}
+              max={600}
+              value={values.restSeconds}
+              error={errors.restSeconds}
+              onChange={(event) => setField("restSeconds", event.target.value)}
+            />
+          </div>
+          <div className={styles.itemFormWide}>
+            <Field
+              id={`note-${item.id}`}
+              label="Observação técnica"
+              hint="Opcional, até 500 caracteres"
+              placeholder="Ex.: Pausa de 1s na base, pegada pronada"
+              maxLength={500}
+              value={values.note}
+              error={errors.note}
+              onChange={(event) => setField("note", event.target.value)}
+            />
+          </div>
         </div>
-      </div>
-
-      <div className={styles.formActions}>
-        <Button type="submit" isLoading={isSaving}>
-          Save targets
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          onClick={onCancel}
-          disabled={isSaving}
-        >
-          Cancel
-        </Button>
-      </div>
-    </form>
+      </form>
+    </Modal>
   );
 }

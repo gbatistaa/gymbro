@@ -7,19 +7,24 @@ import {
   ClipboardList,
   Dumbbell,
   Globe,
+  LogOut,
   Mail,
   Pencil,
   UserRound,
   type LucideIcon,
 } from "lucide-react";
 import { useSetAtom } from "jotai";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import { ErrorState } from "@/components/ui/error-state";
 import { Notice } from "@/components/ui/notice";
+import { SectionLabel } from "@/components/ui/section-label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { userSummarySchema, type UserSummary } from "@/contracts/auth";
 import { completionSummarySchema, type CompletionSummary } from "@/contracts/completion";
 import { playlistSummarySchema } from "@/contracts/playlist";
+import { logout } from "@/features/auth/api";
 import { formatCount, formatDate } from "@/lib/format";
 import { request } from "@/lib/http";
 import { timeZoneLabel } from "@/lib/timezones";
@@ -88,22 +93,28 @@ function DetailRow({ icon: Icon, label, value }: DetailRowProps) {
       </span>
       <span className={styles.detailText}>
         <span className={styles.detailLabel}>{label}</span>
-        <span className={`${styles.detailValue} text-text`}>{value}</span>
+        <span className={styles.detailValue}>{value}</span>
       </span>
     </li>
   );
 }
 
 export function ProfileScreen() {
+  const router = useRouter();
   const setSession = useSetAtom(sessionAtom);
   const { data, error, isLoading, reload } = useResource("profile", loadProfile);
   const [isEditing, setIsEditing] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [savedMessage, setSavedMessage] = useState<string | null>(null);
 
   if (isLoading) {
     return (
       <div className={styles.screen}>
-        <Skeleton lines={8} label="Loading your profile…" />
+        <header className={styles.pageHeader}>
+          <span className={styles.pageKicker}>Conta e preferências</span>
+          <h1 className={styles.title}>Perfil</h1>
+        </header>
+        <Skeleton lines={5} label="Carregando seu perfil…" />
       </div>
     );
   }
@@ -111,7 +122,14 @@ export function ProfileScreen() {
   if (error || !data) {
     return (
       <div className={styles.screen}>
-        <ErrorState message={error ?? "Could not load your profile."} onRetry={reload} />
+        <header className={styles.pageHeader}>
+          <span className={styles.pageKicker}>Conta e preferências</span>
+          <h1 className={styles.title}>Perfil</h1>
+        </header>
+        <ErrorState
+          message={error ?? "Não foi possível carregar o perfil."}
+          onRetry={reload}
+        />
       </div>
     );
   }
@@ -122,23 +140,38 @@ export function ProfileScreen() {
   function handleSaved(saved: UserSummary) {
     setSession((current) => (current ? { ...current, user: saved } : current));
     setIsEditing(false);
-    setSavedMessage("Profile updated.");
+    setSavedMessage("Informações atualizadas.");
     reload();
+  }
+
+  async function handleLogout() {
+    if (isLoggingOut) return;
+    setIsLoggingOut(true);
+
+    try {
+      await logout();
+    } finally {
+      setSession(null);
+      router.replace("/signin");
+    }
   }
 
   return (
     <div className={styles.screen}>
-      <h1 className={styles.srOnly}>Profile</h1>
+      <header className={styles.pageHeader}>
+        <span className={styles.pageKicker}>Conta e preferências</span>
+        <h1 className={styles.title}>Perfil</h1>
+      </header>
 
       {savedMessage ? <Notice tone="success">{savedMessage}</Notice> : null}
 
-      <section className={styles.hero} aria-label="Your profile">
+      <section className={styles.hero} aria-label="Seu perfil">
         <div className={styles.heroTop}>
           <span className={styles.avatar} aria-hidden="true">
             {initialsOf(user.name)}
           </span>
           <div className={styles.identity}>
-            <p className={`${styles.name} text-text`}>{user.name}</p>
+            <p className={styles.name}>{user.name}</p>
             <p className={styles.username}>@{user.username}</p>
           </div>
         </div>
@@ -146,7 +179,7 @@ export function ProfileScreen() {
         <div className={styles.chips}>
           <span className={styles.chip}>
             <CalendarDays size={14} strokeWidth={1.75} aria-hidden="true" />
-            Member since {memberSince}
+            Membro desde {memberSince}
           </span>
           <span className={styles.chip}>
             <Globe size={14} strokeWidth={1.75} aria-hidden="true" />
@@ -154,31 +187,57 @@ export function ProfileScreen() {
           </span>
         </div>
 
-        <button type="button" className={styles.editButton} onClick={() => setIsEditing(true)}>
-          <Pencil size={16} strokeWidth={1.75} aria-hidden="true" />
-          Edit profile
-        </button>
+        <Button
+          variant="secondary"
+          fullWidth
+          onClick={() => setIsEditing(true)}
+        >
+          <Pencil size={15} strokeWidth={1.75} aria-hidden="true" />
+          Editar informações
+        </Button>
       </section>
 
-      <section className={styles.stats} aria-label="Your numbers">
-        <StatTile icon={Dumbbell} value={summary.totalCount} label="Workouts logged" />
-        <StatTile icon={CalendarCheck} value={summary.thisWeekCount} label="This week" />
-        <StatTile icon={ClipboardList} value={planCount} label="Workout plans" />
+      <section className={styles.section} aria-label="Seus números">
+        <SectionLabel>Resumo de atividade</SectionLabel>
+        <div className={styles.stats}>
+          <StatTile icon={Dumbbell} value={summary.totalCount} label="Treinos feitos" />
+          <StatTile icon={CalendarCheck} value={summary.thisWeekCount} label="Esta semana" />
+          <StatTile icon={ClipboardList} value={planCount} label="Rotinas ativas" />
+        </div>
       </section>
 
-      <section className={styles.details}>
-        <h2 className={styles.detailsTitle}>Account details</h2>
-        <ul className={styles.detailList}>
-          <DetailRow icon={UserRound} label="Full name" value={user.name} />
-          <DetailRow icon={AtSign} label="Username" value={`@${user.username}`} />
-          <DetailRow icon={Mail} label="Email" value={user.email} />
-          <DetailRow icon={Globe} label="Time zone" value={timeZoneLabel(user.timezone)} />
-          <DetailRow icon={CalendarDays} label="Member since" value={memberSince} />
-        </ul>
+      <section className={styles.section}>
+        <SectionLabel>Dados da conta</SectionLabel>
+        <div className={styles.details}>
+          <ul className={styles.detailList}>
+            <DetailRow icon={UserRound} label="Nome completo" value={user.name} />
+            <DetailRow icon={AtSign} label="Usuário" value={`@${user.username}`} />
+            <DetailRow icon={Mail} label="E-mail" value={user.email} />
+            <DetailRow icon={Globe} label="Fuso horário" value={timeZoneLabel(user.timezone)} />
+            <DetailRow icon={CalendarDays} label="Membro desde" value={memberSince} />
+          </ul>
+        </div>
+      </section>
+
+      <section className={styles.section}>
+        <SectionLabel>Sessão</SectionLabel>
+        <Button
+          variant="secondary"
+          fullWidth
+          isLoading={isLoggingOut}
+          onClick={handleLogout}
+        >
+          <LogOut size={16} aria-hidden="true" />
+          Sair da conta
+        </Button>
       </section>
 
       {isEditing ? (
-        <EditProfileDialog user={user} onSaved={handleSaved} onClose={() => setIsEditing(false)} />
+        <EditProfileDialog
+          user={user}
+          onSaved={handleSaved}
+          onClose={() => setIsEditing(false)}
+        />
       ) : null}
     </div>
   );

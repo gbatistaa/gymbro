@@ -1,8 +1,11 @@
 "use client";
 
-import { ArrowRight, CalendarCheck2, Dumbbell, Flame, Trophy } from "lucide-react";
+import { ArrowRight, CalendarCheck2, Dumbbell, Flame } from "lucide-react";
 import { useAtomValue } from "jotai";
 import Link from "next/link";
+import { RecentPrsCard } from "@/components/home/recent-prs-card";
+import { VolumeChartCard } from "@/components/home/volume-chart-card";
+import { WeeklyStatsGrid } from "@/components/home/weekly-stats-grid";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -17,10 +20,11 @@ import {
   type Completion,
   type CompletionSummary,
 } from "@/contracts/completion";
-import { formatCount, formatKg, formatRelative, formatVolume } from "@/lib/format";
+import { formatCount, formatRelative, formatVolume } from "@/lib/format";
 import { request } from "@/lib/http";
 import { useResource } from "@/lib/use-resource";
 import { sessionAtom } from "@/stores/session";
+import { recentPrs, volumeChart, weeklyMetrics } from "./home-view-model";
 import styles from "./home.module.css";
 
 const RECENT_LIMIT = 5;
@@ -33,7 +37,7 @@ type HomeData = {
 
 async function loadHome(): Promise<HomeData> {
   const [dashboard, summary, recent] = await Promise.all([
-    request({ url: "/api/dashboard", params: { weeks: 4 } }, dashboardSchema),
+    request({ url: "/api/dashboard", params: { weeks: 12 } }, dashboardSchema),
     request({ url: "/api/completions/summary" }, completionSummarySchema),
     request(
       { url: "/api/completions", params: { size: RECENT_LIMIT } },
@@ -42,12 +46,6 @@ async function loadHome(): Promise<HomeData> {
   ]);
 
   return { dashboard, summary, recent };
-}
-
-function formatWeightDelta(value: number | null | undefined): string {
-  if (value == null) return "—";
-  if (value === 0) return "0 kg";
-  return `${value > 0 ? "+" : "-"}${formatKg(Math.abs(value))} kg`;
 }
 
 function firstNameOf(name: string | undefined): string | null {
@@ -85,6 +83,9 @@ export function HomeScreen() {
   }
 
   const { dashboard, summary, recent } = data;
+  const metrics = weeklyMetrics(dashboard, summary);
+  const chart = volumeChart(dashboard);
+  const prs = recentPrs(dashboard);
 
   return (
     <div className={styles.screen}>
@@ -123,80 +124,11 @@ export function HomeScreen() {
         </SurfaceCard>
       ) : null}
 
-      <section className={styles.section}>
-        <SectionLabel>Resumo geral</SectionLabel>
-        <div className={styles.statsGrid}>
-          <SurfaceCard className={styles.statCard}>
-            <span className={styles.statLabel}>Esta semana</span>
-            <strong className={styles.statValue}>
-              {formatCount(summary.thisWeekCount)}
-            </strong>
-            <span className={styles.statMeta}>
-              {summary.thisWeekCount === 1 ? "treino feito" : "treinos feitos"}
-            </span>
-          </SurfaceCard>
+      <WeeklyStatsGrid sectionLabel="RESUMO DA SEMANA" metrics={metrics} />
 
-          <SurfaceCard className={styles.statCard}>
-            <span className={styles.statLabel}>Total registrado</span>
-            <strong className={styles.statValue}>
-              {formatCount(summary.totalCount)}
-            </strong>
-            <span className={styles.statMeta}>no histórico</span>
-          </SurfaceCard>
+      <VolumeChartCard chart={chart} />
 
-          <SurfaceCard className={styles.statCard}>
-            <span className={styles.statLabel}>Sequência</span>
-            <strong className={styles.statValue}>
-              {formatCount(dashboard.currentStreakWeeks)}
-            </strong>
-            <span className={styles.statMeta}>
-              {dashboard.currentStreakWeeks === 1 ? "semana ativa" : "semanas ativas"}
-            </span>
-          </SurfaceCard>
-
-          <SurfaceCard className={styles.statCard}>
-            <span className={styles.statLabel}>Variação corporal</span>
-            <strong className={styles.statValue}>
-              {formatWeightDelta(dashboard.weightDeltaKg)}
-            </strong>
-            <span className={styles.statMeta}>peso recente</span>
-          </SurfaceCard>
-        </div>
-      </section>
-
-      {dashboard.recentPrs.length > 0 ? (
-        <section className={styles.section}>
-          <SectionLabel>Recordes recentes (PRs)</SectionLabel>
-          <SurfaceCard className={styles.listCard}>
-            <ul className={styles.prList}>
-              {dashboard.recentPrs.slice(0, 4).map((pr) => (
-                <li key={pr.logId} className={styles.prRow}>
-                  <div className={styles.prMain}>
-                    <span className={styles.prIcon} aria-hidden="true">
-                      <Trophy size={15} />
-                    </span>
-                    <div className={styles.prText}>
-                      <span className={styles.prExercise}>{pr.exerciseName}</span>
-                      <span className={styles.prDate}>
-                        {formatRelative(pr.performedAt, dashboard.timezone)}
-                      </span>
-                    </div>
-                  </div>
-                  <div className={styles.prNumbers}>
-                    <span className={styles.prLoad}>
-                      {pr.weight != null ? `${formatKg(pr.weight)} kg` : "—"}
-                      {pr.reps != null ? ` × ${formatCount(pr.reps)}` : ""}
-                    </span>
-                    <span className={styles.prE1rm}>
-                      1RM est. {formatKg(pr.e1rm)} kg
-                    </span>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </SurfaceCard>
-        </section>
-      ) : null}
+      <RecentPrsCard sectionLabel="RECORDES RECENTES (PRs)" items={prs} />
 
       <section className={styles.section}>
         <div className={styles.sectionHeaderRow}>

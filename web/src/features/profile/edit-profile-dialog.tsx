@@ -26,7 +26,7 @@ function isProfileField(value: PropertyKey | undefined): value is ProfileField {
   return PROFILE_FIELDS.some((field) => field === value);
 }
 
-/** A `409` for an email in use comes with `errors[].field`; each message goes to its field. */
+/** `409` de e-mail em uso vem com `errors[].field`; cada mensagem vai para o campo certo. */
 function apiFieldErrors(failure: unknown): FieldErrors {
   if (!axios.isAxiosError(failure)) return {};
 
@@ -39,7 +39,9 @@ function apiFieldErrors(failure: unknown): FieldErrors {
     const field = fieldError.field;
     if (isProfileField(field)) {
       result[field] =
-        isConflict && field === "email" ? "This email is already in use." : fieldError.message;
+        isConflict && field === "email"
+          ? "Este e-mail já está em uso."
+          : fieldError.message;
     }
   }
   return result;
@@ -102,16 +104,16 @@ export function EditProfileDialog({ user, onSaved, onClose }: EditProfileDialogP
 
   return (
     <Modal
-      title="Edit profile"
-      description="Update your name, email and time zone."
+      title="Editar informações"
+      description="Atualize seu nome, e-mail e fuso horário de referência."
       onClose={onClose}
       footer={
         <>
           <Button variant="secondary" onClick={onClose} disabled={isSaving}>
-            Cancel
+            Cancelar
           </Button>
           <Button type="submit" form={FORM_ID} isLoading={isSaving}>
-            Save changes
+            Salvar alterações
           </Button>
         </>
       }
@@ -121,7 +123,7 @@ export function EditProfileDialog({ user, onSaved, onClose }: EditProfileDialogP
       <form id={FORM_ID} className={styles.form} onSubmit={handleSubmit} noValidate>
         <Field
           id="profile-name"
-          label="Full name"
+          label="Nome completo"
           autoComplete="name"
           autoFocus
           value={name}
@@ -131,7 +133,7 @@ export function EditProfileDialog({ user, onSaved, onClose }: EditProfileDialogP
 
         <Field
           id="profile-email"
-          label="Email"
+          label="E-mail"
           type="email"
           autoComplete="email"
           value={email}
@@ -141,7 +143,7 @@ export function EditProfileDialog({ user, onSaved, onClose }: EditProfileDialogP
 
         <SelectField
           id="profile-timezone"
-          label="Time zone"
+          label="Fuso horário"
           value={timezone}
           onChange={(event) => setTimezone(event.target.value)}
           error={fieldErrors.timezone}

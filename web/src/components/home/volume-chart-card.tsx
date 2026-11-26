@@ -54,7 +54,7 @@ export function VolumeChartCard({ chart }: { chart: VolumeChart }) {
         <div
           className={styles.chartCanvas}
           role="img"
-          aria-label={`Training volume over the last ${chart.bars.length} weeks`}
+          aria-label={`Volume de treino nas últimas ${chart.bars.length} semanas`}
         >
           {chart.averagePosition > 0 ? (
             <div className={styles.benchmarkLine} style={benchmarkStyle} aria-hidden="true">
@@ -84,7 +84,7 @@ export function VolumeChartCard({ chart }: { chart: VolumeChart }) {
           <span>{chart.startLabel}</span>
           <span className={styles.legendItem}>
             <span className={styles.legendDot} aria-hidden="true" />
-            <span>Weekly volume</span>
+            <span>Volume semanal</span>
           </span>
           <span className={`${styles.legendCurrent} text-primary`}>{chart.currentLabel}</span>
         </div>
