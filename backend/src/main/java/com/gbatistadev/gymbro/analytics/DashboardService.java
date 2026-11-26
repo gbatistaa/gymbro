@@ -173,7 +173,7 @@ public class DashboardService {
                 return finished.get(i).getPlaylist();
             }
         }
-        List<Playlist> active = playlists.findByUserIdAndArchivedAtIsNullOrderByName(userId);
+        List<Playlist> active = playlists.findByUserIdOrderByName(userId);
         return active.isEmpty() ? null : active.getFirst();
     }
 

@@ -72,32 +72,20 @@ class PlaylistServiceTest {
         PlaylistSummaryDto expected = playlistSummary(playlistId, 2, null);
 
         when(currentUser.id()).thenReturn(userId);
-        when(playlists.findSummariesByUserId(userId, false))
+        when(playlists.findSummariesByUserId(userId))
             .thenReturn(List.of(playlistRow(playlistId, 2, null)));
 
-        assertEquals(List.of(expected), service.list(false));
-    }
-
-    @Test
-    @DisplayName("list includes archived playlists when asked")
-    void shouldListArchivedPlaylists() {
-        PlaylistSummaryDto expected = playlistSummary(playlistId, 0, null);
-
-        when(currentUser.id()).thenReturn(userId);
-        when(playlists.findSummariesByUserId(userId, true))
-            .thenReturn(List.of(playlistRow(playlistId, 0, null)));
-
-        assertEquals(List.of(expected), service.list(true));
+        assertEquals(List.of(expected), service.list());
     }
 
     @Test
     @DisplayName("detail returns the playlist with its ordered exercises")
     void shouldReturnPlaylistDetail() {
-        Playlist playlist = playlist(playlistId, null);
+        Playlist playlist = playlist(playlistId);
         PlaylistExercise item = item(UUID.randomUUID(), 0);
         PlaylistExerciseDto itemDto = itemDto(item.getId());
         PlaylistDetailDto expected = new PlaylistDetailDto(
-            playlistId, "Push", null, null, List.of(itemDto));
+            playlistId, "Push", null, List.of(itemDto));
 
         when(currentUser.id()).thenReturn(userId);
         when(playlists.findByIdAndUserId(playlistId, userId)).thenReturn(Optional.of(playlist));
@@ -111,7 +99,7 @@ class PlaylistServiceTest {
     @Test
     @DisplayName("clone copies the playlist and every exercise")
     void shouldClonePlaylist() {
-        Playlist source = playlist(playlistId, null);
+        Playlist source = playlist(playlistId);
         source.setName("Push");
         Playlist copy = new Playlist();
         PlaylistExercise sourceItem = item(UUID.randomUUID(), 0);
@@ -135,40 +123,32 @@ class PlaylistServiceTest {
     }
 
     @Test
-    @DisplayName("archived playlists are read-only")
-    void shouldRejectUpdateOfArchivedPlaylist() {
-        Playlist archived = playlist(playlistId, Instant.now());
-
-        when(currentUser.id()).thenReturn(userId);
-        when(playlists.findByIdAndUserId(playlistId, userId)).thenReturn(Optional.of(archived));
-
-        assertThrows(ConflictException.class,
-            () -> service.update(playlistId, new UpdatePlaylistRequest("New", null)));
-        verify(playlists, never()).save(any());
-    }
-
-    @Test
-    @DisplayName("archive is idempotent")
-    void shouldArchivePlaylistIdempotently() {
-        Playlist playlist = playlist(playlistId, null);
-        PlaylistDto expected = playlistDto();
+    @DisplayName("delete removes only a playlist owned by the current user")
+    void shouldDeletePlaylist() {
+        Playlist playlist = playlist(playlistId);
 
         when(currentUser.id()).thenReturn(userId);
         when(playlists.findByIdAndUserId(playlistId, userId)).thenReturn(Optional.of(playlist));
-        when(playlists.save(playlist)).thenReturn(playlist);
-        when(mapper.toDto(playlist)).thenReturn(expected);
 
-        service.archive(playlistId);
-        service.archive(playlistId);
+        service.delete(playlistId);
 
-        assertNotNull(playlist.getArchivedAt());
-        verify(playlists, times(1)).save(playlist);
+        verify(playlists).delete(playlist);
+    }
+
+    @Test
+    @DisplayName("delete fails with not found for another user's playlist")
+    void shouldNotDeleteForeignPlaylist() {
+        when(currentUser.id()).thenReturn(userId);
+        when(playlists.findByIdAndUserId(playlistId, userId)).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () -> service.delete(playlistId));
+        verify(playlists, never()).delete(any(Playlist.class));
     }
 
     @Test
     @DisplayName("addExercise appends the exercise at the end of the routine")
     void shouldAddExercise() {
-        Playlist playlist = playlist(playlistId, null);
+        Playlist playlist = playlist(playlistId);
         Exercise exercise = exercise(false);
         AddPlaylistExerciseRequest request = new AddPlaylistExerciseRequest(
             exercise.getId(), 3, 8, 12, 90, "controlled", 40.0);
@@ -195,7 +175,7 @@ class PlaylistServiceTest {
     @Test
     @DisplayName("addExercise rejects an archived exercise")
     void shouldRejectArchivedExercise() {
-        Playlist playlist = playlist(playlistId, null);
+        Playlist playlist = playlist(playlistId);
         Exercise exercise = exercise(true);
         AddPlaylistExerciseRequest request = new AddPlaylistExerciseRequest(
             exercise.getId(), 3, null, null, null, null, null);
@@ -211,7 +191,7 @@ class PlaylistServiceTest {
     @Test
     @DisplayName("addExercise rejects an inverted rep range")
     void shouldRejectInvertedRepRange() {
-        Playlist playlist = playlist(playlistId, null);
+        Playlist playlist = playlist(playlistId);
         Exercise exercise = exercise(false);
         AddPlaylistExerciseRequest request = new AddPlaylistExerciseRequest(
             exercise.getId(), 3, 12, 8, null, null, null);
@@ -227,7 +207,7 @@ class PlaylistServiceTest {
     @Test
     @DisplayName("removeExercise deletes and reindexes the remaining items")
     void shouldRemoveExerciseAndReindex() {
-        Playlist playlist = playlist(playlistId, null);
+        Playlist playlist = playlist(playlistId);
         PlaylistExercise removed = item(UUID.randomUUID(), 1);
         PlaylistExercise first = item(UUID.randomUUID(), 0);
         PlaylistExercise last = item(UUID.randomUUID(), 2);
@@ -251,7 +231,7 @@ class PlaylistServiceTest {
     @Test
     @DisplayName("reorder applies every new index in one batch")
     void shouldReorderItems() {
-        Playlist playlist = playlist(playlistId, null);
+        Playlist playlist = playlist(playlistId);
         PlaylistExercise first = item(UUID.randomUUID(), 0);
         PlaylistExercise second = item(UUID.randomUUID(), 1);
         ReorderRequest request = new ReorderRequest(List.of(
@@ -265,7 +245,7 @@ class PlaylistServiceTest {
         when(items.findDetailByPlaylistId(playlistId)).thenReturn(List.of(first, second));
         when(mapper.toDto(any(PlaylistExercise.class))).thenReturn(itemDto(first.getId()));
         when(mapper.toDetail(eq(playlist), anyList())).thenReturn(
-            new PlaylistDetailDto(playlistId, "Push", null, null, List.of()));
+            new PlaylistDetailDto(playlistId, "Push", null, List.of()));
 
         service.reorder(playlistId, request);
 
@@ -277,7 +257,7 @@ class PlaylistServiceTest {
     @Test
     @DisplayName("reorder rejects a missing item")
     void shouldRejectIncompleteReorder() {
-        Playlist playlist = playlist(playlistId, null);
+        Playlist playlist = playlist(playlistId);
         PlaylistExercise first = item(UUID.randomUUID(), 0);
         PlaylistExercise second = item(UUID.randomUUID(), 1);
         ReorderRequest request = new ReorderRequest(List.of(
@@ -295,7 +275,7 @@ class PlaylistServiceTest {
     @Test
     @DisplayName("reorder rejects duplicated indices")
     void shouldRejectRepeatedOrderIndex() {
-        Playlist playlist = playlist(playlistId, null);
+        Playlist playlist = playlist(playlistId);
         PlaylistExercise first = item(UUID.randomUUID(), 0);
         PlaylistExercise second = item(UUID.randomUUID(), 1);
         ReorderRequest request = new ReorderRequest(List.of(
@@ -320,12 +300,11 @@ class PlaylistServiceTest {
         assertThrows(NotFoundException.class, () -> service.detail(playlistId));
     }
 
-    private Playlist playlist(UUID id, Instant archivedAt) {
+    private Playlist playlist(UUID id) {
         Playlist playlist = new Playlist();
         playlist.setId(id);
         playlist.setUserId(userId);
         playlist.setName("Push");
-        playlist.setArchivedAt(archivedAt);
         return playlist;
     }
 
@@ -347,15 +326,15 @@ class PlaylistServiceTest {
     }
 
     private PlaylistDto playlistDto() {
-        return new PlaylistDto(playlistId, "Push", null, null);
+        return new PlaylistDto(playlistId, "Push", null);
     }
 
     private PlaylistSummaryDto playlistSummary(UUID id, long exerciseCount, Instant lastPerformedAt) {
-        return new PlaylistSummaryDto(id, "Push", null, null, exerciseCount, lastPerformedAt, List.of());
+        return new PlaylistSummaryDto(id, "Push", null, exerciseCount, lastPerformedAt, List.of());
     }
 
     private PlaylistSummaryRow playlistRow(UUID id, long exerciseCount, Instant lastPerformedAt) {
-        return new PlaylistSummaryRow(id, "Push", null, null, exerciseCount, lastPerformedAt);
+        return new PlaylistSummaryRow(id, "Push", null, exerciseCount, lastPerformedAt);
     }
 
     private PlaylistExerciseDto itemDto(UUID id) {

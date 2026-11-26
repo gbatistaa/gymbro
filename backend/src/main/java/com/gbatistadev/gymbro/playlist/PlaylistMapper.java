@@ -25,7 +25,6 @@ public interface PlaylistMapper {
             playlist.getId(),
             playlist.getName(),
             playlist.getDescription(),
-            playlist.getArchivedAt(),
             exercises);
     }
 
@@ -33,21 +32,18 @@ public interface PlaylistMapper {
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "userId", ignore = true)
-    @Mapping(target = "archivedAt", ignore = true)
     Playlist toEntity(CreatePlaylistRequest request);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "userId", ignore = true)
-    @Mapping(target = "archivedAt", ignore = true)
     void updateEntity(UpdatePlaylistRequest request, @MappingTarget Playlist playlist);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "userId", ignore = true)
-    @Mapping(target = "archivedAt", ignore = true)
     Playlist toCopy(Playlist source);
 
     @Mapping(target = "id", ignore = true)

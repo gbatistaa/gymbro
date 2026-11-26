@@ -21,10 +21,8 @@ public class PlaylistController {
     private final ProgressionService progressionService;
 
     @GetMapping
-    public ResponseEntity<List<PlaylistSummaryDto>> list(
-        @RequestParam(defaultValue = "false") boolean includeArchived
-    ) {
-        return ResponseEntity.ok(service.list(includeArchived));
+    public ResponseEntity<List<PlaylistSummaryDto>> list() {
+        return ResponseEntity.ok(service.list());
     }
 
     @PostMapping
@@ -66,9 +64,10 @@ public class PlaylistController {
         return ResponseEntity.created(location).body(clone);
     }
 
-    @PostMapping("/{id}/archive")
-    public ResponseEntity<PlaylistDto> archive(@PathVariable UUID id) {
-        return ResponseEntity.ok(service.archive(id));
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
+        service.delete(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{id}/exercises")

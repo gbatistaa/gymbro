@@ -11,6 +11,7 @@ import {
   Trash2,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { z } from "zod";
 import { Badge } from "@/components/ui/badge";
@@ -111,7 +112,10 @@ export function PlaylistEditor({ playlistId }: { playlistId: string }) {
 
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [addingId, setAddingId] = useState<string | null>(null);
+  const router = useRouter();
   const [isLogging, setIsLogging] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeletingPlan, setIsDeletingPlan] = useState(false);
   const [editingItem, setEditingItem] = useState<PlaylistExercise | null>(null);
   const [removeTarget, setRemoveTarget] = useState<PlaylistExercise | null>(null);
   const [isRemoving, setIsRemoving] = useState(false);
@@ -190,6 +194,20 @@ export function PlaylistEditor({ playlistId }: { playlistId: string }) {
     }
   }
 
+  async function deletePlan() {
+    if (isDeletingPlan) return;
+
+    setIsDeletingPlan(true);
+    try {
+      await requestMaybe({ method: "DELETE", url: `/api/playlists/${playlistId}` }, z.unknown());
+      router.push("/treinar");
+    } catch (failure) {
+      setIsDeleting(false);
+      setActionError(describeApiError(failure));
+      setIsDeletingPlan(false);
+    }
+  }
+
   async function removeItem() {
     if (!removeTarget || isRemoving) return;
 
@@ -219,7 +237,7 @@ export function PlaylistEditor({ playlistId }: { playlistId: string }) {
       <div className={styles.editorScreen}>
         <Link className={styles.backLink} href="/treinar">
           <ArrowLeft size={16} aria-hidden="true" />
-          Voltar para rotinas
+          Voltar para fichas
         </Link>
         <Skeleton lines={4} label="Carregando rotina…" />
       </div>
@@ -231,7 +249,7 @@ export function PlaylistEditor({ playlistId }: { playlistId: string }) {
       <div className={styles.editorScreen}>
         <Link className={styles.backLink} href="/treinar">
           <ArrowLeft size={16} aria-hidden="true" />
-          Voltar para rotinas
+          Voltar para fichas
         </Link>
         <ErrorState
           message={error ?? "Não foi possível carregar a rotina."}
@@ -242,7 +260,6 @@ export function PlaylistEditor({ playlistId }: { playlistId: string }) {
   }
 
   const { playlist, targets, archivedExerciseIds } = data;
-  const isArchived = playlist.archivedAt != null;
   const items = pendingItems ?? playlist.exercises;
   const targetsByExercise = new Map(
     targets.map((target) => [target.exerciseId, target]),
@@ -252,27 +269,23 @@ export function PlaylistEditor({ playlistId }: { playlistId: string }) {
     <div className={styles.editorScreen}>
       <Link className={styles.backLink} href="/treinar">
         <ArrowLeft size={16} aria-hidden="true" />
-        Voltar para rotinas
+        Voltar para fichas
       </Link>
 
       <SurfaceCard className={styles.editorHeroCard}>
         <PlaylistHeader playlist={playlist} onSaved={reload} />
 
-        {isArchived ? null : (
-          <Button fullWidth onClick={() => setIsLogging(true)}>
-            <ClipboardCheck size={17} aria-hidden="true" />
-            Registrar treino
-          </Button>
-        )}
+        <Button fullWidth onClick={() => setIsLogging(true)}>
+          <ClipboardCheck size={17} aria-hidden="true" />
+          Registrar treino
+        </Button>
+        <Button fullWidth variant="ghost" onClick={() => setIsDeleting(true)}>
+          <Trash2 size={16} aria-hidden="true" />
+          Excluir ficha
+        </Button>
       </SurfaceCard>
 
       {successMessage ? <Notice tone="success">{successMessage}</Notice> : null}
-
-      {isArchived ? (
-        <Notice tone="info">
-          Esta rotina está arquivada e funciona apenas para consulta.
-        </Notice>
-      ) : null}
 
       {actionError ? <Notice tone="error">{actionError}</Notice> : null}
 
@@ -280,7 +293,7 @@ export function PlaylistEditor({ playlistId }: { playlistId: string }) {
         <div className={styles.itemsTitle}>
           <SectionLabel>Exercícios da ficha</SectionLabel>
         </div>
-        {isArchived || items.length === 0 ? null : (
+        {items.length === 0 ? null : (
           <Button size="sm" onClick={() => setIsPickerOpen(true)}>
             <Plus size={15} aria-hidden="true" />
             Adicionar
@@ -290,19 +303,13 @@ export function PlaylistEditor({ playlistId }: { playlistId: string }) {
 
       {items.length === 0 ? (
         <EmptyState
-          title="Rotina sem exercícios"
-          description={
-            isArchived
-              ? "Esta rotina arquivada não possui exercícios cadastrados."
-              : "Adicione o primeiro exercício para estruturar sua ficha de treino."
-          }
+          title="Ficha sem exercícios"
+          description="Adicione o primeiro exercício para estruturar sua ficha de treino."
           action={
-            isArchived ? undefined : (
-              <Button onClick={() => setIsPickerOpen(true)}>
-                <Plus size={16} aria-hidden="true" />
-                Adicionar exercício
-              </Button>
-            )
+            <Button onClick={() => setIsPickerOpen(true)}>
+              <Plus size={16} aria-hidden="true" />
+              Adicionar exercício
+            </Button>
           }
         />
       ) : (
@@ -334,45 +341,43 @@ export function PlaylistEditor({ playlistId }: { playlistId: string }) {
                       ) : null}
                     </div>
 
-                    {isArchived ? null : (
-                      <div className={styles.itemActions}>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          aria-label={`Mover ${item.exerciseName} para cima`}
-                          disabled={index === 0 || isReordering}
-                          onClick={() => moveItem(index, -1)}
-                        >
-                          <ChevronUp size={18} aria-hidden="true" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          aria-label={`Mover ${item.exerciseName} para baixo`}
-                          disabled={index === items.length - 1 || isReordering}
-                          onClick={() => moveItem(index, 1)}
-                        >
-                          <ChevronDown size={18} aria-hidden="true" />
-                        </Button>
-                        <Button
-                          variant="secondary"
-                          size="icon"
-                          aria-label={`Editar alvos de ${item.exerciseName}`}
-                          onClick={() => setEditingItem(item)}
-                        >
-                          <Pencil size={16} aria-hidden="true" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          aria-label={`Remover ${item.exerciseName}`}
-                          disabled={isReordering}
-                          onClick={() => setRemoveTarget(item)}
-                        >
-                          <Trash2 size={16} aria-hidden="true" />
-                        </Button>
-                      </div>
-                    )}
+                    <div className={styles.itemActions}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label={`Mover ${item.exerciseName} para cima`}
+                        disabled={index === 0 || isReordering}
+                        onClick={() => moveItem(index, -1)}
+                      >
+                        <ChevronUp size={18} aria-hidden="true" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label={`Mover ${item.exerciseName} para baixo`}
+                        disabled={index === items.length - 1 || isReordering}
+                        onClick={() => moveItem(index, 1)}
+                      >
+                        <ChevronDown size={18} aria-hidden="true" />
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        aria-label={`Editar alvos de ${item.exerciseName}`}
+                        onClick={() => setEditingItem(item)}
+                      >
+                        <Pencil size={16} aria-hidden="true" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label={`Remover ${item.exerciseName}`}
+                        disabled={isReordering}
+                        onClick={() => setRemoveTarget(item)}
+                      >
+                        <Trash2 size={16} aria-hidden="true" />
+                      </Button>
+                    </div>
                   </div>
 
                   <div className={styles.itemMetricsGrid}>
@@ -426,7 +431,7 @@ export function PlaylistEditor({ playlistId }: { playlistId: string }) {
         </ul>
       )}
 
-      {!isArchived && isPickerOpen ? (
+      {isPickerOpen ? (
         <Modal
           title="Adicionar exercício"
           description="Busque na biblioteca ou crie um novo exercício com seu músculo-alvo."
@@ -471,10 +476,21 @@ export function PlaylistEditor({ playlistId }: { playlistId: string }) {
         />
       ) : null}
 
+      {isDeleting ? (
+        <ConfirmDialog
+          title="Excluir esta ficha?"
+          description={`"${playlist.name}" será excluída em definitivo. Os treinos que você já registrou continuam no seu histórico e no Progresso.`}
+          confirmLabel="Excluir"
+          isConfirming={isDeletingPlan}
+          onConfirm={deletePlan}
+          onCancel={() => setIsDeleting(false)}
+        />
+      ) : null}
+
       {removeTarget ? (
         <ConfirmDialog
           title="Remover exercício?"
-          description={`"${removeTarget.exerciseName}" será removido desta rotina.`}
+          description={`"${removeTarget.exerciseName}" será removido desta ficha.`}
           confirmLabel="Remover"
           isConfirming={isRemoving}
           onConfirm={removeItem}

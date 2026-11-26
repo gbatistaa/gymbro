@@ -13,21 +13,18 @@ public interface PlaylistRepository extends JpaRepository<Playlist, UUID>, JpaSp
 
     Optional<Playlist> findByIdAndUserId(UUID id, UUID userId);
 
-    List<Playlist> findByUserIdAndArchivedAtIsNullOrderByName(UUID userId);
+    List<Playlist> findByUserIdOrderByName(UUID userId);
 
     @Query("""
         SELECT new com.gbatistadev.gymbro.playlist.PlaylistSummaryRow(
-            p.id, p.name, p.description, p.archivedAt,
+            p.id, p.name, p.description,
             COUNT(DISTINCT item.id), MAX(completion.completedAt))
         FROM Playlist p
         LEFT JOIN PlaylistExercise item ON item.playlist = p
         LEFT JOIN WorkoutCompletion completion ON completion.playlist = p
         WHERE p.userId = :userId
-          AND (:includeArchived = true OR p.archivedAt IS NULL)
-        GROUP BY p.id, p.name, p.description, p.archivedAt
+        GROUP BY p.id, p.name, p.description
         ORDER BY p.name
         """)
-    List<PlaylistSummaryRow> findSummariesByUserId(
-        @Param("userId") UUID userId,
-        @Param("includeArchived") boolean includeArchived);
+    List<PlaylistSummaryRow> findSummariesByUserId(@Param("userId") UUID userId);
 }

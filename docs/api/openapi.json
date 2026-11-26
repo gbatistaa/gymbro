@@ -143,6 +143,24 @@
             }
           }
         }
+      },
+      "delete" : {
+        "tags" : [ "playlist-controller" ],
+        "operationId" : "delete_1",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
       }
     },
     "/api/playlists/{id}/order" : {
@@ -357,15 +375,6 @@
       "get" : {
         "tags" : [ "playlist-controller" ],
         "operationId" : "list_1",
-        "parameters" : [ {
-          "name" : "includeArchived",
-          "in" : "query",
-          "required" : false,
-          "schema" : {
-            "type" : "boolean",
-            "default" : false
-          }
-        } ],
         "responses" : {
           "200" : {
             "description" : "OK",
@@ -486,33 +495,6 @@
       "post" : {
         "tags" : [ "playlist-controller" ],
         "operationId" : "clone",
-        "parameters" : [ {
-          "name" : "id",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "string",
-            "format" : "uuid"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "*/*" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/PlaylistDto"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/playlists/{id}/archive" : {
-      "post" : {
-        "tags" : [ "playlist-controller" ],
-        "operationId" : "archive_1",
         "parameters" : [ {
           "name" : "id",
           "in" : "path",
@@ -1021,7 +1003,7 @@
     "/api/bioimpedance/{id}" : {
       "delete" : {
         "tags" : [ "bioimpedance-controller" ],
-        "operationId" : "delete_1",
+        "operationId" : "delete_2",
         "parameters" : [ {
           "name" : "id",
           "in" : "path",
@@ -1460,7 +1442,7 @@
     "/api/completions/{id}" : {
       "delete" : {
         "tags" : [ "completion-controller" ],
-        "operationId" : "delete_2",
+        "operationId" : "delete_3",
         "parameters" : [ {
           "name" : "id",
           "in" : "path",
@@ -1568,10 +1550,6 @@
           },
           "description" : {
             "type" : "string"
-          },
-          "archivedAt" : {
-            "type" : "string",
-            "format" : "date-time"
           }
         }
       },
@@ -1615,10 +1593,6 @@
           },
           "description" : {
             "type" : "string"
-          },
-          "archivedAt" : {
-            "type" : "string",
-            "format" : "date-time"
           },
           "exercises" : {
             "type" : "array",
@@ -2196,10 +2170,6 @@
           "container" : {
             "type" : "boolean"
           },
-          "nodeType" : {
-            "type" : "string",
-            "enum" : [ "ARRAY", "BINARY", "BOOLEAN", "MISSING", "NULL", "NUMBER", "OBJECT", "POJO", "STRING" ]
-          },
           "string" : {
             "type" : "boolean"
           },
@@ -2251,6 +2221,10 @@
           },
           "binary" : {
             "type" : "boolean"
+          },
+          "nodeType" : {
+            "type" : "string",
+            "enum" : [ "ARRAY", "BINARY", "BOOLEAN", "MISSING", "NULL", "NUMBER", "OBJECT", "POJO", "STRING" ]
           },
           "embeddedValue" : {
             "type" : "boolean"
@@ -2586,10 +2560,6 @@
           },
           "description" : {
             "type" : "string"
-          },
-          "archivedAt" : {
-            "type" : "string",
-            "format" : "date-time"
           },
           "exerciseCount" : {
             "type" : "integer",

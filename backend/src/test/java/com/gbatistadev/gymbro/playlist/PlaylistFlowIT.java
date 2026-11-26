@@ -46,7 +46,7 @@ class PlaylistFlowIT {
     private ExerciseRepository exerciseRepository;
 
     @Test
-    @DisplayName("create, add, reorder, update, clone and archive a routine")
+    @DisplayName("create, add, reorder, update, clone and delete a routine")
     void shouldRunRoutineLifecycle() throws Exception {
         String auth = bearer(createUser());
         Exercise supino = createExercise("Supino");
@@ -103,28 +103,16 @@ class PlaylistFlowIT {
             .andExpect(jsonPath("$.name").value("Push (cópia)"))
             .andExpect(jsonPath("$.exercises.length()").value(3));
 
-        mockMvc.perform(post("/api/playlists/{id}/archive", playlistId).header(HttpHeaders.AUTHORIZATION, auth))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.archivedAt").exists());
+        mockMvc.perform(delete("/api/playlists/{id}", playlistId).header(HttpHeaders.AUTHORIZATION, auth))
+            .andExpect(status().isNoContent());
 
-        mockMvc.perform(post("/api/playlists/{id}/exercises", playlistId)
-                .header(HttpHeaders.AUTHORIZATION, auth)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                    {"exerciseId":"%s","targetSets":3}
-                    """.formatted(supino.getId())))
-            .andExpect(status().isConflict());
+        mockMvc.perform(get("/api/playlists/{id}", playlistId).header(HttpHeaders.AUTHORIZATION, auth))
+            .andExpect(status().isNotFound());
 
         mockMvc.perform(get("/api/playlists").header(HttpHeaders.AUTHORIZATION, auth))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$[*].id", not(hasItem(playlistId))))
             .andExpect(jsonPath("$[*].id", hasItem(cloneId)));
-
-        mockMvc.perform(get("/api/playlists")
-                .param("includeArchived", "true")
-                .header(HttpHeaders.AUTHORIZATION, auth))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$[*].id", hasItem(playlistId)));
     }
 
     @Test

@@ -18,7 +18,7 @@ type PlanCardProps = {
   timezone: string;
   onLog: (plan: PlaylistSummary) => void;
   onDuplicate: (plan: PlaylistSummary) => void;
-  onArchive: (plan: PlaylistSummary) => void;
+  onDelete: (plan: PlaylistSummary) => void;
 };
 
 function totalSets(plan: PlaylistSummary): number {
@@ -39,8 +39,7 @@ function muscleSummary(plan: PlaylistSummary): string | null {
     : muscles.join(", ");
 }
 
-export function PlanCard({ plan, timezone, onLog, onDuplicate, onArchive }: PlanCardProps) {
-  const isArchived = plan.archivedAt != null;
+export function PlanCard({ plan, timezone, onLog, onDuplicate, onDelete }: PlanCardProps) {
   const preview = plan.exercises.slice(0, PREVIEW_LIMIT);
   const hidden = plan.exercises.length - preview.length;
   const muscles = muscleSummary(plan);
@@ -50,12 +49,11 @@ export function PlanCard({ plan, timezone, onLog, onDuplicate, onArchive }: Plan
       <div className={styles.routineTopRow}>
         <div className={styles.routineHeaderLeft}>
           <div className={styles.routineBadgeRow}>
-            <Badge tone={isArchived ? "neutral" : "primary"}>
+            <Badge tone="primary">
               <Dumbbell size={12} aria-hidden="true" />
               {formatCount(plan.exerciseCount)}{" "}
               {plan.exerciseCount === 1 ? "exercício" : "exercícios"}
             </Badge>
-            {isArchived ? <Badge>Arquivada</Badge> : null}
             <p className={`${styles.lastPerformed} tabular-nums`}>
               {plan.lastPerformedAt
                 ? `Último: ${formatRelative(plan.lastPerformedAt, timezone)}`
@@ -77,9 +75,8 @@ export function PlanCard({ plan, timezone, onLog, onDuplicate, onArchive }: Plan
 
         <PlanMenu
           planName={plan.name}
-          isArchived={isArchived}
           onDuplicate={() => onDuplicate(plan)}
-          onArchive={() => onArchive(plan)}
+          onDelete={() => onDelete(plan)}
         />
       </div>
 
@@ -117,21 +114,10 @@ export function PlanCard({ plan, timezone, onLog, onDuplicate, onArchive }: Plan
           ) : null}
         </ul>
       ) : (
-        <p className={styles.emptyHint}>Nenhum exercício adicionado a esta rotina ainda.</p>
+        <p className={styles.emptyHint}>Nenhum exercício adicionado a esta ficha ainda.</p>
       )}
 
-      {isArchived ? (
-        <div className={styles.routineActionsArchived}>
-          <Link
-            href={`/train/playlists/${plan.id}`}
-            className={styles.editRoutineButtonFull}
-          >
-            <SquarePen size={16} strokeWidth={1.75} aria-hidden="true" />
-            <span>Ver ficha completa</span>
-          </Link>
-        </div>
-      ) : (
-        <div className={styles.routineActionsRow}>
+      <div className={styles.routineActionsRow}>
           <PrimaryButton
             fullWidth
             icon={<ClipboardCheck size={16} strokeWidth={2} />}
@@ -147,20 +133,18 @@ export function PlanCard({ plan, timezone, onLog, onDuplicate, onArchive }: Plan
           >
             <SquarePen size={17} strokeWidth={1.75} aria-hidden="true" />
           </Link>
-        </div>
-      )}
+      </div>
     </SurfaceCard>
   );
 }
 
 type PlanMenuProps = {
   planName: string;
-  isArchived: boolean;
   onDuplicate: () => void;
-  onArchive: () => void;
+  onDelete: () => void;
 };
 
-function PlanMenu({ planName, isArchived, onDuplicate, onArchive }: PlanMenuProps) {
+function PlanMenu({ planName, onDuplicate, onDelete }: PlanMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -210,18 +194,16 @@ function PlanMenu({ planName, isArchived, onDuplicate, onArchive }: PlanMenuProp
             className={styles.menuItem}
             onClick={() => choose(onDuplicate)}
           >
-            Duplicar rotina
+            Duplicar ficha
           </button>
-          {isArchived ? null : (
-            <button
-              type="button"
-              role="menuitem"
-              className={`${styles.menuItem} ${styles.menuItemDanger}`}
-              onClick={() => choose(onArchive)}
-            >
-              Arquivar rotina
-            </button>
-          )}
+          <button
+            type="button"
+            role="menuitem"
+            className={`${styles.menuItem} ${styles.menuItemDanger}`}
+            onClick={() => choose(onDelete)}
+          >
+            Excluir ficha
+          </button>
         </div>
       ) : null}
     </div>

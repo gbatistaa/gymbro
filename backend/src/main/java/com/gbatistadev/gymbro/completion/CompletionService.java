@@ -5,7 +5,6 @@ import com.gbatistadev.gymbro.completion.dto.CompleteWorkoutRequest;
 import com.gbatistadev.gymbro.completion.dto.CompletionDto;
 import com.gbatistadev.gymbro.completion.dto.CompletionSummaryDto;
 import com.gbatistadev.gymbro.completion.dto.LoggedExerciseRequest;
-import com.gbatistadev.gymbro.errors.exceptions.ConflictException;
 import com.gbatistadev.gymbro.errors.exceptions.NotFoundException;
 import com.gbatistadev.gymbro.exercise.Exercise;
 import com.gbatistadev.gymbro.exercise.ExerciseRepository;
@@ -57,10 +56,6 @@ public class CompletionService {
         UUID userId = currentUser.id();
         Playlist playlist = playlists.findByIdAndUserId(playlistId, userId)
             .orElseThrow(() -> new NotFoundException("Playlist not found: " + playlistId));
-
-        if (playlist.getArchivedAt() != null) {
-            throw new ConflictException("PLAYLIST_ARCHIVED", "Archived plans cannot be marked as done");
-        }
 
         Instant now = clock.instant();
         WorkoutSession session = sessions.save(finishedSession(userId, playlist, now));

@@ -174,18 +174,29 @@ class CompletionFlowIT {
     }
 
     @Test
-    @DisplayName("refuses to complete an archived routine with a domain error code")
-    void shouldRejectArchivedRoutine() throws Exception {
+    @DisplayName("deletes a routine and its done markers, keeping the logged workout history")
+    void shouldDeleteRoutineKeepingHistory() throws Exception {
         String auth = bearer(createUser());
-        String playlistId = createPlaylist(auth, "Antiga");
-
-        mockMvc.perform(post("/api/playlists/{id}/archive", playlistId).header(HttpHeaders.AUTHORIZATION, auth))
-            .andExpect(status().isOk());
+        Exercise bench = createExercise("Bench");
+        String playlistId = createPlaylist(auth, "Doomed");
 
         mockMvc.perform(post("/api/playlists/{id}/completions", playlistId)
-                .header(HttpHeaders.AUTHORIZATION, auth))
-            .andExpect(status().isConflict())
-            .andExpect(jsonPath("$.code").value("PLAYLIST_ARCHIVED"));
+                .header(HttpHeaders.AUTHORIZATION, auth)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"exercises":[{"exerciseId":"%s","sets":2,"reps":5,"weightKg":50}]}
+                    """.formatted(bench.getId())))
+            .andExpect(status().isCreated());
+
+        mockMvc.perform(delete("/api/playlists/{id}", playlistId).header(HttpHeaders.AUTHORIZATION, auth))
+            .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/api/playlists/{id}", playlistId).header(HttpHeaders.AUTHORIZATION, auth))
+            .andExpect(status().isNotFound());
+        mockMvc.perform(get("/api/completions").header(HttpHeaders.AUTHORIZATION, auth))
+            .andExpect(jsonPath("$.length()").value(0));
+        mockMvc.perform(get("/api/dashboard").param("weeks", "1").header(HttpHeaders.AUTHORIZATION, auth))
+            .andExpect(jsonPath("$.weeks[0].volume").value(500.0));
     }
 
     private String completeRoutine(String auth, String playlistId) throws Exception {

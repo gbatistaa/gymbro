@@ -27,7 +27,6 @@ export function PlaylistHeader({ playlist, onSaved }: PlaylistHeaderProps) {
   const [formError, setFormError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  const isArchived = playlist.archivedAt != null;
   const count = playlist.exercises.length;
 
   function openEditor() {
@@ -90,20 +89,17 @@ export function PlaylistHeader({ playlist, onSaved }: PlaylistHeaderProps) {
       <div className={styles.headerTop}>
         <div className={styles.headerMain}>
           <div className={styles.headerBadges}>
-            <Badge tone={isArchived ? "neutral" : "primary"}>
+            <Badge tone="primary">
               {formatCount(count)} {count === 1 ? "exercício" : "exercícios"}
             </Badge>
-            {isArchived ? <Badge tone="neutral">Arquivada</Badge> : null}
           </div>
           <h1 className={styles.headerName}>{playlist.name}</h1>
         </div>
 
-        {isArchived ? null : (
-          <Button variant="secondary" size="sm" onClick={openEditor}>
-            <Pencil size={14} aria-hidden="true" />
-            Editar
-          </Button>
-        )}
+        <Button variant="secondary" size="sm" onClick={openEditor}>
+          <Pencil size={14} aria-hidden="true" />
+          Editar
+        </Button>
       </div>
 
       {playlist.description ? (
@@ -112,8 +108,8 @@ export function PlaylistHeader({ playlist, onSaved }: PlaylistHeaderProps) {
 
       {isEditing ? (
         <Modal
-          title="Editar rotina"
-          description="Altere o nome ou a descrição desta rotina de treino."
+          title="Editar ficha"
+          description="Altere o nome ou a descrição desta ficha de treino."
           onClose={() => setIsEditing(false)}
           footer={
             <>

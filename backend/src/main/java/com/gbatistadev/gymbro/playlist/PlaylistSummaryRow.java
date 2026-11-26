@@ -8,7 +8,6 @@ public record PlaylistSummaryRow(
     UUID id,
     String name,
     String description,
-    Instant archivedAt,
     long exerciseCount,
     Instant lastPerformedAt
 ) {}

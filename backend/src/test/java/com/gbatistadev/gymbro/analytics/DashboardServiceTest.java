@@ -71,7 +71,7 @@ class DashboardServiceTest {
         when(logs.findRecentPrs(eq(userId), any(), any(), any())).thenReturn(List.of());
         when(bioimpedance.findByUserIdAndDeletedAtIsNullAndMeasuredAtBetweenOrderByMeasuredAtAsc(
             eq(userId), any(), any())).thenReturn(List.of());
-        when(playlists.findByUserIdAndArchivedAtIsNullOrderByName(userId)).thenReturn(List.of());
+        when(playlists.findByUserIdOrderByName(userId)).thenReturn(List.of());
 
         DashboardDto dashboard = service.dashboard(4);
 
@@ -102,7 +102,7 @@ class DashboardServiceTest {
         when(logs.findRecentPrs(eq(userId), any(), any(), any())).thenReturn(List.of());
         when(bioimpedance.findByUserIdAndDeletedAtIsNullAndMeasuredAtBetweenOrderByMeasuredAtAsc(
             eq(userId), any(), any())).thenReturn(List.of());
-        when(playlists.findByUserIdAndArchivedAtIsNullOrderByName(userId)).thenReturn(List.of());
+        when(playlists.findByUserIdOrderByName(userId)).thenReturn(List.of());
 
         DashboardDto dashboard = service.dashboard(4);
 
@@ -133,7 +133,7 @@ class DashboardServiceTest {
         assertEquals(-2.0, dashboard.weightDeltaKg());
         assertEquals(playlist.getId(), dashboard.nextPlaylistId());
         assertEquals("Push", dashboard.nextPlaylistName());
-        verify(playlists, never()).findByUserIdAndArchivedAtIsNullOrderByName(any());
+        verify(playlists, never()).findByUserIdOrderByName(any());
     }
 
     @Test
@@ -151,7 +151,7 @@ class DashboardServiceTest {
         when(logs.findRecentPrs(eq(userId), any(), any(), any())).thenReturn(List.of());
         when(bioimpedance.findByUserIdAndDeletedAtIsNullAndMeasuredAtBetweenOrderByMeasuredAtAsc(
             eq(userId), any(), any())).thenReturn(List.of());
-        when(playlists.findByUserIdAndArchivedAtIsNullOrderByName(userId)).thenReturn(List.of());
+        when(playlists.findByUserIdOrderByName(userId)).thenReturn(List.of());
 
         DashboardDto dashboard = service.dashboard(2);
 

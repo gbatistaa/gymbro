@@ -12,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -26,8 +25,8 @@ public class PlaylistService {
     private final CurrentUser currentUser;
 
     @Transactional(readOnly = true)
-    public List<PlaylistSummaryDto> list(boolean includeArchived) {
-        List<PlaylistSummaryRow> rows = playlists.findSummariesByUserId(currentUser.id(), includeArchived);
+    public List<PlaylistSummaryDto> list() {
+        List<PlaylistSummaryRow> rows = playlists.findSummariesByUserId(currentUser.id());
         if (rows.isEmpty()) {
             return List.of();
         }
@@ -44,7 +43,6 @@ public class PlaylistService {
                 row.id(),
                 row.name(),
                 row.description(),
-                row.archivedAt(),
                 row.exerciseCount(),
                 row.lastPerformedAt(),
                 itemsByPlaylist.getOrDefault(row.id(), List.of())))
@@ -72,14 +70,14 @@ public class PlaylistService {
 
     @Transactional
     public PlaylistDto update(UUID id, UpdatePlaylistRequest request) {
-        Playlist playlist = loadActive(id);
+        Playlist playlist = load(id);
         mapper.updateEntity(request, playlist);
         return mapper.toDto(playlists.save(playlist));
     }
 
     @Transactional
     public PlaylistDto clone(UUID id) {
-        Playlist source = loadActive(id);
+        Playlist source = load(id);
         Playlist copy = mapper.toCopy(source);
 
         copy.setName(source.getName() + " (cópia)");
@@ -97,18 +95,13 @@ public class PlaylistService {
     }
 
     @Transactional
-    public PlaylistDto archive(UUID id) {
-        Playlist playlist = load(id);
-        if (playlist.getArchivedAt() == null) {
-            playlist.setArchivedAt(Instant.now());
-            playlists.save(playlist);
-        }
-        return mapper.toDto(playlist);
+    public void delete(UUID id) {
+        playlists.delete(load(id));
     }
 
     @Transactional
     public PlaylistExerciseDto addExercise(UUID id, AddPlaylistExerciseRequest request) {
-        return mapper.toDto(appendExercise(loadActive(id), request));
+        return mapper.toDto(appendExercise(load(id), request));
     }
 
 
@@ -133,7 +126,7 @@ public class PlaylistService {
     public PlaylistExerciseDto updateExercise(
         UUID id, UUID itemId, UpdatePlaylistExerciseRequest request
     ) {
-        loadActive(id);
+        load(id);
         PlaylistExercise item = items.findByIdAndPlaylistId(itemId, id)
             .orElseThrow(() -> new NotFoundException("Playlist exercise not found: " + itemId));
 
@@ -147,7 +140,7 @@ public class PlaylistService {
 
     @Transactional
     public void removeExercise(UUID id, UUID itemId) {
-        loadActive(id);
+        load(id);
         PlaylistExercise item = items.findByIdAndPlaylistId(itemId, id)
             .orElseThrow(() -> new NotFoundException("Playlist exercise not found: " + itemId));
 
@@ -158,7 +151,7 @@ public class PlaylistService {
 
     @Transactional
     public PlaylistDetailDto reorder(UUID id, ReorderRequest request) {
-        Playlist playlist = loadActive(id);
+        Playlist playlist = load(id);
         List<PlaylistExercise> current = items.findByPlaylistIdOrderByOrderIndexAsc(id);
 
         Map<UUID, PlaylistExercise> byId = current.stream()
@@ -212,11 +205,4 @@ public class PlaylistService {
             .orElseThrow(() -> new NotFoundException("Playlist not found: " + id));
     }
 
-    private Playlist loadActive(UUID id) {
-        Playlist playlist = load(id);
-        if (playlist.getArchivedAt() != null) {
-            throw new ConflictException("Playlist is archived");
-        }
-        return playlist;
-    }
 }

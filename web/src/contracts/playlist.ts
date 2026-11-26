@@ -5,7 +5,6 @@ export const playlistSchema = z.object({
   id: z.uuid(),
   name: z.string(),
   description: z.string().nullish(),
-  archivedAt: isoDateTime.nullish(),
 });
 
 export const playlistExerciseSchema = z.object({

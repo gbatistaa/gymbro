@@ -9,7 +9,6 @@ public record PlaylistSummaryDto(
     UUID id,
     String name,
     String description,
-    Instant archivedAt,
     long exerciseCount,
     Instant lastPerformedAt,
     List<PlaylistExerciseDto> exercises

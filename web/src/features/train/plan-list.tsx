@@ -13,15 +13,14 @@ import type { Completion } from "@/contracts/completion";
 import { playlistSchema, playlistSummarySchema, type PlaylistSummary } from "@/contracts/playlist";
 import { describeApiError } from "@/lib/api-error-text";
 import { formatCount, formatVolume } from "@/lib/format";
-import { request } from "@/lib/http";
+import { z } from "zod";
+import { request, requestMaybe } from "@/lib/http";
 import { useResource } from "@/lib/use-resource";
 import { sessionAtom } from "@/stores/session";
 import { CreatePlanModal } from "./create-plan-modal";
 import { LogWorkoutModal } from "./log-workout-modal";
 import { PlanCard } from "./plan-card";
 import styles from "./plans.module.css";
-
-type Filter = "active" | "archived";
 
 function loggedMessage(completion: Completion): string {
   if (completion.loggedSets === 0) {
@@ -34,24 +33,18 @@ export function PlanList() {
   const user = useAtomValue(sessionAtom)?.user;
   const timezone = user?.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-  const [filter, setFilter] = useState<Filter>("active");
   const [isCreating, setIsCreating] = useState(false);
   const [logTarget, setLogTarget] = useState<PlaylistSummary | null>(null);
-  const [archiveTarget, setArchiveTarget] = useState<PlaylistSummary | null>(null);
-  const [isArchiving, setIsArchiving] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<PlaylistSummary | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
 
-  const { data, error, isLoading, reload } = useResource(`plans:${filter}`, () =>
-    request(
-      { url: "/api/playlists", params: { includeArchived: filter === "archived" } },
-      playlistSummarySchema.array(),
-    ),
+  const { data, error, isLoading, reload } = useResource("plans", () =>
+    request({ url: "/api/playlists" }, playlistSummarySchema.array()),
   );
 
-  const plans = (data ?? []).filter((plan) =>
-    filter === "archived" ? plan.archivedAt != null : plan.archivedAt == null,
-  );
+  const plans = data ?? [];
 
   function showSuccess(message: string) {
     setActionError(null);
@@ -68,23 +61,20 @@ export function PlanList() {
     }
   }
 
-  async function archivePlan() {
-    if (!archiveTarget || isArchiving) return;
+  async function deletePlan() {
+    if (!deleteTarget || isDeleting) return;
 
-    setIsArchiving(true);
+    setIsDeleting(true);
     try {
-      await request(
-        { method: "POST", url: `/api/playlists/${archiveTarget.id}/archive` },
-        playlistSchema,
-      );
-      showSuccess(`"${archiveTarget.name}" arquivada.`);
-      setArchiveTarget(null);
+      await requestMaybe({ method: "DELETE", url: `/api/playlists/${deleteTarget.id}` }, z.unknown());
+      showSuccess(`"${deleteTarget.name}" excluída.`);
+      setDeleteTarget(null);
       reload();
     } catch (failure) {
-      setArchiveTarget(null);
+      setDeleteTarget(null);
       setActionError(describeApiError(failure));
     } finally {
-      setIsArchiving(false);
+      setIsDeleting(false);
     }
   }
 
@@ -98,72 +88,35 @@ export function PlanList() {
     <div className={styles.screen}>
       <div className={styles.topRow}>
         <div className={styles.titleGroup}>
-          <span className={styles.pageKicker}>Planos de treino</span>
+          <span className={styles.pageKicker}>Fichas de treino</span>
           <h1 className={styles.screenTitle}>Treinar</h1>
           <p className={`${styles.screenSubtitle} tabular-nums`}>
             {data
-              ? `${formatCount(plans.length)} ${
-                  filter === "active"
-                    ? plans.length === 1
-                      ? "rotina ativa"
-                      : "rotinas ativas"
-                    : plans.length === 1
-                      ? "rotina arquivada"
-                      : "rotinas arquivadas"
-                }`
+              ? `${formatCount(plans.length)} ${plans.length === 1 ? "ficha de treino" : "fichas de treino"}`
               : "Suas fichas de treino"}
           </p>
         </div>
 
         <PrimaryButton icon={<Plus size={16} strokeWidth={2} />} onClick={() => setIsCreating(true)}>
-          Nova rotina
+          Nova ficha
         </PrimaryButton>
-      </div>
-
-      <div
-        className={styles.segmentedControl}
-        role="group"
-        aria-label="Filtrar rotinas"
-      >
-        {(["active", "archived"] as const).map((option) => (
-          <button
-            key={option}
-            type="button"
-            aria-pressed={filter === option}
-            onClick={() => setFilter(option)}
-            className={[
-              styles.segmentButton,
-              filter === option ? styles.segmentButtonActive : null,
-            ]
-              .filter(Boolean)
-              .join(" ")}
-          >
-            {option === "active" ? "Rotinas ativas" : "Arquivadas"}
-          </button>
-        ))}
       </div>
 
       {successMessage ? <Notice tone="success">{successMessage}</Notice> : null}
       {actionError ? <Notice tone="error">{actionError}</Notice> : null}
 
       {isLoading ? (
-        <Skeleton lines={4} label="Carregando rotinas…" />
+        <Skeleton lines={4} label="Carregando fichas…" />
       ) : error || !data ? (
-        <ErrorState message={error ?? "Não foi possível carregar suas rotinas."} onRetry={reload} />
+        <ErrorState message={error ?? "Não foi possível carregar suas fichas."} onRetry={reload} />
       ) : plans.length === 0 ? (
         <EmptyState
-          title={filter === "archived" ? "Nenhuma rotina arquivada" : "Nenhuma rotina criada ainda"}
-          description={
-            filter === "archived"
-              ? "As rotinas que você arquivar aparecem aqui."
-              : "Crie uma rotina com seus exercícios, cargas, séries e repetições."
-          }
+          title="Nenhuma ficha de treino ainda"
+          description="Crie uma ficha com seus exercícios, cargas, séries e repetições."
           action={
-            filter === "active" ? (
-              <PrimaryButton icon={<Plus size={16} strokeWidth={2} />} onClick={() => setIsCreating(true)}>
-                Criar primeira rotina
-              </PrimaryButton>
-            ) : undefined
+            <PrimaryButton icon={<Plus size={16} strokeWidth={2} />} onClick={() => setIsCreating(true)}>
+              Criar primeira ficha
+            </PrimaryButton>
           }
         />
       ) : (
@@ -175,7 +128,7 @@ export function PlanList() {
                 timezone={timezone}
                 onLog={setLogTarget}
                 onDuplicate={duplicatePlan}
-                onArchive={setArchiveTarget}
+                onDelete={setDeleteTarget}
               />
             </li>
           ))}
@@ -186,8 +139,7 @@ export function PlanList() {
         <CreatePlanModal
           onCreated={() => {
             setIsCreating(false);
-            setFilter("active");
-            showSuccess("Rotina de treino criada.");
+            showSuccess("Ficha de treino criada.");
             reload();
           }}
           onClose={() => setIsCreating(false)}
@@ -203,14 +155,14 @@ export function PlanList() {
         />
       ) : null}
 
-      {archiveTarget ? (
+      {deleteTarget ? (
         <ConfirmDialog
-          title="Arquivar esta rotina?"
-          description={`"${archiveTarget.name}" sairá da sua lista ativa. Você poderá consultá-la na aba Arquivadas.`}
-          confirmLabel="Arquivar"
-          isConfirming={isArchiving}
-          onConfirm={archivePlan}
-          onCancel={() => setArchiveTarget(null)}
+          title="Excluir esta ficha?"
+          description={`"${deleteTarget.name}" será excluída em definitivo. Os treinos que você já registrou continuam no seu histórico e no Progresso.`}
+          confirmLabel="Excluir"
+          isConfirming={isDeleting}
+          onConfirm={deletePlan}
+          onCancel={() => setDeleteTarget(null)}
         />
       ) : null}
     </div>
