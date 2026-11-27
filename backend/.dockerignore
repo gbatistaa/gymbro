@@ -1,0 +1,10 @@
+# o contexto do build só precisa de pom.xml, .mvn/, mvnw e src/main
+target/
+.env
+.env.*
+*.log
+.idea/
+.vscode/
+src/test/
+tasks/
+db/

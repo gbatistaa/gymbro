@@ -1,0 +1,70 @@
+# Stack do Gymbro nesta máquina: API Java + motor Python e, com o perfil "tunnel", o Cloudflare Tunnel
+# que dá URL pública aos dois. Quem liga e desliga por horário é o ops/scheduler.sh.
+#
+# Variáveis: .env na raiz (modelo em .env.example) + backend/.env (banco, R2).
+#   docker compose build            constrói as imagens
+#   docker compose up -d            sobe (o túnel só com COMPOSE_PROFILES=tunnel no .env)
+#   docker compose stop             derruba sem apagar nada
+name: gymbro
+
+services:
+  backend:
+    build:
+      context: ./backend
+    image: gymbro-backend:local
+    env_file:
+      - path: ./backend/.env
+        required: true
+    environment:
+      # o Java chama o Python pela rede interna do Compose, pelo nome do serviço
+      BIOIMPEDANCE_PARSER_URL: http://parser:8000
+      BIOIMPEDANCE_PARSER_TOKEN: ${PARSER_TOKEN:?defina PARSER_TOKEN no .env da raiz}
+      # sem isto o Spring usaria o segredo padrão que está versionado no application.yaml
+      JWT_SECRET: ${JWT_SECRET:?defina JWT_SECRET no .env da raiz}
+      # exposto na internet: cookie só em HTTPS e Swagger fechado
+      AUTH_COOKIE_SECURE: "true"
+      OPENAPI_PUBLIC: "false"
+      # fallback do banco: o Postgres do host ("localhost" aqui dentro seria o próprio contêiner)
+      LOCAL_DB_URL: jdbc:postgresql://host.docker.internal:5432/gymbro
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    ports:
+      # só para teste local; o túnel entra pela rede interna, sem porta publicada
+      - 127.0.0.1:${BACKEND_HOST_PORT:-18080}:8080
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+
+  parser:
+    build:
+      context: ./doc-process
+    image: gymbro-parser:local
+    environment:
+      PARSER_TOKEN: ${PARSER_TOKEN:?defina PARSER_TOKEN no .env da raiz}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:?defina OPENROUTER_API_KEY no .env da raiz}
+      # URL pública: sem /docs nem /openapi.json
+      PARSER_DOCS_ENABLED: "false"
+    ports:
+      - 127.0.0.1:${PARSER_HOST_PORT:-18000}:8000
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 4g
+
+  tunnel:
+    image: cloudflare/cloudflared:2026.10.7
+    profiles: [tunnel]
+    # túnel gerenciado pelo painel da Cloudflare: os hostnames públicos apontam para
+    # http://backend:8080 e http://parser:8000 (nomes desta rede)
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:-}
+    depends_on:
+      backend:
+        condition: service_healthy
+      parser:
+        condition: service_healthy
+    restart: unless-stopped

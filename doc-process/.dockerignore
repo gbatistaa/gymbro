@@ -1,0 +1,10 @@
+# a imagem leva só o código do serviço e o requirements.txt
+.venv/
+__pycache__/
+.pytest_cache/
+.env
+.env.*
+*.pdf
+*.md
+test_app.py
+requests.http

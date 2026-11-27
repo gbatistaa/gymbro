@@ -108,3 +108,47 @@ def test_normalize_numbers_written_as_text():
     assert result["visceralFat"] == 8.0
     assert result["waterPercentage"] is None
     assert "waterPercentage" in result["missingFields"]
+
+
+def test_health_is_public_and_light(monkeypatch):
+    monkeypatch.setenv("PARSER_TOKEN", "secret")
+
+    response = TestClient(app.app).get("/health")
+
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok"}
+
+
+def test_pdf_to_markdown_requires_the_parser_token(monkeypatch):
+    monkeypatch.setenv("PARSER_TOKEN", "secret")
+
+    def must_not_run(*_):
+        raise AssertionError("conversion must not run without a valid token")
+
+    monkeypatch.setattr(app, "convert_and_save_pdf_bytes", must_not_run)
+    response = TestClient(app.app).post(
+        "/pdf-to-markdown",
+        files={"file": ("inbody.pdf", b"%PDF-1.4", "application/pdf")},
+    )
+
+    assert response.status_code == 401
+
+
+def test_interactive_docs_can_be_turned_off(monkeypatch):
+    import importlib
+
+    monkeypatch.setenv("PARSER_DOCS_ENABLED", "false")
+    hidden = importlib.reload(app)
+    try:
+        client = TestClient(hidden.app)
+        assert client.get("/docs").status_code == 404
+        assert client.get("/openapi.json").status_code == 404
+    finally:
+        monkeypatch.delenv("PARSER_DOCS_ENABLED")
+        importlib.reload(app)
+
+
+def test_interactive_docs_stay_on_by_default(monkeypatch):
+    monkeypatch.delenv("PARSER_DOCS_ENABLED", raising=False)
+
+    assert TestClient(app.app).get("/openapi.json").status_code == 200

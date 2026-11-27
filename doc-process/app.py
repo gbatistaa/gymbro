@@ -4,13 +4,38 @@ import re
 
 import requests
 from docling.exceptions import ConversionError
-from fastapi import FastAPI, File, Header, HTTPException, UploadFile
+from fastapi import Depends, FastAPI, File, Header, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 
 from openrouter_test import BIOIMPEDANCE_FIELDS, analyze_markdown, extract_bioimpedance
 from pdf_to_markdown import PROMPT, convert_and_save_pdf_bytes, convert_pdf_bytes_to_markdown
 
-app = FastAPI()
+def docs_enabled() -> bool:
+    """Interactive docs (/docs, /redoc, /openapi.json) stay on locally; turn them off when public."""
+    return os.getenv("PARSER_DOCS_ENABLED", "true").strip().lower() not in {"false", "0", "no"}
+
+
+_DOCS = docs_enabled()
+app = FastAPI(
+    docs_url="/docs" if _DOCS else None,
+    redoc_url="/redoc" if _DOCS else None,
+    openapi_url="/openapi.json" if _DOCS else None,
+)
+
+
+def require_parser_token(
+    parser_token: str | None = Header(default=None, alias="X-Parser-Token"),
+) -> None:
+    """With PARSER_TOKEN set, every conversion route needs the same value in X-Parser-Token."""
+    expected_token = os.getenv("PARSER_TOKEN", "")
+    if expected_token and not hmac.compare_digest(parser_token or "", expected_token):
+        raise HTTPException(status_code=401, detail="invalid parser token")
+
+
+@app.get("/health")
+def health() -> dict:
+    """Liveness for the container health check; no token and no model work."""
+    return {"status": "ok"}
 
 
 def normalize_extraction(result: dict) -> dict:
@@ -63,7 +88,7 @@ def normalize_measured_at(value):
         return text
     return None
 
-@app.post("/pdf-to-markdown")
+@app.post("/pdf-to-markdown", dependencies=[Depends(require_parser_token)])
 async def pdf_to_markdown(file: UploadFile = File(...)):
     md_bytes, md_path = convert_and_save_pdf_bytes(await file.read(), file.filename or "doc.pdf")
     result = analyze_markdown(md_bytes, PROMPT)
@@ -71,15 +96,8 @@ async def pdf_to_markdown(file: UploadFile = File(...)):
     return JSONResponse(result)
 
 
-@app.post("/extract")
-async def extract(
-    file: UploadFile = File(...),
-    parser_token: str | None = Header(default=None, alias="X-Parser-Token"),
-):
-    expected_token = os.getenv("PARSER_TOKEN", "")
-    if expected_token and not hmac.compare_digest(parser_token or "", expected_token):
-        raise HTTPException(status_code=401, detail="invalid parser token")
-
+@app.post("/extract", dependencies=[Depends(require_parser_token)])
+async def extract(file: UploadFile = File(...)):
     try:
         markdown = convert_pdf_bytes_to_markdown(await file.read())
     except ConversionError as error:
