@@ -4,13 +4,11 @@ import { type FormEvent, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Modal } from "@/components/ui/modal";
-import { SelectField } from "@/components/ui/select-field";
 import { userSummarySchema, type UserSummary } from "@/contracts/auth";
 import { profileFormSchema, type ProfileFormInput } from "@/contracts/user";
 import { apiFieldMessages } from "@/lib/api-error-text";
 import { request } from "@/lib/http";
 import { notifyApiError, notifyValidation } from "@/lib/notify";
-import { timeZoneOptionsWithCurrent } from "@/lib/timezones";
 import styles from "./profile.module.css";
 
 const FORM_ID = "edit-profile-form";
@@ -18,7 +16,7 @@ const FORM_ID = "edit-profile-form";
 type ProfileField = keyof ProfileFormInput;
 type FieldErrors = Partial<Record<ProfileField, string>>;
 
-const PROFILE_FIELDS: readonly ProfileField[] = ["name", "email", "timezone"];
+const PROFILE_FIELDS: readonly ProfileField[] = ["name", "email"];
 
 function isProfileField(value: PropertyKey | undefined): value is ProfileField {
   return PROFILE_FIELDS.some((field) => field === value);
@@ -42,16 +40,15 @@ type EditProfileDialogProps = {
 export function EditProfileDialog({ user, onSaved, onClose }: EditProfileDialogProps) {
   const [name, setName] = useState(user.name);
   const [email, setEmail] = useState(user.email);
-  const [timezone, setTimezone] = useState(user.timezone);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [isSaving, setIsSaving] = useState(false);
-  const timezoneOptions = timeZoneOptionsWithCurrent(user.timezone);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (isSaving) return;
 
-    const parsed = profileFormSchema.safeParse({ name, email, timezone });
+    // o fuso é lógica interna: segue o valor atual do usuário, sem campo na tela
+    const parsed = profileFormSchema.safeParse({ name, email, timezone: user.timezone });
     if (!parsed.success) {
       const localErrors: FieldErrors = {};
       for (const issue of parsed.error.issues) {
@@ -85,7 +82,7 @@ export function EditProfileDialog({ user, onSaved, onClose }: EditProfileDialogP
   return (
     <Modal
       title="Editar informações"
-      description="Atualize seu nome, e-mail e fuso horário de referência."
+      description="Atualize seu nome e e-mail."
       onClose={onClose}
       footer={
         <>
@@ -118,20 +115,6 @@ export function EditProfileDialog({ user, onSaved, onClose }: EditProfileDialogP
           onChange={(event) => setEmail(event.target.value)}
           error={fieldErrors.email}
         />
-
-        <SelectField
-          id="profile-timezone"
-          label="Fuso horário"
-          value={timezone}
-          onChange={(event) => setTimezone(event.target.value)}
-          error={fieldErrors.timezone}
-        >
-          {timezoneOptions.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </SelectField>
       </form>
     </Modal>
   );

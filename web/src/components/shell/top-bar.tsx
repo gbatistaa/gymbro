@@ -2,26 +2,24 @@
 
 import { Dumbbell } from "lucide-react";
 import { useAtomValue } from "jotai";
+import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
+import { useLoadProfilePhoto } from "@/features/profile/use-load-profile-photo";
+import { initialsOf } from "@/lib/initials";
+import { profilePhotoAtom } from "@/stores/profile-photo";
 import { sessionAtom } from "@/stores/session";
 import styles from "./shell.module.css";
 
-/** Iniciais do nome para o avatar, ex.: "Gabriel Batista" → "GB". */
-function initialsOf(name: string | undefined): string {
-  const initials = (name ?? "")
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join("");
-
-  return initials || "?";
-}
+const AVATAR_SIZE = 30;
 
 export function TopBar() {
   const user = useAtomValue(sessionAtom)?.user;
+  const photo = useAtomValue(profilePhotoAtom);
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
   const userInitials = initialsOf(user?.name);
+  const visiblePhotoUrl = photo && photo.url !== failedUrl ? photo.url : null;
+  useLoadProfilePhoto();
 
   return (
     <header className={styles.topBar}>
@@ -43,7 +41,20 @@ export function TopBar() {
               <span className={styles.topUserHandle}>@{user.username}</span>
             ) : null}
             <span className={styles.avatarCircle}>
-              {userInitials}
+              {visiblePhotoUrl ? (
+                <Image
+                  src={visiblePhotoUrl}
+                  alt=""
+                  width={AVATAR_SIZE}
+                  height={AVATAR_SIZE}
+                  // link assinado e temporário do bucket; GIF precisa chegar intacto para animar
+                  unoptimized
+                  className={styles.avatarCircleImage}
+                  onError={() => setFailedUrl(visiblePhotoUrl)}
+                />
+              ) : (
+                userInitials
+              )}
             </span>
           </Link>
         </div>

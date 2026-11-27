@@ -1,7 +1,8 @@
 "use client";
 
 import { X } from "lucide-react";
-import { useEffect, useId, useRef, type MouseEvent, type ReactNode } from "react";
+import { useId, type ReactNode } from "react";
+import { useModalDialog } from "./use-modal-dialog";
 import styles from "./ui.module.css";
 
 type ModalSize = "default" | "large";
@@ -30,30 +31,9 @@ export function Modal({
   children,
   footer,
 }: ModalProps) {
-  const dialogRef = useRef<HTMLDialogElement>(null);
+  const { dialogRef, handleBackdropClick } = useModalDialog(onClose);
   const titleId = useId();
   const descriptionId = useId();
-
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (dialog && !dialog.open) {
-      dialog.showModal();
-    }
-
-    const root = document.documentElement;
-    const previousOverflow = root.style.overflow;
-    root.style.overflow = "hidden";
-
-    return () => {
-      root.style.overflow = previousOverflow;
-    };
-  }, []);
-
-  function handleBackdropClick(event: MouseEvent<HTMLDialogElement>) {
-    if (event.target === event.currentTarget) {
-      onClose();
-    }
-  }
 
   return (
     <dialog

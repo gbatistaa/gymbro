@@ -6,7 +6,6 @@ import {
   CalendarDays,
   ClipboardList,
   Dumbbell,
-  Globe,
   LogOut,
   Mail,
   Pencil,
@@ -28,7 +27,6 @@ import { logout } from "@/features/auth/api";
 import { formatCount, formatDate } from "@/lib/format";
 import { request } from "@/lib/http";
 import { notifySuccess } from "@/lib/notify";
-import { timeZoneLabel } from "@/lib/timezones";
 import { useResource } from "@/lib/use-resource";
 import { sessionAtom } from "@/stores/session";
 import { EditProfileDialog } from "./edit-profile-dialog";
@@ -168,10 +166,6 @@ export function ProfileScreen() {
             <CalendarDays size={14} strokeWidth={1.75} aria-hidden="true" />
             Membro desde {memberSince}
           </span>
-          <span className={styles.chip}>
-            <Globe size={14} strokeWidth={1.75} aria-hidden="true" />
-            {timeZoneLabel(user.timezone)}
-          </span>
         </div>
 
         <Button
@@ -189,7 +183,7 @@ export function ProfileScreen() {
         <div className={styles.stats}>
           <StatTile icon={Dumbbell} value={summary.totalCount} label="Treinos feitos" />
           <StatTile icon={CalendarCheck} value={summary.thisWeekCount} label="Esta semana" />
-          <StatTile icon={ClipboardList} value={planCount} label="Rotinas ativas" />
+          <StatTile icon={ClipboardList} value={planCount} label="Fichas ativas" />
         </div>
       </section>
 
@@ -200,7 +194,6 @@ export function ProfileScreen() {
             <DetailRow icon={UserRound} label="Nome completo" value={user.name} />
             <DetailRow icon={AtSign} label="Usuário" value={`@${user.username}`} />
             <DetailRow icon={Mail} label="E-mail" value={user.email} />
-            <DetailRow icon={Globe} label="Fuso horário" value={timeZoneLabel(user.timezone)} />
             <DetailRow icon={CalendarDays} label="Membro desde" value={memberSince} />
           </ul>
         </div>

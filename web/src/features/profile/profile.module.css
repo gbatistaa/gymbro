@@ -62,6 +62,7 @@
 
 .avatar {
   position: relative;
+  padding: 0;
   flex: none;
   display: grid;
   place-items: center;
@@ -147,21 +148,6 @@
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
-}
-
-.photoActions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  min-height: 32px;
-}
-
-.photoHint {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--color-text-muted);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -338,4 +324,89 @@
   .stats {
     grid-template-columns: 1fr;
   }
+}
+
+/* ---------- Photo viewer ---------- */
+
+.viewer {
+  position: fixed;
+  inset: 0;
+  width: min(100% - 32px, 480px);
+  max-width: none;
+  max-height: none;
+  margin: auto;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-modal);
+  background: transparent;
+  overflow: visible;
+}
+
+.viewer::backdrop {
+  background: rgb(4 6 5 / 0.86);
+  backdrop-filter: blur(6px);
+}
+
+.viewerFrame {
+  position: relative;
+  aspect-ratio: 1;
+  width: 100%;
+  overflow: hidden;
+  border-radius: var(--radius-modal);
+  background: var(--color-raised);
+  box-shadow: 0 24px 64px rgb(0 0 0 / 0.65);
+}
+
+.viewerImage {
+  object-fit: cover;
+}
+
+.viewerBusy {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgb(4 6 5 / 0.55);
+  color: var(--color-text-primary);
+}
+
+.viewerTools {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  flex-direction: row-reverse;
+  gap: 8px;
+}
+
+.viewerFab {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid rgb(255 255 255 / 0.18);
+  border-radius: 999px;
+  background: rgb(4 6 5 / 0.62);
+  color: var(--color-text-primary);
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+  transition: background-color 120ms ease-out;
+}
+
+.viewerFab:hover:not(:disabled) {
+  background: rgb(4 6 5 / 0.85);
+}
+
+.viewerFab:disabled {
+  cursor: progress;
+  opacity: 0.5;
+}
+
+.viewerFab:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.viewerFabDanger {
+  color: var(--color-danger);
 }

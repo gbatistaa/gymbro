@@ -7,6 +7,11 @@ export function notifySuccess(message: string) {
   toast.success(message);
 }
 
+/** Informação neutra, sem ação pendente. */
+export function notifyInfo(message: string) {
+  toast.info(message);
+}
+
 /** Um toast de erro por mensagem distinta. */
 export function notifyErrors(messages: readonly string[]) {
   for (const message of new Set(messages)) {
