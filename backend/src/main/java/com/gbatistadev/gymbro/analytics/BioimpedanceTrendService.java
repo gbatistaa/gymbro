@@ -15,22 +15,13 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 public class BioimpedanceTrendService {
-    private static final Set<String> METRICS = Set.of(
-        "bodyWeightKg",
-        "bodyFatPercentage",
-        "muscleMassKg",
-        "skeletalMuscleMassKg",
-        "visceralFat",
-        "waterPercentage");
-
     private final BioimpedanceRepository repository;
     private final CurrentUser currentUser;
 
     @Transactional(readOnly = true)
     public TrendDto trend(String metric, Instant from, Instant to, int window) {
-        if (!METRICS.contains(metric)) {
-            throw new BadRequestException("Unsupported metric: " + metric);
-        }
+        BioimpedanceMetric selected = BioimpedanceMetric.fromKey(metric)
+            .orElseThrow(() -> new BadRequestException("Unsupported metric: " + metric));
 
         int size = Math.clamp(window, 1, 30);
         Instant start = from != null ? from : Instant.EPOCH;
@@ -44,7 +35,7 @@ public class BioimpedanceTrendService {
         List<Double> values = new ArrayList<>();
 
         for (Bioimpedance measurement : measurements) {
-            Double value = value(metric, measurement);
+            Double value = selected.valueOf(measurement);
             if (value == null) {
                 continue;
             }
@@ -67,17 +58,5 @@ public class BioimpedanceTrendService {
             : delta / first * 100;
 
         return new TrendDto(metric, points, delta, percentage);
-    }
-
-    private Double value(String metric, Bioimpedance measurement) {
-        return switch (metric) {
-            case "bodyWeightKg" -> measurement.getBodyWeightKg();
-            case "bodyFatPercentage" -> measurement.getBodyFatPercentage();
-            case "muscleMassKg" -> measurement.getMuscleMassKg();
-            case "skeletalMuscleMassKg" -> measurement.getSkeletalMuscleMassKg();
-            case "visceralFat" -> measurement.getVisceralFat();
-            case "waterPercentage" -> measurement.getWaterPercentage();
-            default -> null;
-        };
     }
 }

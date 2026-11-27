@@ -60,7 +60,6 @@ export function useProfilePhoto(initialPhoto: ProfilePhoto | null): ProfilePhoto
       await removeProfilePhoto();
       setPhoto(null);
       setSharedPhoto(null);
-      notifySuccess("Foto de perfil removida.");
       return true;
     } catch (failure) {
       notifyProfilePhotoError(failure);

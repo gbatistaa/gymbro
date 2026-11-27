@@ -1,7 +1,6 @@
 "use client";
 
 import { Plus } from "lucide-react";
-import { useAtomValue } from "jotai";
 import { useState } from "react";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -15,7 +14,7 @@ import { z } from "zod";
 import { request, requestMaybe } from "@/lib/http";
 import { notifyApiError, notifySuccess } from "@/lib/notify";
 import { useResource } from "@/lib/use-resource";
-import { sessionAtom } from "@/stores/session";
+import { useUserTimeZone } from "@/lib/use-user-time-zone";
 import { CreatePlanModal } from "./create-plan-modal";
 import { LogWorkoutModal } from "./log-workout-modal";
 import { PlanCard } from "./plan-card";
@@ -29,8 +28,7 @@ function loggedMessage(completion: Completion): string {
 }
 
 export function PlanList() {
-  const user = useAtomValue(sessionAtom)?.user;
-  const timezone = user?.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const timezone = useUserTimeZone();
 
   const [isCreating, setIsCreating] = useState(false);
   const [logTarget, setLogTarget] = useState<PlaylistSummary | null>(null);

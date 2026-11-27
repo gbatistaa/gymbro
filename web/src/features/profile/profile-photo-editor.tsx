@@ -3,14 +3,13 @@
 import { useRef, useState, type ChangeEvent, type ReactNode } from "react";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { PROFILE_PHOTO_TYPES, type ProfilePhoto } from "@/contracts/user";
-import { notifyErrors, notifyInfo } from "@/lib/notify";
+import { notifyErrors } from "@/lib/notify";
 import { PhotoViewer } from "./photo-viewer";
 import { ProfileAvatar } from "./profile-avatar";
 import styles from "./profile.module.css";
 import { useProfilePhoto } from "./use-profile-photo";
 
 const ACCEPTED_TYPES = PROFILE_PHOTO_TYPES.join(",");
-const PHOTO_FORMAT_HINT = "Formatos aceitos: PNG, JPEG, WEBP ou GIF · até 1 MB.";
 
 type ProfilePhotoEditorProps = {
   name: string;
@@ -31,7 +30,6 @@ export function ProfilePhotoEditor({ name, initialPhoto, children }: ProfilePhot
   const [isConfirmingRemoval, setIsConfirmingRemoval] = useState(false);
 
   function openFilePicker() {
-    notifyInfo(PHOTO_FORMAT_HINT);
     inputRef.current?.click();
   }
 

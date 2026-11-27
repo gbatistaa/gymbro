@@ -1,7 +1,6 @@
 "use client";
 
 import { FileUp, Plus } from "lucide-react";
-import { useAtomValue } from "jotai";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -14,7 +13,7 @@ import type { Bioimpedance, ImportJob } from "@/contracts/bioimpedance";
 import { formatCount, formatDate, formatRelative } from "@/lib/format";
 import { notifyApiError, notifySuccess } from "@/lib/notify";
 import { useResource } from "@/lib/use-resource";
-import { sessionAtom } from "@/stores/session";
+import { useUserTimeZone } from "@/lib/use-user-time-zone";
 import { deleteMeasurement, listMeasurements } from "./api";
 import { ImportJobList } from "./import-job-list";
 import { ImportModal } from "./import-modal";
@@ -37,8 +36,7 @@ function subtitle(measurements: Bioimpedance[] | null, timeZone: string): string
 }
 
 export function BioimpedanceScreen() {
-  const user = useAtomValue(sessionAtom)?.user;
-  const timeZone = user?.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const timeZone = useUserTimeZone();
 
   const measurements = useResource("bioimpedance:measurements", listMeasurements);
   const imports = useImportJobs();

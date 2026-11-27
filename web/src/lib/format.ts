@@ -127,3 +127,12 @@ export function formatShortDate(iso: string, timeZone: string): string {
     month: "short",
   }).format(new Date(iso));
 }
+
+/** Mês e ano no fuso do usuário, ex.: `novembro de 2026`. */
+export function formatMonthYear(iso: string, timeZone: string): string {
+  return new Intl.DateTimeFormat("pt-BR", {
+    timeZone,
+    month: "long",
+    year: "numeric",
+  }).format(new Date(iso));
+}

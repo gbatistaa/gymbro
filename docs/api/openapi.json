@@ -141,6 +141,56 @@
         }
       }
     },
+    "/api/progress/pinned-exercises" : {
+      "get" : {
+        "tags" : [ "progress-controller" ],
+        "operationId" : "pinnedExercises",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/PinnedExerciseDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "put" : {
+        "tags" : [ "progress-controller" ],
+        "operationId" : "replacePinnedExercises",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UpdatePinnedExercisesRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/PinnedExerciseDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/playlists/{id}" : {
       "get" : {
         "tags" : [ "playlist-controller" ],
@@ -1150,6 +1200,126 @@
         }
       }
     },
+    "/api/progress/exercises" : {
+      "get" : {
+        "tags" : [ "progress-controller" ],
+        "operationId" : "exercises",
+        "parameters" : [ {
+          "name" : "q",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "muscle",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "default" : "LAST_PERFORMED_AT",
+            "enum" : [ "LAST_PERFORMED_AT", "NAME", "SESSION_COUNT", "TOTAL_SETS", "TOTAL_VOLUME", "BEST_WEIGHT", "BEST_E1RM" ]
+          }
+        }, {
+          "name" : "direction",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "default" : "DESC",
+            "enum" : [ "ASC", "DESC" ]
+          }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 10
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PageDtoExerciseProgressSummaryDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/progress/exercises/{exerciseId}/series" : {
+      "get" : {
+        "tags" : [ "progress-controller" ],
+        "operationId" : "series",
+        "parameters" : [ {
+          "name" : "exerciseId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "name" : "from",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }, {
+          "name" : "to",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }, {
+          "name" : "bucket",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "DAY", "WEEK", "MONTH" ]
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ExerciseSeriesDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/playlists/{id}/next-targets" : {
       "get" : {
         "tags" : [ "playlist-controller" ],
@@ -1506,6 +1676,41 @@
         }
       }
     },
+    "/api/bioimpedance/evolution" : {
+      "get" : {
+        "tags" : [ "bioimpedance-controller" ],
+        "operationId" : "evolution",
+        "parameters" : [ {
+          "name" : "from",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }, {
+          "name" : "to",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BioimpedanceEvolutionDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/sessions/{id}/logs/{logId}" : {
       "delete" : {
         "tags" : [ "workout-session-controller" ],
@@ -1631,6 +1836,40 @@
           }
         },
         "required" : [ "currentPassword", "newPassword" ]
+      },
+      "UpdatePinnedExercisesRequest" : {
+        "type" : "object",
+        "properties" : {
+          "exerciseIds" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "format" : "uuid"
+            },
+            "maxItems" : 4,
+            "minItems" : 0
+          }
+        },
+        "required" : [ "exerciseIds" ]
+      },
+      "PinnedExerciseDto" : {
+        "type" : "object",
+        "properties" : {
+          "exerciseId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "primaryMuscle" : {
+            "type" : "string"
+          },
+          "position" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
       },
       "UpdatePlaylistRequest" : {
         "type" : "object",
@@ -2295,12 +2534,6 @@
           "container" : {
             "type" : "boolean"
           },
-          "number" : {
-            "type" : "boolean"
-          },
-          "object" : {
-            "type" : "boolean"
-          },
           "nodeType" : {
             "type" : "string",
             "enum" : [ "ARRAY", "BINARY", "BOOLEAN", "MISSING", "NULL", "NUMBER", "OBJECT", "POJO", "STRING" ]
@@ -2317,7 +2550,13 @@
           "valueNode" : {
             "type" : "boolean"
           },
+          "object" : {
+            "type" : "boolean"
+          },
           "pojo" : {
+            "type" : "boolean"
+          },
+          "number" : {
             "type" : "boolean"
           },
           "floatingPointNumber" : {
@@ -2673,6 +2912,177 @@
           }
         }
       },
+      "ExerciseProgressSummaryDto" : {
+        "type" : "object",
+        "properties" : {
+          "exerciseId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "primaryMuscle" : {
+            "type" : "string"
+          },
+          "sessionCount" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalSets" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalVolume" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "bestWeight" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "bestE1rm" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "lastPerformedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "isPinned" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "PageDtoExerciseProgressSummaryDto" : {
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ExerciseProgressSummaryDto"
+            }
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "ExerciseSeriesDto" : {
+        "type" : "object",
+        "properties" : {
+          "exerciseId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "primaryMuscle" : {
+            "type" : "string"
+          },
+          "bucket" : {
+            "type" : "string",
+            "enum" : [ "DAY", "WEEK", "MONTH" ]
+          },
+          "from" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "to" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "points" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/SeriesPointDto"
+            }
+          },
+          "summary" : {
+            "$ref" : "#/components/schemas/SeriesSummaryDto"
+          }
+        }
+      },
+      "SeriesPointDto" : {
+        "type" : "object",
+        "properties" : {
+          "periodStart" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "sessions" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "sets" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "reps" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "maxWeight" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "volume" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "bestE1rm" : {
+            "type" : "number",
+            "format" : "double"
+          }
+        }
+      },
+      "SeriesSummaryDto" : {
+        "type" : "object",
+        "properties" : {
+          "sessionCount" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalSets" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalReps" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalVolume" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "bestWeight" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "bestE1rm" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "lastPerformedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
       "PlaylistSummaryDto" : {
         "type" : "object",
         "properties" : {
@@ -2991,6 +3401,80 @@
             "format" : "double"
           },
           "movingAverage" : {
+            "type" : "number",
+            "format" : "double"
+          }
+        }
+      },
+      "BioimpedanceEvolutionDto" : {
+        "type" : "object",
+        "properties" : {
+          "from" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "to" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "measurementCount" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "metrics" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/MetricEvolutionDto"
+            }
+          }
+        }
+      },
+      "MetricEvolutionDto" : {
+        "type" : "object",
+        "properties" : {
+          "metric" : {
+            "type" : "string"
+          },
+          "points" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/MetricPointDto"
+            }
+          },
+          "first" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "last" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "min" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "max" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "deltaAbsolute" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "deltaPercentage" : {
+            "type" : "number",
+            "format" : "double"
+          }
+        }
+      },
+      "MetricPointDto" : {
+        "type" : "object",
+        "properties" : {
+          "measuredAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "value" : {
             "type" : "number",
             "format" : "double"
           }

@@ -1,6 +1,8 @@
 package com.gbatistadev.gymbro.bioimpedance;
 
+import com.gbatistadev.gymbro.analytics.BioimpedanceEvolutionService;
 import com.gbatistadev.gymbro.analytics.BioimpedanceTrendService;
+import com.gbatistadev.gymbro.analytics.dto.BioimpedanceEvolutionDto;
 import com.gbatistadev.gymbro.analytics.dto.TrendDto;
 import com.gbatistadev.gymbro.bioimpedance.dto.*;
 import jakarta.validation.Valid;
@@ -21,6 +23,7 @@ import java.util.UUID;
 public class BioimpedanceController {
     private final BioimpedanceService service;
     private final BioimpedanceTrendService trendService;
+    private final BioimpedanceEvolutionService evolutionService;
 
     @PostMapping
     public ResponseEntity<BioimpedanceDto> create(
@@ -71,6 +74,15 @@ public class BioimpedanceController {
         @RequestParam(defaultValue = "7") int window
     ) {
         return ResponseEntity.ok(trendService.trend(metric, from, to, window));
+    }
+
+    /** Todas as métricas no intervalo {@code [from, to]}, para o painel de evolução. */
+    @GetMapping("/evolution")
+    public ResponseEntity<BioimpedanceEvolutionDto> evolution(
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant from,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant to
+    ) {
+        return ResponseEntity.ok(evolutionService.evolution(from, to));
     }
 
     @PostMapping("/import")

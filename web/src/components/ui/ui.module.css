@@ -747,3 +747,98 @@
 .primaryButtonFull {
   width: 100%;
 }
+
+/* ---------- Segmented control ---------- */
+
+.segmented {
+  display: flex;
+  min-width: 0;
+  margin: 0;
+  padding: 3px;
+  gap: 2px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-canvas);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.segmented::-webkit-scrollbar {
+  display: none;
+}
+
+.segment {
+  position: relative;
+  flex: 1 0 auto;
+  display: flex;
+}
+
+.segmentInput {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.segmentLabel {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: calc(var(--radius-control) - 3px);
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+  transition:
+    background-color 140ms ease-out,
+    color 140ms ease-out;
+}
+
+.segmentedSm .segmentLabel {
+  min-height: 32px;
+  padding: 0 10px;
+  font-size: 12px;
+}
+
+.segment:hover .segmentLabel {
+  color: var(--color-text-primary);
+}
+
+.segmentInput:checked + .segmentLabel {
+  background: var(--color-raised);
+  color: var(--color-text-primary);
+  box-shadow:
+    0 0 0 1px var(--color-border),
+    inset 0 1px 0 rgb(255 255 255 / 0.04);
+}
+
+.segmentInput:focus-visible + .segmentLabel {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+}
+
+/* ---------- Pagination ---------- */
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.paginationStatus {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .segmentLabel {
+    transition: none;
+  }
+}

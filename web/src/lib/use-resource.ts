@@ -7,6 +7,8 @@ export type Resource<T> = {
   data: T | null;
   error: string | null;
   isLoading: boolean;
+  /** Último dado carregado com sucesso, mesmo de um pedido anterior: evita piscar ao trocar filtros. */
+  lastData: T | null;
   reload: () => void;
 };
 
@@ -35,6 +37,7 @@ export function useResource<T>(
   const loadRef = useRef(load);
   const [version, setVersion] = useState(0);
   const [loaded, setLoaded] = useState<Loaded<T> | null>(null);
+  const [lastData, setLastData] = useState<T | null>(null);
 
   useEffect(() => {
     loadRef.current = load;
@@ -44,7 +47,10 @@ export function useResource<T>(
     let ignore = false;
     loadRef.current().then(
       (result) => {
-        if (!ignore) setLoaded({ key, version, data: result, error: null });
+        if (!ignore) {
+          setLoaded({ key, version, data: result, error: null });
+          setLastData(result);
+        }
       },
       (failure: unknown) => {
         if (!ignore) {
@@ -72,6 +78,7 @@ export function useResource<T>(
     data: current === null ? null : current.data,
     error: current === null ? null : current.error,
     isLoading: current === null,
+    lastData,
     reload,
   };
 }

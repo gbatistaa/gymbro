@@ -1,21 +1,15 @@
+/* ---------- Página ---------- */
+
 .screen {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: var(--space-5);
 }
 
 .pageHeader {
   display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.headerText {
-  display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-1);
 }
 
 .pageKicker {
@@ -35,232 +29,713 @@
   letter-spacing: -0.02em;
 }
 
+.tabPanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
 .section {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
-.summaryGrid {
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: 40px;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.sectionCount {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-muted);
+}
+
+/* conteúdo anterior fica esmaecido enquanto o próximo pedido carrega */
+.tabPanel [aria-busy="true"],
+.evolution [aria-busy="true"] {
+  opacity: 0.55;
+  transition: opacity 120ms ease-out;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- KPIs ---------- */
+
+.kpis {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
 }
 
-.metricCard {
+.kpi {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 16px;
+  gap: 2px;
+  min-width: 0;
+  padding: var(--space-3);
 }
 
-.metricLabel {
+.kpiLabel {
   font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 500;
+  font-size: 10px;
+  font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--color-text-muted);
 }
 
-.metricValue {
+.kpiValue {
+  font-family: var(--font-mono);
+  font-size: clamp(17px, 5vw, 22px);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+}
+
+.kpiUnit {
+  font-size: 11px;
+  line-height: 1.3;
+  color: var(--color-text-secondary);
+}
+
+/* ---------- Gráficos de série ---------- */
+
+.headline {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.headlineValue {
   font-family: var(--font-mono);
   font-size: 24px;
   font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  line-height: 1.25;
+  line-height: 1.2;
   letter-spacing: -0.03em;
-  color: var(--color-text-primary);
+  font-variant-numeric: tabular-nums;
 }
 
-.metricSub {
-  font-size: 12px;
-  color: var(--color-text-secondary);
-}
-
-/* ---------- Barras de frequência e músculos ---------- */
-
-.weeksCard {
-  padding: 16px;
-}
-
-.weeksList {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+.headlineChange,
+.headlineEmpty {
   margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.weekRow {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.weekTop {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.weekDate {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--color-text-secondary);
-}
-
-.muscleName {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--color-text-primary);
-}
-
-.weekStats {
-  font-family: var(--font-mono);
   font-size: 12px;
   font-variant-numeric: tabular-nums;
-  color: var(--color-text-muted);
-  text-align: right;
+  color: var(--color-text-secondary);
 }
 
-.weekStats strong {
-  color: var(--color-text-primary);
-  font-weight: 600;
-}
-
-.progressTrack {
-  width: 100%;
-  height: 8px;
-  border-radius: 999px;
-  background: var(--color-raised);
-  border: 1px solid var(--color-border);
-  overflow: hidden;
-}
-
-.progressFill {
-  height: 100%;
-  border-radius: 999px;
-  background: var(--color-accent);
-  transition: width 240ms ease-out;
-}
-
-.progressFillInfo {
-  height: 100%;
-  border-radius: 999px;
-  background: var(--color-info);
-  transition: width 240ms ease-out;
-}
-
-.emptyCard {
+.chartHeader {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 20px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-2);
 }
 
-.emptyCardIcon {
-  flex: none;
+.chartMeta {
+  font-family: var(--font-mono);
+  font-size: 11px;
   color: var(--color-text-muted);
 }
 
-.emptyCardText {
+/* ---------- Fixados ---------- */
+
+.pinnedGrid,
+.bioGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-3);
+}
+
+@media (min-width: 600px) {
+  .pinnedGrid,
+  .bioGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.pinnedCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.pinnedTitle {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "name chevron"
+    "muscle chevron";
+  align-items: center;
+  column-gap: var(--space-2);
+  margin: calc(var(--space-2) * -1);
+  padding: var(--space-2);
+  border: 0;
+  border-radius: var(--radius-chip);
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.pinnedTitle:hover .pinnedChevron {
+  color: var(--color-text-primary);
+}
+
+.pinnedTitle:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 0;
+}
+
+.pinnedName {
+  grid-area: name;
+  overflow: hidden;
+  font-size: 15px;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pinnedMuscle {
+  grid-area: muscle;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.pinnedChevron {
+  grid-area: chevron;
+  color: var(--color-text-muted);
+}
+
+.pinnedBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.pinnedEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.pinnedEmptyIcon {
+  color: var(--color-accent);
+}
+
+.pinnedEmptyText {
   margin: 0;
+  max-width: 52ch;
   font-size: 14px;
   line-height: 1.5;
   color: var(--color-text-secondary);
 }
 
-/* ---------- PRs ---------- */
+/* ---------- Modal de fixação ---------- */
 
-.prListCard {
-  padding: 0;
-  overflow: hidden;
+.pinPicker {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
 }
 
-.prList {
+.pinSelected {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.pinCounter {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-muted);
+}
+
+.pinChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.prRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--color-rule);
-}
-
-.prRow:last-child {
-  border-bottom: 0;
-}
-
-.prLeft {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 0;
-}
-
-.prBadgeIcon {
-  flex: none;
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
-  background: var(--color-accent-tint);
-  border: 1px solid color-mix(in srgb, var(--color-accent) 32%, var(--color-border));
-  color: var(--color-accent);
+.pinChip {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  gap: 6px;
+  max-width: 100%;
+  padding: 4px 4px 4px 6px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-raised);
+  font-size: 13px;
 }
 
-.prMeta {
+.pinChipOrder {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--color-accent-tint);
+  color: var(--color-accent);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.pinChipName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pinChipRemove {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.pinChipRemove:hover {
+  color: var(--color-text-primary);
+}
+
+.pinChipRemove:focus-visible {
+  outline: 2px solid var(--color-accent);
+}
+
+.pinOptions {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-panel);
+  overflow: hidden;
+}
+
+.pinOptions li + li {
+  border-top: 1px solid var(--color-border);
+}
+
+.pinOption {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--tap-target-min);
+  padding: var(--space-2) var(--space-3);
+  cursor: pointer;
+}
+
+.pinOption:hover {
+  background: var(--color-raised);
+}
+
+.pinOptionDisabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.pinOptionDisabled:hover {
+  background: transparent;
+}
+
+.pinCheckbox {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.pinCheckmark {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 1.5px solid var(--color-border-strong);
+  border-radius: 6px;
+  color: var(--color-on-accent);
+}
+
+.pinCheckbox:checked + .pinCheckmark {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+}
+
+.pinCheckbox:focus-visible + .pinCheckmark {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.pinOptionText {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
 }
 
-.prExercise {
-  font-size: 15px;
+.pinOptionName {
+  overflow: hidden;
+  font-size: 14px;
   font-weight: 600;
-  color: var(--color-text-primary);
-  overflow-wrap: anywhere;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.prTime {
-  font-family: var(--font-mono);
-  font-size: 11px;
+.pinOptionMuscle {
+  font-size: 12px;
   color: var(--color-text-muted);
 }
 
-.prRight {
+.pinEmpty,
+.pinHint {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+}
+
+/* ---------- Lista de exercícios ---------- */
+
+.filters {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-3);
+}
+
+@media (min-width: 560px) {
+  .filters {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .filterSearch {
+    grid-column: 1 / -1;
+  }
+}
+
+.filterSort {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-2);
+}
+
+.filterSort > :first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+.filterSort .directionButton {
+  flex: none;
+  width: var(--tap-target-min);
+  height: var(--tap-target-min);
+}
+
+.exerciseList {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  overflow: hidden;
+}
+
+.exerciseList li + li {
+  border-top: 1px solid var(--color-border);
+}
+
+.exerciseRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 64px;
+  padding: var(--space-3) var(--space-4);
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 120ms ease-out;
+}
+
+.exerciseRow:hover {
+  background: var(--color-raised);
+}
+
+.exerciseRow:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+}
+
+.exerciseMain {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.exerciseName {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.exerciseNameText {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.exercisePinned {
+  flex: none;
+  color: var(--color-accent);
+}
+
+.exerciseMeta {
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--color-text-muted);
+}
+
+.exerciseStat {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 2px;
-  flex: none;
+  gap: 1px;
 }
 
-.prWeight {
+.exerciseStatValue {
   font-family: var(--font-mono);
   font-size: 14px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
-  color: var(--color-accent);
+  white-space: nowrap;
 }
 
-.prE1rm {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-family: var(--font-mono);
+.exerciseStatLabel {
   font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.exerciseChevron {
+  color: var(--color-text-muted);
+}
+
+/* ---------- Modal de evolução ---------- */
+
+.evolution {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.evolutionBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.rangePicker {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.customRange {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  margin: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-panel);
+  background: var(--color-border);
+  overflow: hidden;
+}
+
+@media (min-width: 560px) {
+  .summaryGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.summaryItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-3);
+  background: var(--color-surface);
+}
+
+.summaryLabel {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.summaryValue {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Séries por músculo ---------- */
+
+.muscleCard {
+  padding: var(--space-4);
+}
+
+.muscleList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.muscleRow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.muscleTop {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.muscleName {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.muscleStats {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-secondary);
+}
+
+.muscleStats strong {
+  color: var(--color-text-primary);
+}
+
+.muscleTrack {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--color-raised);
+  overflow: hidden;
+}
+
+.muscleFill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--color-info);
+}
+
+/* ---------- Bioimpedância ---------- */
+
+.bioSummary {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
   font-variant-numeric: tabular-nums;
   color: var(--color-text-muted);
+}
+
+.bioCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.bioCardHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bioCardTitle {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.bioCardValue {
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.bioCardChange {
+  font-size: 12px;
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-secondary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tabPanel [aria-busy="true"],
+  .evolution [aria-busy="true"],
+  .exerciseRow {
+    transition: none;
+  }
 }
