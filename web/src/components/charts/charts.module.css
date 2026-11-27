@@ -44,9 +44,19 @@
   text-anchor: end;
 }
 
+/* o preenchimento vem do <linearGradient> do gráfico: o accent esvaece até o eixo */
 .area {
-  fill: var(--color-accent);
-  opacity: 0.09;
+  stroke: none;
+}
+
+.gradientTop {
+  stop-color: var(--color-accent);
+  stop-opacity: 0.22;
+}
+
+.gradientBottom {
+  stop-color: var(--color-accent);
+  stop-opacity: 0.02;
 }
 
 .line {
@@ -135,4 +145,43 @@
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+.variation {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 8px 3px 6px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.variationUp {
+  border-color: color-mix(in srgb, var(--color-accent) 35%, transparent);
+  background: var(--color-accent-tint);
+  color: var(--color-accent);
+}
+
+.variationDown {
+  border-color: color-mix(in srgb, var(--color-danger) 35%, transparent);
+  background: color-mix(in srgb, var(--color-danger) 12%, transparent);
+  color: var(--color-danger);
+}
+
+.variationNeutral {
+  border-color: color-mix(in srgb, var(--color-info) 35%, transparent);
+  background: var(--color-info-tint);
+  color: var(--color-info);
+}
+
+.variationFlat {
+  border-color: var(--color-border);
+  background: var(--color-raised);
+  color: var(--color-text-secondary);
 }

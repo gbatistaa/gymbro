@@ -33,9 +33,15 @@ BEGIN;
 -- ---------------------------------------------------------------------------------------------
 
 -- Id estável por (usuário, tipo, chave): permite limpar e recriar sem marcador visível nos dados.
+-- Formato UUID v4 válido (versão 4, variante 8-b): o contrato do frontend (z.uuid) rejeita md5 cru.
 CREATE OR REPLACE FUNCTION pg_temp.seed_uuid(kind text, key text) RETURNS uuid
     LANGUAGE sql STABLE AS
-$$ SELECT md5('gymbro-seed|' || current_setting('seed.user_id') || '|' || kind || '|' || key)::uuid $$;
+$$
+    SELECT (substr(h, 1, 8) || '-' || substr(h, 9, 4) || '-4' || substr(h, 14, 3) || '-'
+            || substr('89ab', (('x' || substr(h, 17, 1))::bit(4)::int % 4) + 1, 1) || substr(h, 18, 3)
+            || '-' || substr(h, 21, 12))::uuid
+    FROM (SELECT md5('gymbro-seed|' || current_setting('seed.user_id') || '|' || kind || '|' || key) AS h) t
+$$;
 
 -- Inteiro pseudo-aleatório determinístico em [0, n): mesma chave, mesmo resultado.
 CREATE OR REPLACE FUNCTION pg_temp.seed_rnd(key text, n int) RETURNS int

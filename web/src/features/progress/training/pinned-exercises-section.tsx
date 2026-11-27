@@ -5,13 +5,16 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ErrorState } from "@/components/ui/error-state";
 import { SegmentedControl } from "@/components/ui/segmented-control";
+import { SortableList } from "@/components/ui/sortable-list";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SurfaceCard } from "@/components/ui/surface-card";
 import { MAX_PINNED_EXERCISES, type PinnedExercise } from "@/contracts/progress";
 import { bucketForRange, exercisePresetRange, type ExerciseRangePreset } from "@/lib/date-ranges";
+import { notifyApiError } from "@/lib/notify";
 import type { Resource } from "@/lib/use-resource";
 import styles from "../progress.module.css";
 import type { EvolutionTarget } from "./exercise-evolution-modal";
+import { savePinnedExercises } from "../progress-api";
 import { PinExercisesModal } from "./pin-exercises-modal";
 import { PinnedExerciseCard } from "./pinned-exercise-card";
 import { PRESET_OPTIONS } from "./range-picker";
@@ -27,9 +30,24 @@ type PinnedExercisesSectionProps = {
 export function PinnedExercisesSection({ pinned, timeZone, onPinnedChange, onOpenExercise }: PinnedExercisesSectionProps) {
   const [preset, setPreset] = useState<ExerciseRangePreset>("month");
   const [isPicking, setIsPicking] = useState(false);
+  const [isSavingOrder, setIsSavingOrder] = useState(false);
   const range = exercisePresetRange(preset, timeZone);
   const bucket = bucketForRange(range);
   const exercises = pinned.data ?? pinned.lastData;
+
+  /** A nova ordem aparece na hora e é gravada em seguida; se falhar, volta ao que está salvo. */
+  async function handleReorder(next: PinnedExercise[]) {
+    pinned.replace(next.map((exercise, position) => ({ ...exercise, position })));
+    setIsSavingOrder(true);
+    try {
+      pinned.replace(await savePinnedExercises(next.map((exercise) => exercise.exerciseId)));
+    } catch (failure) {
+      notifyApiError(failure);
+      pinned.reload();
+    } finally {
+      setIsSavingOrder(false);
+    }
+  }
 
   function handleSaved() {
     setIsPicking(false);
@@ -63,18 +81,23 @@ export function PinnedExercisesSection({ pinned, timeZone, onPinnedChange, onOpe
       ) : (
         <>
           <SegmentedControl legend="Período dos fixados" options={PRESET_OPTIONS} value={preset} onChange={setPreset} size="sm" />
-          <div className={styles.pinnedGrid}>
-            {exercises.map((exercise) => (
+          <SortableList
+            items={exercises}
+            getId={(exercise) => exercise.exerciseId}
+            getLabel={(exercise) => `gráfico de ${exercise.name}`}
+            onReorder={handleReorder}
+            disabled={isSavingOrder}
+            renderItem={(exercise, dragHandle) => (
               <PinnedExerciseCard
-                key={exercise.exerciseId}
                 exercise={exercise}
                 range={range}
                 bucket={bucket}
                 timeZone={timeZone}
                 onOpen={() => onOpenExercise(exercise)}
+                dragHandle={dragHandle}
               />
-            ))}
-          </div>
+            )}
+          />
         </>
       )}
 

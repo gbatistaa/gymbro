@@ -10,6 +10,8 @@ export type Resource<T> = {
   /** Último dado carregado com sucesso, mesmo de um pedido anterior: evita piscar ao trocar filtros. */
   lastData: T | null;
   reload: () => void;
+  /** Troca o dado atual sem novo pedido (atualização otimista ou resposta de uma gravação). */
+  replace: (next: T) => void;
 };
 
 type Loaded<T> = {
@@ -68,6 +70,14 @@ export function useResource<T>(
     setVersion((current) => current + 1);
   }, []);
 
+  const replace = useCallback(
+    (next: T) => {
+      setLoaded({ key, version, data: next, error: null });
+      setLastData(next);
+    },
+    [key, version],
+  );
+
   // loading é derivado: enquanto o resultado não corresponde ao pedido atual, não há dado válido
   const current =
     loaded !== null && loaded.key === key && loaded.version === version
@@ -80,5 +90,6 @@ export function useResource<T>(
     isLoading: current === null,
     lastData,
     reload,
+    replace,
   };
 }

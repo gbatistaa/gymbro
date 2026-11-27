@@ -1,4 +1,6 @@
+import type { ReactNode } from "react";
 import { LineChart } from "@/components/charts/line-chart";
+import { VariationBadge } from "@/components/charts/variation-badge";
 import { SurfaceCard } from "@/components/ui/surface-card";
 import type { MetricEvolution } from "@/contracts/progress";
 import { formatMetric, formatDelta, type MetricDefinition } from "@/features/bioimpedance/metrics";
@@ -12,10 +14,12 @@ type BioMetricCardProps = {
   definition: MetricDefinition;
   range: TimeRange;
   timeZone: string;
+  /** Alça de arrastar para reordenar; vem da lista e some quando há um gráfico só. */
+  dragHandle: ReactNode;
 };
 
 /** Uma métrica de bioimpedância: valor atual, variação no período, faixa e a curva. */
-export function BioMetricCard({ evolution, definition, range, timeZone }: BioMetricCardProps) {
+export function BioMetricCard({ evolution, definition, range, timeZone, dragHandle }: BioMetricCardProps) {
   const data = evolution.points.map((point) => ({ x: Date.parse(point.measuredAt), y: point.value }));
   const hasRange = evolution.min != null && evolution.max != null && evolution.min !== evolution.max;
   const delta = evolution.deltaAbsolute;
@@ -28,8 +32,12 @@ export function BioMetricCard({ evolution, definition, range, timeZone }: BioMet
 
   return (
     <SurfaceCard as="article" className={styles.bioCard}>
-      <header className={styles.bioCardHeader}>
+      <header className={styles.cardHeader}>
+        {dragHandle}
         <h3 className={styles.bioCardTitle}>{definition.label}</h3>
+        <VariationBadge percentage={evolution.deltaPercentage} tone="neutral" />
+      </header>
+      <div className={styles.bioCardBody}>
         <strong className={styles.bioCardValue}>{formatMetric(definition.unit, evolution.last)}</strong>
         <span className={styles.bioCardChange}>
           {change}
@@ -37,7 +45,7 @@ export function BioMetricCard({ evolution, definition, range, timeZone }: BioMet
             ? ` · entre ${formatMetric(definition.unit, evolution.min)} e ${formatMetric(definition.unit, evolution.max)}`
             : ""}
         </span>
-      </header>
+      </div>
       <LineChart
         data={data}
         label={definition.label}
@@ -46,7 +54,7 @@ export function BioMetricCard({ evolution, definition, range, timeZone }: BioMet
         formatTick={formatKg}
         formatDate={(x) => formatDate(new Date(x).toISOString(), timeZone)}
         formatAxisDate={(x) => formatAxisDate(x, timeZone)}
-        height={170}
+        height={190}
       />
     </SurfaceCard>
   );

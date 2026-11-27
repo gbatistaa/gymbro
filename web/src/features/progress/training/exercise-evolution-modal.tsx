@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { VariationBadge } from "@/components/charts/variation-badge";
 import { ErrorState } from "@/components/ui/error-state";
 import { Modal } from "@/components/ui/modal";
 import { SegmentedControl } from "@/components/ui/segmented-control";
@@ -10,6 +11,7 @@ import { bucketForRange } from "@/lib/date-ranges";
 import { formatCount, formatKg, formatVolume } from "@/lib/format";
 import { useResource } from "@/lib/use-resource";
 import { useUserTimeZone } from "@/lib/use-user-time-zone";
+import { percentChange } from "@/lib/variation";
 import { BUCKET_LABEL } from "../period-labels";
 import { fetchExerciseSeries } from "../progress-api";
 import styles from "../progress.module.css";
@@ -67,6 +69,11 @@ export function ExerciseEvolutionModal({ exercise, onClose }: ExerciseEvolutionM
   );
   const shown = series.data ?? series.lastData;
   const metric = seriesMetric(metricKey);
+  const points = shown?.points ?? [];
+  const variation =
+    points.length > 1
+      ? percentChange(metric.read(points[0]), metric.read(points[points.length - 1]))
+      : null;
 
   return (
     <Modal title={exercise.name} description={exercise.primaryMuscle} size="large" onClose={onClose}>
@@ -82,7 +89,10 @@ export function ExerciseEvolutionModal({ exercise, onClose }: ExerciseEvolutionM
           <div className={styles.evolutionBody} aria-busy={series.isLoading || undefined}>
             <div className={styles.chartHeader}>
               <SeriesHeadline series={shown} metric={metric} timeZone={timeZone} />
-              <span className={styles.chartMeta}>{metric.label} {BUCKET_LABEL[shown.bucket]}</span>
+              <div className={styles.chartAside}>
+                <VariationBadge percentage={variation} />
+                <span className={styles.chartMeta}>{metric.label} {BUCKET_LABEL[shown.bucket]}</span>
+              </div>
             </div>
             <SeriesChart series={shown} metric={metric} range={range} timeZone={timeZone} height={240} />
             <SummaryGrid summary={shown.summary} />

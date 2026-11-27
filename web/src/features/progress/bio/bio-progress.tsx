@@ -5,15 +5,18 @@ import { ButtonLink } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorState } from "@/components/ui/error-state";
 import { SegmentedControl, type SegmentedOption } from "@/components/ui/segmented-control";
+import { SortableList } from "@/components/ui/sortable-list";
 import { Skeleton } from "@/components/ui/skeleton";
 import { METRICS, type MetricDefinition } from "@/features/bioimpedance/metrics";
 import { bioPresetRange, type BioRangePreset } from "@/lib/date-ranges";
 import { formatCount } from "@/lib/format";
+import { applyOrder } from "@/lib/order";
 import { useResource } from "@/lib/use-resource";
 import { useUserTimeZone } from "@/lib/use-user-time-zone";
 import { fetchBioimpedanceEvolution } from "../progress-api";
 import styles from "../progress.module.css";
 import { BioMetricCard } from "./bio-metric-card";
+import { useMetricOrder } from "./use-metric-order";
 
 const PRESETS: readonly SegmentedOption<BioRangePreset>[] = [
   { value: "week", label: "7 dias" },
@@ -34,11 +37,16 @@ export function BioProgress() {
   const range = bioPresetRange(preset, timeZone);
   const evolution = useResource(`progress:bio:${range.from}:${range.to}`, () => fetchBioimpedanceEvolution(range));
   const shown = evolution.data ?? evolution.lastData;
+  const [savedOrder, saveOrder] = useMetricOrder();
 
-  const charted = (shown?.metrics ?? []).flatMap((metric) => {
-    const definition = definitionOf(metric.metric);
-    return definition && metric.points.length > 0 ? [{ metric, definition }] : [];
-  });
+  const charted = applyOrder(
+    (shown?.metrics ?? []).flatMap((metric) => {
+      const definition = definitionOf(metric.metric);
+      return definition && metric.points.length > 0 ? [{ metric, definition }] : [];
+    }),
+    (entry) => entry.metric.metric,
+    savedOrder,
+  );
 
   return (
     <div className={styles.tabPanel}>
@@ -56,20 +64,29 @@ export function BioProgress() {
         />
       ) : (
         <>
-          <p className={styles.bioSummary} aria-live="polite">
-            {formatCount(shown.measurementCount)} {shown.measurementCount === 1 ? "medição" : "medições"} no período
-          </p>
-          <div className={styles.bioGrid} aria-busy={evolution.isLoading || undefined}>
-            {charted.map(({ metric, definition }) => (
-              <BioMetricCard
-                key={metric.metric}
-                evolution={metric}
-                definition={definition}
-                range={range}
-                timeZone={timeZone}
-              />
-            ))}
-          </div>
+          <section className={styles.section} aria-labelledby="bio-metrics-title" aria-busy={evolution.isLoading || undefined}>
+            <div className={styles.sectionHeader}>
+              <h2 id="bio-metrics-title" className={styles.sectionTitle}>Métricas corporais</h2>
+              <span className={styles.sectionCount} aria-live="polite">
+                {formatCount(shown.measurementCount)} {shown.measurementCount === 1 ? "medição" : "medições"}
+              </span>
+            </div>
+            <SortableList
+              items={charted}
+              getId={(entry) => entry.metric.metric}
+              getLabel={(entry) => `gráfico de ${entry.definition.label}`}
+              onReorder={(next) => saveOrder(next.map((entry) => entry.metric.metric))}
+              renderItem={({ metric, definition }, dragHandle) => (
+                <BioMetricCard
+                  evolution={metric}
+                  definition={definition}
+                  range={range}
+                  timeZone={timeZone}
+                  dragHandle={dragHandle}
+                />
+              )}
+            />
+          </section>
         </>
       )}
     </div>

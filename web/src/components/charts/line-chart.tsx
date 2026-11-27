@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type KeyboardEvent, type PointerEvent } from "react";
+import { useId, useState, type KeyboardEvent, type PointerEvent } from "react";
 import {
   monotoneAreaPath,
   monotonePath,
@@ -65,6 +65,8 @@ export function LineChart({
 }: LineChartProps) {
   const [containerRef, width] = useElementWidth<HTMLDivElement>();
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  // `useId` traz ":" no valor, que não serve dentro de `url(#…)`
+  const gradientId = `area-${useId().replace(/:/g, "")}`;
 
   const margin = compact ? COMPACT_MARGIN : FULL_MARGIN;
   const plotLeft = margin.left;
@@ -130,6 +132,12 @@ export function LineChart({
     >
       {width > 0 ? (
         <svg className={styles.svg} width={width} height={height} aria-hidden="true">
+          <defs>
+            <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+              <stop className={styles.gradientTop} offset="0" />
+              <stop className={styles.gradientBottom} offset="1" />
+            </linearGradient>
+          </defs>
           {compact
             ? null
             : domain.ticks.map((tick) => (
@@ -160,7 +168,11 @@ export function LineChart({
 
           {screen.length > 1 ? (
             <>
-              <path className={styles.area} d={monotoneAreaPath(screen, plotBottom)} />
+              <path
+                className={styles.area}
+                fill={`url(#${gradientId})`}
+                d={monotoneAreaPath(screen, plotBottom)}
+              />
               <path className={styles.line} d={monotonePath(screen)} />
             </>
           ) : null}

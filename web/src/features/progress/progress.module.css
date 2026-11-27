@@ -156,6 +156,13 @@
   gap: var(--space-2);
 }
 
+.chartAside {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-1);
+}
+
 .chartMeta {
   font-family: var(--font-mono);
   font-size: 11px;
@@ -164,20 +171,6 @@
 
 /* ---------- Fixados ---------- */
 
-.pinnedGrid,
-.bioGrid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--space-3);
-}
-
-@media (min-width: 600px) {
-  .pinnedGrid,
-  .bioGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
 .pinnedCard {
   display: flex;
   flex-direction: column;
@@ -185,16 +178,23 @@
   min-width: 0;
 }
 
-.pinnedTitle {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  grid-template-areas:
-    "name chevron"
-    "muscle chevron";
-  align-items: center;
-  column-gap: var(--space-2);
-  margin: calc(var(--space-2) * -1);
-  padding: var(--space-2);
+/* ---------- Cabeçalho dos cartões de gráfico ---------- */
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.cardTitle {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  margin: -4px -6px;
+  padding: 4px 6px;
   border: 0;
   border-radius: var(--radius-chip);
   background: transparent;
@@ -203,32 +203,38 @@
   cursor: pointer;
 }
 
-.pinnedTitle:hover .pinnedChevron {
+.cardTitle:hover .cardChevron {
   color: var(--color-text-primary);
 }
 
-.pinnedTitle:focus-visible {
+.cardTitle:focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 0;
 }
 
-.pinnedName {
-  grid-area: name;
-  overflow: hidden;
+.cardName {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
   font-size: 15px;
   font-weight: 650;
+}
+
+.cardNameText {
+  min-width: 0;
+  overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.pinnedMuscle {
-  grid-area: muscle;
-  font-size: 12px;
+.cardChevron {
+  flex: none;
   color: var(--color-text-muted);
 }
 
-.pinnedChevron {
-  grid-area: chevron;
+.cardSub {
+  font-size: 12px;
   color: var(--color-text-muted);
 }
 
@@ -688,14 +694,6 @@
 
 /* ---------- Bioimpedância ---------- */
 
-.bioSummary {
-  margin: 0;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  font-variant-numeric: tabular-nums;
-  color: var(--color-text-muted);
-}
-
 .bioCard {
   display: flex;
   flex-direction: column;
@@ -703,17 +701,18 @@
   min-width: 0;
 }
 
-.bioCardHeader {
+.bioCardTitle {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 650;
+}
+
+.bioCardBody {
   display: flex;
   flex-direction: column;
   gap: 2px;
-}
-
-.bioCardTitle {
-  margin: 0;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--color-text-secondary);
 }
 
 .bioCardValue {
